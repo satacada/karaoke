@@ -30,7 +30,13 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 ### 🔧 [AFINAMIENTO / REFINAMIENTO]
 - Proxy inverso en Vite dev server (`client/vite.config.ts`): reenvío transparente de peticiones `/api/*` hacia el servidor Express en puerto 3001.
 - Optimización de peso de la PWA: bundle final de producción de ~148 KB gzip (139 KB JS + 8.9 KB CSS), cumpliendo el requerimiento de carga ultrarrápida en redes celulares 4G/5G.
-- Arquitectura Clean-by-Design: todos los 10 componentes atómicos de invitados (`GuestWelcomeModal`, `GuestHeader`, `GuestFilterChips`, `GuestSearchBar`, `GuestSearchResultCard`, `GuestMyQueue`, `GuestPartyQueue`, `GuestCancelSongModal`, `GuestGeoBlockedModal`, `GuestView`) se encuentran estrictamente por debajo del límite de 120 líneas de código.
+### 🐛 [CORRECCIÓN / FIX]
+- **Ajuste Móvil y Miniaturas de Video:**
+  - Corrección de la propiedad `thumbnailUrl` en la Serverless Function de Vercel (`client/api/search.js`) y en `searchService.js` para que las miniaturas de YouTube se proyecten correctamente en la tarjeta.
+  - Inclusión de texto explícito *"Pedir"* en el botón verde con ícono `+` (`GuestSearchResultCard.tsx`) para eliminar ambigüedades visuales.
+  - Corrección del desbordamiento horizontal en pantallas móviles estrechas: ajuste de anchos fluidos (`w-full min-w-0`), reducción de padding lateral y ancho responsivo de miniatura.
+  - Habilitación del escalado de pantalla en `index.html` retirando `user-scalable=no` del meta viewport para permitir pellizcar/reducir la pantalla libremente.
+  - Ocultamiento de la barra flotante de desarrollo (`Modo TV | Host DJ | Invitado`) en la vista de invitados (`App.tsx`) para que no se superponga sobre el encabezado con el nombre y sala del usuario.
 
 ---
 
