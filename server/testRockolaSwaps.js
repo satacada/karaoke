@@ -12,9 +12,17 @@ async function testSwapsAndReplacement() {
   console.log('🧪 TEST: REEMPLAZO DE CANCIÓN Y SWAP DE ORDEN PROPIO');
   console.log('======================================================\n');
 
-  const testRoomId = 'a0000000-0000-0000-0000-000000000001';
+  const testRoomCode = 'TEST' + Math.floor(Math.random() * 10000);
   const guestA = 'Juan Perez';
   const guestB = 'Maria Gomez';
+
+  // Crear sala aislada de prueba
+  const { data: testRoom } = await supabase.from('karaoke_rooms').insert([{
+    room_code: testRoomCode,
+    name: 'Sala Test Rockola Swaps',
+    host_pin: '9999'
+  }]).select().single();
+  const testRoomId = testRoom.id;
 
   try {
     // 1. Insertar 3 canciones simulando:
@@ -112,14 +120,19 @@ async function testSwapsAndReplacement() {
     console.log('\n   🎉 ¡PERFECTO! El orden de María (#11) no fue tocado y las dos de Juan se intercambiaron.');
 
     // 4. Limpieza
-    console.log('\n4️⃣ Limpiando canciones de prueba...');
+    console.log('\n4️⃣ Limpiando canciones y sala de prueba...');
     await supabase.from('karaoke_queue').delete().in('id', [s1.id, s2.id, s3.id]);
+    await supabase.from('karaoke_rooms').delete().eq('id', testRoomId);
     console.log('   ✅ Limpieza completada.');
 
     console.log('\n======================================================');
     console.log('🎉 TODAS LAS PRUEBAS DE REEMPLAZO Y SWAP PASARON');
     console.log('======================================================\n');
   } catch (err) {
+    if (testRoomId) {
+      await supabase.from('karaoke_queue').delete().eq('room_id', testRoomId);
+      await supabase.from('karaoke_rooms').delete().eq('id', testRoomId);
+    }
     console.error('\n❌ ERROR EN TEST DE SWAPS:', err.message);
     process.exit(1);
   }

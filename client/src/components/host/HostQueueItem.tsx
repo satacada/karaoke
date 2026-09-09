@@ -1,4 +1,4 @@
-import type { FC } from 'react';
+import { useRef, type FC, type TouchEvent, type DragEvent } from 'react';
 import { GripVertical, Zap, Trash2, ArrowUp, ArrowDown, User } from 'lucide-react';
 import type { QueueItem } from '../../types';
 
@@ -10,23 +10,29 @@ interface HostQueueItemProps {
   onMoveUp: (id: string, currentPos: number) => void;
   onMoveDown: (id: string, currentPos: number) => void;
   onDelete: (item: QueueItem) => void;
-  onDragStart: (e: React.DragEvent, index: number) => void;
-  onDragOver: (e: React.DragEvent) => void;
-  onDrop: (e: React.DragEvent, targetIndex: number) => void;
+  onDragStart: (e: DragEvent, index: number) => void;
+  onDragOver: (e: DragEvent) => void;
+  onDrop: (e: DragEvent, targetIndex: number) => void;
 }
 
 export const HostQueueItem: FC<HostQueueItemProps> = ({
-  item,
-  index,
-  totalItems,
-  onMoveToNext,
-  onMoveUp,
-  onMoveDown,
-  onDelete,
-  onDragStart,
-  onDragOver,
-  onDrop,
+  item, index, totalItems, onMoveToNext, onMoveUp, onMoveDown,
+  onDelete, onDragStart, onDragOver, onDrop,
 }) => {
+  const startYRef = useRef(0);
+  const handleTouchStart = (e: TouchEvent) => { startYRef.current = e.touches[0].clientY; };
+  const handleTouchMove = (e: TouchEvent) => {
+    if (!startYRef.current) return;
+    const dy = e.touches[0].clientY - startYRef.current;
+    if (dy > 35 && index < totalItems - 1) {
+      onMoveDown(item.id, item.priority_order);
+      startYRef.current = e.touches[0].clientY;
+    } else if (dy < -35 && index > 0) {
+      onMoveUp(item.id, item.priority_order);
+      startYRef.current = e.touches[0].clientY;
+    }
+  };
+
   return (
     <div
       draggable
@@ -36,8 +42,14 @@ export const HostQueueItem: FC<HostQueueItemProps> = ({
       className="flex items-center justify-between gap-2.5 p-3 rounded-2xl bg-zinc-900/90 border border-zinc-800 shadow-sm active:bg-zinc-800 transition-all select-none"
     >
       <div className="flex items-center gap-2 min-w-0 flex-1">
-        <div className="cursor-grab active:cursor-grabbing text-zinc-500 hover:text-zinc-300 p-1">
-          <GripVertical className="w-5 h-5" />
+        <div
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={() => { startYRef.current = 0; }}
+          className="cursor-grab active:cursor-grabbing text-zinc-500 hover:text-zinc-300 p-1 touch-none"
+          title="Arrastra con el dedo"
+        >
+          <GripVertical className="w-5 h-5 text-purple-400/80" />
         </div>
         <span className="w-6 h-6 rounded-lg bg-zinc-800 text-zinc-300 text-xs font-mono font-bold flex items-center justify-center shrink-0">
           {index + 1}

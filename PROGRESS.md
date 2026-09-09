@@ -1,8 +1,8 @@
 # 📊 PLAN MAESTRO DEL PROYECTO: ROCKOLA DIGITAL LIVE (SISTEMA MULTI-TENANT EN TIEMPO REAL)
 
-**Versión del Plan:** 2.4.0 (Consolidado de Ingeniería)  
+**Versión del Plan:** 2.5.0 (Control Táctil Móvil y Reordenamiento con el Dedo)  
 **Fecha de Emisión:** Septiembre 2026  
-**Estado:** 🟢 Fase 4 (Nodo Invitados Rockola + Swaps + Multi-Tenant Google OAuth - Completa y Verificada)  
+**Estado:** 🟢 Fase 4 (Nodo Invitados Rockola + Reordenamiento Táctil con el Dedo + Google Auth - Completa y Verificada)  
 **Metodología:** Agile / BDD / Clean Architecture con Compuertas de Control Formales  
 **Alineación:** Estructura inspirada en `boot-ventas-saas` y `aplicacion para ofertas`  
 

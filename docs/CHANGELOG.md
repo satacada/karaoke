@@ -4,6 +4,22 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.5.0] - 2026-09-09
+
+### 🚀 [ESPECIFICACIÓN / FEATURE]
+- **Control Táctil con el Dedo (Touch Gesture Reordering) en Dispositivos Móviles:**
+  - **Reordenamiento con el Dedo para Invitados (`client/src/components/guest/GuestMyQueue.tsx`):** Implementación de gestos táctiles nativos de pantalla táctil (`onTouchStart`, `onTouchMove`, `onTouchEnd`) sobre el control de agarre `GripVertical` con la propiedad CSS `touch-none` (evita que el navegador del teléfono intercepte el gesto como scroll vertical).
+  - **Botones Táctiles de 1 Toque (`ArrowUp` / `ArrowDown`):** Permite a los invitados subir o bajar el orden de sus temas en la cola con un solo toque con el dedo.
+  - **Toque Directo para Sustituir Canción:** Tocar cualquier parte de la tarjeta o el botón verde "Cambiar" abre el modal de sustitución de YouTube para cambiar de canción manteniendo intacto el turno en la cola.
+  - **Reordenamiento Táctil en Consola de Anfitrión / DJ Móvil (`client/src/components/host/HostQueueItem.tsx`):** Añadido soporte de arrastre con el dedo sobre el control `GripVertical` (`touch-none`) para que el anfitrión pueda mover temas hacia arriba o abajo en la cola completa simplemente deslizando su dedo por la pantalla de su teléfono.
+
+### 🔧 [AFINAMIENTO / REFINAMIENTO]
+- **Cumplimiento Estricto de Clean-by-Design:** `GuestMyQueue.tsx` optimizado a 108 líneas y `HostQueueItem.tsx` a 104 líneas, cumpliendo el límite inquebrantable de $\le 120$ líneas por archivo.
+- **Aislamiento en Pruebas Automatizadas:** `server/testRockolaSwaps.js` actualizado para ejecutar pruebas contra salas temporales dedicadas con limpieza automática, garantizando ejecución determinista al 100%.
+- **Validación de Compilación:** Compilación de producción limpia en Vite y TypeScript sin errores.
+
+---
+
 ## [1.4.0] - 2026-09-09
 
 ### 🚀 [ESPECIFICACIÓN / FEATURE]
