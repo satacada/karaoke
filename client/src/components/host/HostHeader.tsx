@@ -1,20 +1,24 @@
 import type { FC } from 'react';
-import { RotateCcw, Users, Settings, Crown } from 'lucide-react';
+import { RotateCcw, Users, Settings, Crown, ShieldCheck } from 'lucide-react';
 
 interface HostHeaderProps {
   roomCode: string;
   isOwner?: boolean;
+  isSuperAdmin?: boolean;
   onOpenGuests: () => void;
   onOpenReset: () => void;
   onOpenSettings: () => void;
+  onOpenSuperAdmin?: () => void;
 }
 
 export const HostHeader: FC<HostHeaderProps> = ({
   roomCode,
   isOwner,
+  isSuperAdmin,
   onOpenGuests,
   onOpenReset,
   onOpenSettings,
+  onOpenSuperAdmin,
 }) => {
   return (
     <header className="flex items-center justify-between py-2 border-b border-zinc-800 mb-4">
@@ -30,6 +34,16 @@ export const HostHeader: FC<HostHeaderProps> = ({
         <h1 className="text-lg font-black text-white font-mono">{roomCode}</h1>
       </div>
       <div className="flex gap-1.5">
+        {isSuperAdmin && onOpenSuperAdmin && (
+          <button
+            onClick={onOpenSuperAdmin}
+            className="p-2 rounded-xl bg-purple-950/80 border border-purple-600/50 text-purple-300 active:scale-95 transition-transform hover:text-white"
+            title="Aprobación de Locales (SuperAdmin)"
+            aria-label="Panel SuperAdmin"
+          >
+            <ShieldCheck className="w-4 h-4 text-purple-300" />
+          </button>
+        )}
         <button
           onClick={onOpenSettings}
           className="p-2 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-300 active:scale-95 transition-transform hover:text-white"

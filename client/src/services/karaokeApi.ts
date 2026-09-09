@@ -325,3 +325,41 @@ export async function updateRoomSettings(
   return !error;
 }
 
+export async function approveRoom(
+  roomId: string,
+  approvedBy: string,
+  isApproved: boolean
+): Promise<boolean> {
+  const { data: rpcData, error: rpcError } = await supabase.rpc('fn_approve_room', {
+    p_room_id: roomId,
+    p_approved_by: approvedBy,
+    p_status: isApproved,
+  });
+
+  if (!rpcError && typeof rpcData === 'boolean') {
+    return rpcData;
+  }
+
+  const { error } = await supabase
+    .from('karaoke_rooms')
+    .update({
+      is_approved: isApproved,
+      approved_at: isApproved ? new Date().toISOString() : null,
+      approved_by: isApproved ? approvedBy : null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', roomId);
+
+  return !error;
+}
+
+export async function getAllRoomsForSuperAdmin(): Promise<KaraokeRoom[]> {
+  const { data, error } = await supabase
+    .from('karaoke_rooms')
+    .select('*')
+    .order('created_at', { ascending: false });
+
+  if (error || !data) return [];
+  return data as KaraokeRoom[];
+}
+

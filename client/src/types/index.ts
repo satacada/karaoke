@@ -17,6 +17,9 @@ export interface KaraokeRoom {
   business_name?: string | null;
   pricing_mode?: 'free' | 'paid_per_song';
   price_per_song?: number;
+  is_approved?: boolean;
+  approved_at?: string | null;
+  approved_by?: string | null;
 }
 
 export type QueueStatus =

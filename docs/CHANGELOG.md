@@ -20,6 +20,11 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
   - Trazabilidad en base de datos: las salas quedan vinculadas a su dueño con `owner_id` y `owner_email`.
   - Migración DDL `supabase/migrations/03_rockola_multitenant_and_swaps.sql` con columnas multi-tenant y procedimientos `fn_replace_guest_song` y `fn_swap_guest_songs`.
   - Script de prueba automatizado `server/testRockolaSwaps.js` validando reemplazo y swaps intercalados con 100% de éxito.
+- **Compuerta de Aprobación Obligatoria por el Super Administrador:**
+  - Control de acceso estricto: todo nuevo establecimiento/dueño inicia con `is_approved = false` y permanece bloqueado hasta recibir la aprobación directa del Super Administrador (tú).
+  - Pantalla bloqueada con estado en tiempo real (`client/src/components/host/HostPendingApprovalView.tsx`): informa al dueño que su cuenta está en revisión y se desbloquea de manera instantánea vía WebSockets en cuanto es aprobada.
+  - Panel exclusivo de Super Administrador (`client/src/components/host/SuperAdminApprovalModal.tsx`): permite al creador listar todos los locales registrados y autorizarlos o suspenderlos con 1 toque desde su propio dispositivo.
+  - Migración DDL `supabase/migrations/04_owner_approval_system.sql` con columnas `is_approved`, `approved_at`, `approved_by` y procedimiento `fn_approve_room`.
 
 ### 🔧 [AFINAMIENTO / REFINAMIENTO]
 - Regla Clean-by-Design rigurosamente mantenida: todos los nuevos componentes (`GuestReplaceSongModal.tsx`, `HostSettingsModal.tsx`) y vistas actualizadas (`GuestView.tsx`, `HostView.tsx`, `GuestMyQueue.tsx`, `HostAuth.tsx`) se mantuvieron estrictamente por debajo del límite de 120 líneas.
