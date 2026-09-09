@@ -41,3 +41,26 @@
 .animate-pulse-glow {
   animation: pulse-glow 3s infinite ease-in-out;
 }
+
+@keyframes float-reaction {
+  0% {
+    opacity: 0;
+    transform: translateY(0) scale(0.6);
+  }
+  15% {
+    opacity: 1;
+    transform: translateY(-50px) scale(1.2);
+  }
+  75% {
+    opacity: 0.85;
+    transform: translateY(-320px) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-520px) scale(0.7);
+  }
+}
+
+.animate-float-reaction {
+  animation: float-reaction 3.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}

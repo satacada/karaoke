@@ -4,6 +4,39 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.7.0] - 2026-09-09
+
+### 🚀 [ESPECIFICACIÓN / FEATURE]
+- **Pase VIP con Mercado Pago ($500 ARS):**
+  - Integración de cobranza express por transferencia al alias `david.taboa` con copia con un solo toque y deep link directo `mercadopago://` hacia la app de transferencias de Mercado Pago (`client/src/components/guest/GuestMercadoPagoModal.tsx`).
+  - Límite estricto de máximo 3 canciones VIP consecutivas por dispositivo para salvaguardar el orden y la justicia social en la fiesta.
+- **Identificación Antifraude por Dispositivo (`client/src/utils/deviceId.ts`):**
+  - Generación y persistencia de `deviceId` único (UUID v4) en `localStorage` para identificar teléfonos de invitados sin vulnerar el sandbox de privacidad W3C (evitando acceso indebido a IMEI/MAC).
+  - Algoritmo de control de turnos VIP que valida el historial del dispositivo en cola antes de habilitar el Fast-Pass.
+- **Extensión de Dedicatorias en Pantalla a 40 Segundos (`client/src/components/tv/TvDedicationBanner.tsx`):**
+  - El temporizador del banner en TV se extendió de 12 a 40 segundos para permitir que todo el local aprecie las dedicatorias y saludos especiales.
+- **Reacciones y Emojis en Vivo Estilo TikTok/Twitch Live:**
+  - **Barra de Reacciones para Invitados (`client/src/components/guest/GuestLiveReactionsBar.tsx`):** Disparo de aplausos 👏, fuegos 🔥, corazones ❤️ y brindis 🍻 con animación táctil y cooldown anti-spam.
+  - **Partículas Flotantes en Pantalla TV (`client/src/components/tv/TvFloatingReactions.tsx`):** Los emojis ascienden flotando por el margen derecho de la TV sobre cualquier video o pantalla de espera vía canales de difusión en tiempo real de Supabase (`room_reactions_[code]`).
+  - **Animación CSS dedicada (`client/src/index.css`):** Keyframes `@keyframes float-reaction` con desplazamiento vertical, desvanecimiento y balanceo lateral.
+- **Control de Horario / "Última Ronda" de Pedidos:**
+  - Botón de bloqueo rápido de cola en la Consola DJ (`client/src/components/host/HostHeader.tsx` y `HostView.tsx`).
+  - Alerta visual en la vista de búsqueda del invitado informando que la rockola cerró pedidos para culminar a horario (`GuestView.tsx`).
+- **Modo Auto-DJ Ambiente de Respaldo:**
+  - Selector en la configuración del local (`client/src/components/host/HostSettingsModal.tsx`) para activar música ambiental cuando no hay temas solicitados.
+  - Indicador animado en la pantalla de espera de la TV (`TvIdleScreen.tsx`), cortando al instante en cuanto un invitado pide una canción.
+- **Votación Comunitaria y Likes en Cola (`client/src/components/guest/GuestPartyQueue.tsx`):**
+  - Botón interactivo de Me Gusta con corazón y contador en tiempo real para temas en cola.
+  - Condecoración automática **"🔥 Más Esperado"** para la canción con mayor cantidad de votos comunitarios.
+- **Migración DDL 05 (`supabase/migrations/05_rockola_features.sql`):**
+  - Columnas `is_queue_locked`, `auto_dj_enabled`, `auto_dj_genre`, `promo_banners`, `likes_count`, `liked_by` y función RPC transaccional `fn_toggle_song_like`.
+
+### 🔧 [AFINAMIENTO / REFINAMIENTO]
+- **Estándar Clean-by-Design Estricto ($\le 120$ líneas):** Todos los componentes del cliente (`GuestView.tsx`, `GuestModals.tsx`, `GuestReplaceSongModal.tsx`, `HostSettingsModal.tsx`, `GuestPartyQueue.tsx`, etc.) se verificaron y mantuvieron rigurosamente dentro del límite de 120 líneas.
+- **Compilación de Producción:** Vite 8 y TypeScript estricto ejecutaron con 0 errores y 0 advertencias de tipo.
+
+---
+
 ## [1.6.0] - 2026-09-09
 
 ### 🚀 [ESPECIFICACIÓN / FEATURE]

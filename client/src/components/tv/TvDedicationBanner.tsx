@@ -26,7 +26,7 @@ export const TvDedicationBanner: FC<TvDedicationBannerProps> = ({ currentSong })
 
       const timer = setTimeout(() => {
         setIsVisible(false);
-      }, 12000);
+      }, 40000);
 
       return () => clearTimeout(timer);
     } else {

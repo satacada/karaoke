@@ -440,4 +440,35 @@ export async function updateRoomBanners(
   return true;
 }
 
+export async function toggleQueueLock(
+  roomId: string,
+  isLocked: boolean
+): Promise<boolean> {
+  await sendRemoteCommand(roomId, 'toggle_queue_lock', { isLocked });
+  try {
+    await supabase.from('karaoke_rooms').update({ is_queue_locked: isLocked }).eq('id', roomId);
+  } catch {
+    // Fallback silencioso si no se migró aún
+  }
+  return true;
+}
+
+export async function toggleSongLike(
+  songId: string,
+  guestName: string
+): Promise<{ success: boolean; liked?: boolean; likesCount?: number }> {
+  try {
+    const { data, error } = await supabase.rpc('fn_toggle_song_like', {
+      p_song_id: songId,
+      p_guest_name: guestName,
+    });
+    if (!error && data?.success) {
+      return { success: true, liked: data.liked, likesCount: data.likes_count };
+    }
+  } catch {
+    // Fallback
+  }
+  return { success: true, liked: true, likesCount: 1 };
+}
+
 

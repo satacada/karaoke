@@ -4,29 +4,23 @@ import { validateDedication, MAX_DEDICATION_LENGTH } from '../../utils/profanity
 import type { SearchResultItem } from '../../types';
 
 interface GuestSongConfirmModalProps {
-  isOpen: boolean;
-  song: SearchResultItem | null;
-  guestName: string;
-  onConfirm: (dedication: string | null, isVip: boolean) => void;
-  onClose: () => void;
+  isOpen: boolean; song: SearchResultItem | null; guestName: string; canRequestVip?: boolean;
+  onConfirm: (dedication: string | null, isVip: boolean) => void; onClose: () => void;
 }
 
 export const GuestSongConfirmModal: FC<GuestSongConfirmModalProps> = ({
-  isOpen, song, guestName, onConfirm, onClose,
+  isOpen, song, guestName, canRequestVip = true, onConfirm, onClose,
 }) => {
-  const [dedication, setDedication] = useState('');
-  const [isVip, setIsVip] = useState(false);
+  const [dedication, setDedication] = useState(''); const [isVip, setIsVip] = useState(false);
 
   if (!isOpen || !song) return null;
-
   const validation = validateDedication(dedication);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!validation.isValid) return;
     onConfirm(dedication.trim() || null, isVip);
-    setDedication('');
-    setIsVip(false);
+    setDedication(''); setIsVip(false);
   };
 
   return (
@@ -64,9 +58,7 @@ export const GuestSongConfirmModal: FC<GuestSongConfirmModalProps> = ({
               }`}
             />
             <div className="flex justify-between items-center text-[10px]">
-              <span className={validation.isValid ? 'text-zinc-500' : 'text-rose-400 font-semibold'}>
-                {validation.errorReason || 'Aparecerá 12 segundos al iniciar la canción.'}
-              </span>
+              <span className={validation.isValid ? 'text-zinc-500' : 'text-rose-400 font-semibold'}>{validation.errorReason || 'Aparecerá 40 segundos al iniciar la canción.'}</span>
               <span className="text-zinc-500">{dedication.length}/{MAX_DEDICATION_LENGTH}</span>
             </div>
           </div>
@@ -87,15 +79,23 @@ export const GuestSongConfirmModal: FC<GuestSongConfirmModalProps> = ({
 
             <button
               type="button"
-              onClick={() => setIsVip(true)}
+              disabled={!canRequestVip}
+              onClick={() => canRequestVip && setIsVip(true)}
               className={`p-3 rounded-2xl border text-left transition-all ${
-                isVip ? 'bg-gradient-to-br from-amber-500/20 to-pink-500/20 border-amber-400 shadow-lg scale-[1.02]' : 'bg-zinc-950/60 border-zinc-800 opacity-60'
+                !canRequestVip
+                  ? 'opacity-40 cursor-not-allowed bg-zinc-950 border-zinc-800'
+                  : isVip
+                  ? 'bg-gradient-to-br from-amber-500/20 to-pink-500/20 border-amber-400 shadow-lg scale-[1.02]'
+                  : 'bg-zinc-950/60 border-zinc-800 opacity-60'
               }`}
             >
-              <div className="flex items-center gap-1 text-xs font-black text-amber-300 mb-0.5">
-                <Zap className="w-3.5 h-3.5" /><span>Pase VIP ⚡</span>
+              <div className="flex items-center justify-between gap-1 text-xs font-black text-amber-300 mb-0.5">
+                <div className="flex items-center gap-1"><Zap className="w-3.5 h-3.5" /><span>Pase VIP ⚡</span></div>
+                <span className="text-[10px] text-amber-400 font-mono">$500</span>
               </div>
-              <p className="text-[10px] text-amber-200/80">Toca de siguiente en la TV.</p>
+              <p className="text-[10px] text-amber-200/80">
+                {canRequestVip ? 'Toca de siguiente (Máx 3).' : 'Límite de 3 alcanzado.'}
+              </p>
             </button>
           </div>
 
@@ -109,7 +109,7 @@ export const GuestSongConfirmModal: FC<GuestSongConfirmModalProps> = ({
             } disabled:opacity-30`}
           >
             {isVip ? <Zap className="w-4 h-4 fill-zinc-950" /> : <Music className="w-4 h-4" />}
-            <span>{isVip ? 'Pedir con Pase VIP ⚡' : 'Agregar a la Fila 🎤'}</span>
+            <span>{isVip ? 'Continuar con Pago VIP ($500) ⚡' : 'Agregar a la Fila 🎤'}</span>
           </button>
         </form>
       </div>

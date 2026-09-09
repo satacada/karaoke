@@ -1,26 +1,30 @@
 import type { FC } from 'react';
-import { RotateCcw, Users, Settings, Crown, ShieldCheck, Megaphone } from 'lucide-react';
+import { RotateCcw, Users, Settings, Crown, ShieldCheck, Megaphone, Lock, LockOpen } from 'lucide-react';
 
 interface HostHeaderProps {
   roomCode: string;
   isOwner?: boolean;
   isSuperAdmin?: boolean;
+  isQueueLocked?: boolean;
   onOpenGuests: () => void;
   onOpenReset: () => void;
   onOpenSettings: () => void;
   onOpenSuperAdmin?: () => void;
   onOpenBanners?: () => void;
+  onToggleQueueLock?: () => void;
 }
 
 export const HostHeader: FC<HostHeaderProps> = ({
   roomCode,
   isOwner,
   isSuperAdmin,
+  isQueueLocked,
   onOpenGuests,
   onOpenReset,
   onOpenSettings,
   onOpenSuperAdmin,
   onOpenBanners,
+  onToggleQueueLock,
 }) => {
   return (
     <header className="flex items-center justify-between py-2 border-b border-zinc-800 mb-4">
@@ -36,6 +40,20 @@ export const HostHeader: FC<HostHeaderProps> = ({
         <h1 className="text-lg font-black text-white font-mono">{roomCode}</h1>
       </div>
       <div className="flex gap-1.5">
+        {onToggleQueueLock && (
+          <button
+            onClick={onToggleQueueLock}
+            className={`p-2 rounded-xl border transition-transform active:scale-95 ${
+              isQueueLocked
+                ? 'bg-amber-500/20 border-amber-500/50 text-amber-400 shadow-lg shadow-amber-500/10'
+                : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-zinc-200'
+            }`}
+            title={isQueueLocked ? 'Fila bloqueada (Última Ronda)' : 'Bloquear pedidos (Última Ronda)'}
+            aria-label="Bloqueo de Pedidos Última Ronda"
+          >
+            {isQueueLocked ? <Lock className="w-4 h-4" /> : <LockOpen className="w-4 h-4" />}
+          </button>
+        )}
         {isSuperAdmin && onOpenSuperAdmin && (
           <button
             onClick={onOpenSuperAdmin}

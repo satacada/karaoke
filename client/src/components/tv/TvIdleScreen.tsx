@@ -1,6 +1,6 @@
 import { useState, useEffect, type FC } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
-import { Mic, Sparkles, Smartphone, Signal, Tag } from 'lucide-react';
+import { Mic, Sparkles, Smartphone, Signal, Tag, Disc3 } from 'lucide-react';
 import type { PromoBanner } from '../../types';
 
 interface TvIdleScreenProps {
@@ -8,10 +8,11 @@ interface TvIdleScreenProps {
   joinUrl: string;
   roomName?: string;
   banners?: PromoBanner[];
+  autoDjActive?: boolean;
 }
 
 export const TvIdleScreen: FC<TvIdleScreenProps> = ({
-  roomCode, joinUrl, roomName = 'Rockola Digital Live', banners = [],
+  roomCode, joinUrl, roomName = 'Rockola Digital Live', banners = [], autoDjActive = false,
 }) => {
   const activeBanners = banners.filter((b) => b.is_active);
   const [promoIdx, setPromoIdx] = useState(0);
@@ -39,6 +40,11 @@ export const TvIdleScreen: FC<TvIdleScreenProps> = ({
           <Sparkles className="w-7 h-7 text-amber-300 absolute -top-2 -right-2 animate-spin" />
         </div>
 
+        {autoDjActive && (
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-pink-500/20 border border-pink-500/40 text-pink-300 text-xs font-bold mb-3 shadow-lg shadow-pink-500/10 animate-pulse">
+            <Disc3 className="w-3.5 h-3.5 animate-spin" /> Modo Auto-DJ Ambiente Activo
+          </div>
+        )}
         <h1 className="text-3xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-amber-300 tracking-tight mb-2">
           {roomName}
         </h1>

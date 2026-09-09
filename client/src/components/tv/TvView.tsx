@@ -8,6 +8,7 @@ import { TvNextQueueTicker } from './TvNextQueueTicker';
 import { TvFloatingQr } from './TvFloatingQr';
 import { TvDedicationBanner } from './TvDedicationBanner';
 import { TvPromoTicker } from './TvPromoTicker';
+import { TvFloatingReactions } from './TvFloatingReactions';
 import { updatePlaybackTick } from '../../services/karaokeApi';
 import type { RemoteCommand, PromoBanner } from '../../types';
 
@@ -70,7 +71,12 @@ export const TvView: FC<{ roomCode?: string }> = ({ roomCode = 'FIESTA' }) => {
   const joinUrl = `${window.location.origin}/join?room=${roomCode}`;
 
   if (!currentSong) {
-    return <TvIdleScreen roomCode={roomCode} joinUrl={joinUrl} roomName={room?.name || 'Rockola Digital Live'} banners={banners} />;
+    return (
+      <div className="relative w-full h-screen bg-black overflow-hidden select-none">
+        <TvIdleScreen roomCode={roomCode} joinUrl={joinUrl} roomName={room?.name || 'Rockola Digital Live'} banners={banners} autoDjActive={Boolean(room?.auto_dj_enabled)} />
+        <TvFloatingReactions roomCode={roomCode} />
+      </div>
+    );
   }
 
   return (
@@ -86,6 +92,7 @@ export const TvView: FC<{ roomCode?: string }> = ({ roomCode = 'FIESTA' }) => {
       <TvNowPlayingHUD song={currentSong} currentTime={currentTime} duration={duration} />
       <TvPromoTicker banners={banners} />
       <TvDedicationBanner currentSong={currentSong} />
+      <TvFloatingReactions roomCode={roomCode} />
     </div>
   );
 };

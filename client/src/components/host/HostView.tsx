@@ -14,7 +14,7 @@ import { HostSettingsModal } from './HostSettingsModal';
 import { HostPendingApprovalView } from './HostPendingApprovalView';
 import { SuperAdminApprovalModal } from './SuperAdminApprovalModal';
 import { HostBannersModal } from './HostBannersModal';
-import { sendRemoteCommand, reorderQueueItem, purgeGuestSongs, deleteQueueItem, resetRoomQueue, updateRoomBanners } from '../../services/karaokeApi';
+import { sendRemoteCommand, reorderQueueItem, purgeGuestSongs, deleteQueueItem, resetRoomQueue, updateRoomBanners, toggleQueueLock } from '../../services/karaokeApi';
 import type { QueueItem } from '../../types';
 
 const SUPER_ADMINS = (import.meta.env.VITE_SUPER_ADMIN_EMAILS || 'satacada@gmail.com,david@gmail.com,admin@karaoke.com').toLowerCase().split(',').map((s: string) => s.trim());
@@ -67,9 +67,14 @@ export const HostView: FC<{ roomCode?: string }> = ({ roomCode = 'FIESTA' }) => 
     return <HostPendingApprovalView roomCode={roomCode} businessName={room.business_name || room.name} ownerEmail={ownerEmail || 'No asignado'} onLoggedOut={() => setIsAuthenticated(false)} />;
   }
 
+  const handleToggleLock = async () => {
+    if (!room) return;
+    await toggleQueueLock(room.id, !room.is_queue_locked); refreshState();
+  };
+
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col max-w-lg mx-auto pb-28 pt-12 px-4 select-none">
-      <HostHeader roomCode={roomCode} isOwner={isOwner} isSuperAdmin={isSuperAdmin} onOpenGuests={() => setShowGuestModal(true)} onOpenReset={() => setShowResetModal(true)} onOpenSettings={() => setShowSettingsModal(true)} onOpenSuperAdmin={() => setShowSuperAdminModal(true)} onOpenBanners={() => setShowBannersModal(true)} />
+      <HostHeader roomCode={roomCode} isOwner={isOwner} isSuperAdmin={isSuperAdmin} isQueueLocked={Boolean(room?.is_queue_locked)} onToggleQueueLock={handleToggleLock} onOpenGuests={() => setShowGuestModal(true)} onOpenReset={() => setShowResetModal(true)} onOpenSettings={() => setShowSettingsModal(true)} onOpenSuperAdmin={() => setShowSuperAdminModal(true)} onOpenBanners={() => setShowBannersModal(true)} />
       <section className="mb-4"><HostNowPlayingCard currentSong={currentSong} currentTime={room?.current_time_seconds || 0} onSkip={handleNextSong} /></section>
       <section className="flex-1 flex flex-col gap-2">
         <div className="flex items-center gap-1.5 text-xs text-zinc-400 font-bold uppercase tracking-wider mb-1">
