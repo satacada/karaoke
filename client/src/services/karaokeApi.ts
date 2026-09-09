@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabaseClient';
+import { encodeSongThumbnail } from '../utils/songMeta';
 import type {
   KaraokeRoom,
   QueueItem,
@@ -7,6 +8,7 @@ import type {
   KaraokeGuest,
   SearchResultItem,
   SearchFilterType,
+  PromoBanner,
 } from '../types';
 
 export async function getRoomByCode(code: string): Promise<KaraokeRoom | null> {
@@ -178,17 +180,54 @@ export async function addSongToQueue(params: {
   durationSeconds: number;
   durationText: string;
   requestedBy: string;
+  dedication?: string | null;
+  isVip?: boolean;
 }): Promise<QueueItem | null> {
-  const { data: maxItem } = await supabase
-    .from('karaoke_queue')
-    .select('priority_order')
-    .eq('room_id', params.roomId)
-    .eq('status', 'queued')
-    .order('priority_order', { ascending: false })
-    .limit(1)
-    .maybeSingle();
+  let targetPriority = 1;
 
-  const nextPriority = (maxItem?.priority_order ?? 0) + 1;
+  if (params.isVip) {
+    const { data: queued } = await supabase
+      .from('karaoke_queue')
+      .select('id, priority_order, thumbnail_url')
+      .eq('room_id', params.roomId)
+      .eq('status', 'queued')
+      .order('priority_order', { ascending: true });
+
+    let existingVipCount = 0;
+    if (queued) {
+      for (const q of queued) {
+        if (q.thumbnail_url?.includes('vip=1')) existingVipCount++;
+      }
+    }
+    targetPriority = Math.min(existingVipCount + 1, 3);
+
+    if (queued && queued.length > 0) {
+      for (let i = queued.length - 1; i >= 0; i--) {
+        if (queued[i].priority_order >= targetPriority) {
+          await supabase
+            .from('karaoke_queue')
+            .update({ priority_order: queued[i].priority_order + 1 })
+            .eq('id', queued[i].id);
+        }
+      }
+    }
+  } else {
+    const { data: maxItem } = await supabase
+      .from('karaoke_queue')
+      .select('priority_order')
+      .eq('room_id', params.roomId)
+      .eq('status', 'queued')
+      .order('priority_order', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    targetPriority = (maxItem?.priority_order ?? 0) + 1;
+  }
+
+  const encodedThumbnail = encodeSongThumbnail(params.thumbnailUrl, {
+    dedication: params.dedication,
+    isVip: params.isVip,
+  });
 
   const { data, error } = await supabase
     .from('karaoke_queue')
@@ -199,11 +238,11 @@ export async function addSongToQueue(params: {
         video_id: params.videoId,
         title: params.title,
         author: params.author,
-        thumbnail_url: params.thumbnailUrl || null,
+        thumbnail_url: encodedThumbnail,
         duration_seconds: params.durationSeconds,
         duration_text: params.durationText,
         requested_by: params.requestedBy,
-        priority_order: nextPriority,
+        priority_order: targetPriority,
         status: 'queued',
       },
     ])
@@ -387,4 +426,18 @@ export async function getAllRoomsForSuperAdmin(): Promise<KaraokeRoom[]> {
   if (error || !data) return [];
   return data as KaraokeRoom[];
 }
+
+export async function updateRoomBanners(
+  roomId: string,
+  banners: PromoBanner[]
+): Promise<boolean> {
+  await sendRemoteCommand(roomId, 'set_promo_banners', { banners });
+  try {
+    await supabase.from('karaoke_rooms').update({ promo_banners: banners }).eq('id', roomId);
+  } catch {
+    // Ignorar si la columna aún no está creada en BD
+  }
+  return true;
+}
+
 

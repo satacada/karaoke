@@ -11,19 +11,18 @@ import { GuestPartyQueue } from './GuestPartyQueue';
 import { GuestCancelSongModal } from './GuestCancelSongModal';
 import { GuestReplaceSongModal } from './GuestReplaceSongModal';
 import { GuestGeoBlockedModal } from './GuestGeoBlockedModal';
+import { GuestSongConfirmModal } from './GuestSongConfirmModal';
 import type { KaraokeRoom, QueueItem, SearchResultItem, SearchFilterType, GuestTurnStatus } from '../../types';
 
 export const GuestView: FC<{ roomCode?: string }> = ({ roomCode = 'FIESTA' }) => {
   const [room, setRoom] = useState<KaraokeRoom | null>(null);
   const [queue, setQueue] = useState<QueueItem[]>([]);
   const [activeTab, setActiveTab] = useState<'search' | 'my-turn' | 'party-queue'>('search');
-  const [query, setQuery] = useState('');
-  const [filter, setFilter] = useState<SearchFilterType>('all');
-  const [results, setResults] = useState<SearchResultItem[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
+  const [query, setQuery] = useState(''); const [filter, setFilter] = useState<SearchFilterType>('all');
+  const [results, setResults] = useState<SearchResultItem[]>([]); const [isSearching, setIsSearching] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
-  const [songToCancel, setSongToCancel] = useState<QueueItem | null>(null);
-  const [songToReplace, setSongToReplace] = useState<QueueItem | null>(null);
+  const [songToCancel, setSongToCancel] = useState<QueueItem | null>(null); const [songToReplace, setSongToReplace] = useState<QueueItem | null>(null);
+  const [songToConfirm, setSongToConfirm] = useState<SearchResultItem | null>(null);
   const [geoBlockedDist, setGeoBlockedDist] = useState<number | undefined>();
   const [lastReqTime, setLastReqTime] = useState(0);
   const isSwappingRef = useRef(false);
@@ -78,9 +77,15 @@ export const GuestView: FC<{ roomCode?: string }> = ({ roomCode = 'FIESTA' }) =>
     if (Date.now() - lastReqTime < 15000) { showToast('Espera 15 segundos entre pedidos'); return; }
     const check = await verifyPresence();
     if (!check.allowed && check.reason === 'distance') { setGeoBlockedDist(check.distanceMeters); return; }
-    setLastReqTime(Date.now());
-    await addSongToQueue({ roomId: room.id, videoId: item.videoId, title: item.title, author: item.author, thumbnailUrl: item.thumbnailUrl || (item as unknown as { thumbnail?: string }).thumbnail, durationSeconds: item.durationSeconds, durationText: item.durationText, requestedBy: session.guestName });
-    showToast('¡Canción agregada a la fila! 🎤'); setActiveTab('my-turn');
+    setSongToConfirm(item);
+  };
+
+  const handleConfirmSong = async (dedication: string | null, isVip: boolean) => {
+    if (!room || !session || !songToConfirm) return;
+    const item = songToConfirm;
+    setSongToConfirm(null); setLastReqTime(Date.now());
+    await addSongToQueue({ roomId: room.id, videoId: item.videoId, title: item.title, author: item.author, thumbnailUrl: item.thumbnailUrl || (item as unknown as { thumbnail?: string }).thumbnail, durationSeconds: item.durationSeconds, durationText: item.durationText, requestedBy: session.guestName, dedication: dedication || undefined, isVip });
+    showToast(isVip ? '¡Canción VIP agregada como siguiente! ⚡' : '¡Canción agregada a la fila! 🎤'); setActiveTab('my-turn');
   };
 
   return (
@@ -102,6 +107,7 @@ export const GuestView: FC<{ roomCode?: string }> = ({ roomCode = 'FIESTA' }) =>
             )}
             {activeTab === 'party-queue' && <GuestPartyQueue currentSong={currentSong} queuedSongs={queuedSongs} currentGuestName={session.guestName} />}
           </main>
+          <GuestSongConfirmModal isOpen={Boolean(songToConfirm)} song={songToConfirm} guestName={session.guestName} onConfirm={handleConfirmSong} onClose={() => setSongToConfirm(null)} />
           <GuestCancelSongModal isOpen={Boolean(songToCancel)} songTitle={songToCancel?.title || ''} onConfirm={async () => { if (songToCancel) { await deleteQueueItem(songToCancel.id); setSongToCancel(null); showToast('Canción cancelada'); } }} onCancel={() => setSongToCancel(null)} />
           <GuestReplaceSongModal isOpen={Boolean(songToReplace)} targetSong={songToReplace} onClose={() => setSongToReplace(null)} onReplace={async (sid, item) => { if (await replaceGuestSong(sid, { videoId: item.videoId, title: item.title, author: item.author, thumbnailUrl: item.thumbnailUrl, durationSeconds: item.durationSeconds, durationText: item.durationText })) { if (room) refreshQueue(room.id); showToast('¡Canción cambiada en tu turno! 🔄'); } }} />
           <GuestGeoBlockedModal isOpen={geoBlockedDist !== undefined} distanceMeters={geoBlockedDist} onClose={() => setGeoBlockedDist(undefined)} />

@@ -1,12 +1,11 @@
 import { useState, useRef, type FC, type TouchEvent } from 'react';
 import { Sparkles, Trash2, Clock, Music, RefreshCw, GripVertical, ArrowUp, ArrowDown } from 'lucide-react';
+import { parseSongMeta } from '../../utils/songMeta';
 import type { QueueItem, GuestTurnStatus } from '../../types';
 
 interface GuestMyQueueProps {
-  mySongs: QueueItem[]; currentSong: QueueItem | null; guestName: string;
-  turnStatus: GuestTurnStatus; onCancelSong: (song: QueueItem) => void;
-  onReplaceSong: (song: QueueItem) => void; onSwapSongs?: (id1: string, id2: string) => void;
-  onGoToSearch: () => void;
+  mySongs: QueueItem[]; currentSong: QueueItem | null; guestName: string; turnStatus: GuestTurnStatus;
+  onCancelSong: (song: QueueItem) => void; onReplaceSong: (song: QueueItem) => void; onSwapSongs?: (id1: string, id2: string) => void; onGoToSearch: () => void;
 }
 
 export const GuestMyQueue: FC<GuestMyQueueProps> = ({
@@ -25,11 +24,8 @@ export const GuestMyQueue: FC<GuestMyQueueProps> = ({
     const dy = e.touches[0].clientY - startYRef.current;
     if (Math.abs(dy) > 35) {
       touchDoneRef.current = true; setIsBusy(true);
-      if (dy > 35 && idx < mySongs.length - 1) {
-        onSwapSongs(mySongs[idx].id, mySongs[idx + 1].id);
-      } else if (dy < -35 && idx > 0) {
-        onSwapSongs(mySongs[idx].id, mySongs[idx - 1].id);
-      }
+      if (dy > 35 && idx < mySongs.length - 1) onSwapSongs(mySongs[idx].id, mySongs[idx + 1].id);
+      else if (dy < -35 && idx > 0) onSwapSongs(mySongs[idx].id, mySongs[idx - 1].id);
       setTimeout(() => setIsBusy(false), 600);
     }
   };
@@ -72,33 +68,40 @@ export const GuestMyQueue: FC<GuestMyQueueProps> = ({
               )}
             </div>
 
-            {mySongs.map((song, idx) => (
-              <div key={song.id} className={`bg-zinc-900/90 border rounded-2xl p-3 flex items-center gap-2 select-none transition-all ${activeIdx === idx ? 'border-emerald-400 bg-zinc-800 shadow-lg scale-[1.02]' : 'border-zinc-800'}`}>
-                {mySongs.length >= 2 && (
-                  <div onTouchStart={(e) => handleTouchStart(idx, e)} onTouchMove={(e) => handleTouchMove(idx, e)} onTouchEnd={handleTouchEnd} className="p-1 text-zinc-500 hover:text-zinc-300 touch-none cursor-grab active:cursor-grabbing" title="Arrastra con el dedo">
-                    <GripVertical className="w-5 h-5 text-emerald-400" />
-                  </div>
-                )}
-                <div className="w-5 text-center font-bold text-xs text-zinc-500">#{idx + 1}</div>
-                {song.thumbnail_url && (
-                  <img src={song.thumbnail_url} alt={song.title} onClick={() => onReplaceSong(song)} className="w-12 h-9 object-cover rounded-lg shrink-0 cursor-pointer" />
-                )}
-                <div className="flex-1 min-w-0 cursor-pointer" onClick={() => onReplaceSong(song)}>
-                  <h5 className="text-xs font-semibold text-white truncate">{song.title}</h5>
-                  <p className="text-[10px] text-zinc-400 truncate">{song.duration_text} • Toca para cambiar</p>
-                </div>
-                <div className="flex items-center gap-1 shrink-0">
-                  {mySongs.length >= 2 && onSwapSongs && (
-                    <div className="flex flex-col gap-0.5">
-                      <button disabled={idx === 0 || isBusy} onClick={() => onSwapSongs(song.id, mySongs[idx - 1].id)} className="p-1 text-zinc-400 hover:text-white disabled:opacity-20 active:scale-90" aria-label="Mover arriba"><ArrowUp className="w-3.5 h-3.5" /></button>
-                      <button disabled={idx === mySongs.length - 1 || isBusy} onClick={() => onSwapSongs(song.id, mySongs[idx + 1].id)} className="p-1 text-zinc-400 hover:text-white disabled:opacity-20 active:scale-90" aria-label="Mover abajo"><ArrowDown className="w-3.5 h-3.5" /></button>
+            {mySongs.map((song, idx) => {
+              const { dedication, isVip, cleanThumbnail } = parseSongMeta(song);
+              return (
+                <div key={song.id} className={`bg-zinc-900/90 border rounded-2xl p-3 flex items-center gap-2 select-none transition-all ${activeIdx === idx ? 'border-emerald-400 bg-zinc-800 shadow-lg scale-[1.02]' : 'border-zinc-800'}`}>
+                  {mySongs.length >= 2 && (
+                    <div onTouchStart={(e) => handleTouchStart(idx, e)} onTouchMove={(e) => handleTouchMove(idx, e)} onTouchEnd={handleTouchEnd} className="p-1 text-zinc-500 hover:text-zinc-300 touch-none cursor-grab active:cursor-grabbing" title="Arrastra con el dedo">
+                      <GripVertical className="w-5 h-5 text-emerald-400" />
                     </div>
                   )}
-                  <button type="button" onClick={() => onReplaceSong(song)} className="px-2 py-1 bg-zinc-800 hover:bg-zinc-700 text-emerald-400 text-[11px] font-bold rounded-lg flex items-center gap-1"><RefreshCw className="w-3 h-3" /><span>Cambiar</span></button>
-                  <button type="button" onClick={() => onCancelSong(song)} className="p-1.5 text-zinc-500 hover:text-rose-400" aria-label="Cancelar canción"><Trash2 className="w-3.5 h-3.5" /></button>
+                  <div className="w-5 text-center font-bold text-xs text-zinc-500">#{idx + 1}</div>
+                  {(cleanThumbnail || song.thumbnail_url) && (
+                    <img src={(cleanThumbnail || song.thumbnail_url) || undefined} alt={song.title} onClick={() => onReplaceSong(song)} className="w-12 h-9 object-cover rounded-lg shrink-0 cursor-pointer" />
+                  )}
+                  <div className="flex-1 min-w-0 cursor-pointer" onClick={() => onReplaceSong(song)}>
+                    <div className="flex items-center gap-1.5">
+                      <h5 className="text-xs font-semibold text-white truncate">{song.title}</h5>
+                      {isVip && <span className="shrink-0 px-1 py-0.2 text-[9px] font-black bg-amber-400 text-zinc-950 rounded">VIP ⚡</span>}
+                    </div>
+                    {dedication && <p className="text-[10px] text-pink-300/90 italic truncate">💌 &quot;{dedication}&quot;</p>}
+                    <p className="text-[10px] text-zinc-400 truncate">{song.duration_text} • Toca para cambiar</p>
+                  </div>
+                  <div className="flex items-center gap-1 shrink-0">
+                    {mySongs.length >= 2 && onSwapSongs && (
+                      <div className="flex flex-col gap-0.5">
+                        <button disabled={idx === 0 || isBusy} onClick={() => onSwapSongs(song.id, mySongs[idx - 1].id)} className="p-1 text-zinc-400 hover:text-white disabled:opacity-20 active:scale-90" aria-label="Mover arriba"><ArrowUp className="w-3.5 h-3.5" /></button>
+                        <button disabled={idx === mySongs.length - 1 || isBusy} onClick={() => onSwapSongs(song.id, mySongs[idx + 1].id)} className="p-1 text-zinc-400 hover:text-white disabled:opacity-20 active:scale-90" aria-label="Mover abajo"><ArrowDown className="w-3.5 h-3.5" /></button>
+                      </div>
+                    )}
+                    <button type="button" onClick={() => onReplaceSong(song)} className="px-2 py-1 bg-zinc-800 hover:bg-zinc-700 text-emerald-400 text-[11px] font-bold rounded-lg flex items-center gap-1"><RefreshCw className="w-3 h-3" /><span>Cambiar</span></button>
+                    <button type="button" onClick={() => onCancelSong(song)} className="p-1.5 text-zinc-500 hover:text-rose-400" aria-label="Cancelar canción"><Trash2 className="w-3.5 h-3.5" /></button>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </>
       ) : !turnStatus.isSingingNow ? (

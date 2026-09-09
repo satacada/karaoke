@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import { RotateCcw, Users, Settings, Crown, ShieldCheck } from 'lucide-react';
+import { RotateCcw, Users, Settings, Crown, ShieldCheck, Megaphone } from 'lucide-react';
 
 interface HostHeaderProps {
   roomCode: string;
@@ -9,6 +9,7 @@ interface HostHeaderProps {
   onOpenReset: () => void;
   onOpenSettings: () => void;
   onOpenSuperAdmin?: () => void;
+  onOpenBanners?: () => void;
 }
 
 export const HostHeader: FC<HostHeaderProps> = ({
@@ -19,6 +20,7 @@ export const HostHeader: FC<HostHeaderProps> = ({
   onOpenReset,
   onOpenSettings,
   onOpenSuperAdmin,
+  onOpenBanners,
 }) => {
   return (
     <header className="flex items-center justify-between py-2 border-b border-zinc-800 mb-4">
@@ -42,6 +44,16 @@ export const HostHeader: FC<HostHeaderProps> = ({
             aria-label="Panel SuperAdmin"
           >
             <ShieldCheck className="w-4 h-4 text-purple-300" />
+          </button>
+        )}
+        {onOpenBanners && (
+          <button
+            onClick={onOpenBanners}
+            className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 active:scale-95 transition-transform hover:text-white"
+            title="Banners y Promos TV"
+            aria-label="Promociones en Pantalla TV"
+          >
+            <Megaphone className="w-4 h-4 text-amber-400" />
           </button>
         )}
         <button

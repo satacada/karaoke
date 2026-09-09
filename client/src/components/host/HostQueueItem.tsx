@@ -1,5 +1,6 @@
 import { useRef, type FC, type TouchEvent, type DragEvent } from 'react';
 import { GripVertical, Zap, Trash2, ArrowUp, ArrowDown, User } from 'lucide-react';
+import { parseSongMeta } from '../../utils/songMeta';
 import type { QueueItem } from '../../types';
 
 interface HostQueueItemProps {
@@ -19,6 +20,7 @@ export const HostQueueItem: FC<HostQueueItemProps> = ({
   item, index, totalItems, onMoveToNext, onMoveUp, onMoveDown,
   onDelete, onDragStart, onDragOver, onDrop,
 }) => {
+  const { dedication, isVip } = parseSongMeta(item);
   const startYRef = useRef(0);
   const handleTouchStart = (e: TouchEvent) => { startYRef.current = e.touches[0].clientY; };
   const handleTouchMove = (e: TouchEvent) => {
@@ -55,7 +57,11 @@ export const HostQueueItem: FC<HostQueueItemProps> = ({
           {index + 1}
         </span>
         <div className="min-w-0 flex-1">
-          <h3 className="text-xs font-semibold text-white truncate leading-tight">{item.title}</h3>
+          <div className="flex items-center gap-1.5">
+            <h3 className="text-xs font-semibold text-white truncate leading-tight">{item.title}</h3>
+            {isVip && <span className="shrink-0 px-1 py-0.2 text-[9px] font-black bg-amber-400 text-zinc-950 rounded">VIP ⚡</span>}
+          </div>
+          {dedication && <p className="text-[10px] text-pink-300/90 italic truncate">💌 &quot;{dedication}&quot;</p>}
           <div className="flex items-center gap-1 text-[11px] text-zinc-400 mt-0.5">
             <User className="w-3 h-3 text-pink-400 shrink-0" />
             <span className="truncate text-pink-300 font-medium">{item.requested_by}</span>

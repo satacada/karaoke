@@ -1,5 +1,6 @@
 import type { FC } from 'react';
 import { Tv, Disc3, ListOrdered } from 'lucide-react';
+import { parseSongMeta } from '../../utils/songMeta';
 import type { QueueItem } from '../../types';
 
 interface GuestPartyQueueProps {
@@ -14,20 +15,23 @@ export const GuestPartyQueue: FC<GuestPartyQueueProps> = ({
   currentGuestName,
 }) => {
   const normName = currentGuestName.trim().toLowerCase();
+  const currentMeta = currentSong ? parseSongMeta(currentSong) : null;
 
   return (
     <div className="space-y-4">
       {/* Canción en reproducción */}
-      {currentSong ? (
+      {currentSong && currentMeta ? (
         <div className="bg-zinc-900 border border-purple-500/30 rounded-2xl p-4 relative overflow-hidden">
           <div className="flex items-center gap-2 text-[10px] font-bold text-purple-400 uppercase tracking-wider mb-2">
             <Tv className="w-3.5 h-3.5" />
             <span>Sonando en la Pantalla TV</span>
+            {currentMeta.isVip && <span className="ml-auto px-1.5 py-0.2 text-[9px] font-black bg-amber-400 text-zinc-950 rounded">VIP ⚡</span>}
           </div>
           <div className="flex items-center gap-3">
             <Disc3 className="w-10 h-10 text-purple-400 shrink-0 animate-spin" style={{ animationDuration: '4s' }} />
             <div className="min-w-0 flex-1">
               <h4 className="text-sm font-bold text-white truncate">{currentSong.title}</h4>
+              {currentMeta.dedication && <p className="text-xs text-pink-300 italic truncate">💌 &quot;{currentMeta.dedication}&quot;</p>}
               <p className="text-xs text-zinc-400">
                 Pide: <span className="text-purple-300 font-semibold">{currentSong.requested_by}</span>
               </p>
@@ -48,6 +52,7 @@ export const GuestPartyQueue: FC<GuestPartyQueueProps> = ({
           <div className="space-y-2">
             {queuedSongs.map((song, idx) => {
               const isMine = (song.requested_by || '').trim().toLowerCase() === normName;
+              const { dedication, isVip, cleanThumbnail } = parseSongMeta(song);
               return (
                 <div
                   key={song.id}
@@ -60,15 +65,19 @@ export const GuestPartyQueue: FC<GuestPartyQueueProps> = ({
                   <div className="w-6 text-center font-bold text-xs text-zinc-500">
                     #{idx + 1}
                   </div>
-                  {song.thumbnail_url && (
+                  {(cleanThumbnail || song.thumbnail_url) && (
                     <img
-                      src={song.thumbnail_url}
+                      src={(cleanThumbnail || song.thumbnail_url) || undefined}
                       alt={song.title}
                       className="w-12 h-9 object-cover rounded-lg shrink-0"
                     />
                   )}
                   <div className="flex-1 min-w-0">
-                    <h5 className="text-xs font-semibold text-white truncate">{song.title}</h5>
+                    <div className="flex items-center gap-1.5">
+                      <h5 className="text-xs font-semibold text-white truncate">{song.title}</h5>
+                      {isVip && <span className="shrink-0 px-1 py-0.2 text-[9px] font-black bg-amber-400 text-zinc-950 rounded">VIP ⚡</span>}
+                    </div>
+                    {dedication && <p className="text-[10px] text-pink-300/90 italic truncate">💌 &quot;{dedication}&quot;</p>}
                     <div className="flex items-center gap-1.5 text-[11px] text-zinc-400">
                       <span>{song.duration_text}</span>
                       <span>•</span>

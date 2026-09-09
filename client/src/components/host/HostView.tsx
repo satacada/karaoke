@@ -13,7 +13,8 @@ import { HostDeleteSongModal } from './HostDeleteSongModal';
 import { HostSettingsModal } from './HostSettingsModal';
 import { HostPendingApprovalView } from './HostPendingApprovalView';
 import { SuperAdminApprovalModal } from './SuperAdminApprovalModal';
-import { sendRemoteCommand, reorderQueueItem, purgeGuestSongs, deleteQueueItem, resetRoomQueue } from '../../services/karaokeApi';
+import { HostBannersModal } from './HostBannersModal';
+import { sendRemoteCommand, reorderQueueItem, purgeGuestSongs, deleteQueueItem, resetRoomQueue, updateRoomBanners } from '../../services/karaokeApi';
 import type { QueueItem } from '../../types';
 
 const SUPER_ADMINS = (import.meta.env.VITE_SUPER_ADMIN_EMAILS || 'satacada@gmail.com,david@gmail.com,admin@karaoke.com').toLowerCase().split(',').map((s: string) => s.trim());
@@ -23,10 +24,9 @@ export const HostView: FC<{ roomCode?: string }> = ({ roomCode = 'FIESTA' }) => 
   const [isOwner, setIsOwner] = useState(false);
   const [ownerEmail, setOwnerEmail] = useState<string | null>(null);
   const [volume, setVolume] = useState(100);
-  const [showResetModal, setShowResetModal] = useState(false);
-  const [showGuestModal, setShowGuestModal] = useState(false);
-  const [showSettingsModal, setShowSettingsModal] = useState(false);
-  const [showSuperAdminModal, setShowSuperAdminModal] = useState(false);
+  const [showResetModal, setShowResetModal] = useState(false); const [showGuestModal, setShowGuestModal] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useState(false); const [showSuperAdminModal, setShowSuperAdminModal] = useState(false);
+  const [showBannersModal, setShowBannersModal] = useState(false);
   const [songToDelete, setSongToDelete] = useState<QueueItem | null>(null);
   const [isResetting, setIsResetting] = useState(false);
   const draggedIndexRef = useRef<number | null>(null);
@@ -69,7 +69,7 @@ export const HostView: FC<{ roomCode?: string }> = ({ roomCode = 'FIESTA' }) => 
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col max-w-lg mx-auto pb-28 pt-12 px-4 select-none">
-      <HostHeader roomCode={roomCode} isOwner={isOwner} isSuperAdmin={isSuperAdmin} onOpenGuests={() => setShowGuestModal(true)} onOpenReset={() => setShowResetModal(true)} onOpenSettings={() => setShowSettingsModal(true)} onOpenSuperAdmin={() => setShowSuperAdminModal(true)} />
+      <HostHeader roomCode={roomCode} isOwner={isOwner} isSuperAdmin={isSuperAdmin} onOpenGuests={() => setShowGuestModal(true)} onOpenReset={() => setShowResetModal(true)} onOpenSettings={() => setShowSettingsModal(true)} onOpenSuperAdmin={() => setShowSuperAdminModal(true)} onOpenBanners={() => setShowBannersModal(true)} />
       <section className="mb-4"><HostNowPlayingCard currentSong={currentSong} currentTime={room?.current_time_seconds || 0} onSkip={handleNextSong} /></section>
       <section className="flex-1 flex flex-col gap-2">
         <div className="flex items-center gap-1.5 text-xs text-zinc-400 font-bold uppercase tracking-wider mb-1">
@@ -95,6 +95,7 @@ export const HostView: FC<{ roomCode?: string }> = ({ roomCode = 'FIESTA' }) => 
       <HostDeleteSongModal item={songToDelete} onConfirm={async () => { if (songToDelete) await deleteQueueItem(songToDelete.id); setSongToDelete(null); refreshState(); }} onClose={() => setSongToDelete(null)} />
       <HostSettingsModal isOpen={showSettingsModal} room={room} ownerEmail={ownerEmail} onClose={() => setShowSettingsModal(false)} onSaved={refreshState} />
       <SuperAdminApprovalModal isOpen={showSuperAdminModal} superAdminEmail={ownerEmail || 'SuperAdmin'} onClose={() => setShowSuperAdminModal(false)} onUpdated={refreshState} />
+      <HostBannersModal isOpen={showBannersModal} banners={room?.promo_banners || []} onClose={() => setShowBannersModal(false)} onSave={async (b) => { if (room) await updateRoomBanners(room.id, b); refreshState(); setShowBannersModal(false); }} />
       <HostTransportBar isPlaying={room?.is_playing || false} volume={volume} onPlayPause={() => handleCommand(room?.is_playing ? 'pause' : 'play')} onSkip={handleNextSong} onSeek={(sec) => handleCommand('seek', { seconds: (room?.current_time_seconds || 0) + sec })} onVolumeChange={(v) => { setVolume(v); handleCommand('volume', { volume: v }); }} />
     </div>
   );

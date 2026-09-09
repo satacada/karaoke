@@ -1,8 +1,8 @@
 # 📊 PLAN MAESTRO DEL PROYECTO: ROCKOLA DIGITAL LIVE (SISTEMA MULTI-TENANT EN TIEMPO REAL)
 
-**Versión del Plan:** 2.5.0 (Control Táctil Móvil y Reordenamiento con el Dedo)  
+**Versión del Plan:** 2.6.0 (Dedicatorias Anti-Ofensivas, Banners de Promos TV y Pases VIP)  
 **Fecha de Emisión:** Septiembre 2026  
-**Estado:** 🟢 Fase 4 (Nodo Invitados Rockola + Reordenamiento Táctil con el Dedo + Google Auth - Completa y Verificada)  
+**Estado:** 🟢 Fase 4 (Dedicatorias Filtradas + Banners TV + Pase VIP Fast-Pass - Completa y Verificada)  
 **Metodología:** Agile / BDD / Clean Architecture con Compuertas de Control Formales  
 **Alineación:** Estructura inspirada en `boot-ventas-saas` y `aplicacion para ofertas`  
 

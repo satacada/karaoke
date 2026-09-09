@@ -4,6 +4,35 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.6.0] - 2026-09-09
+
+### 🚀 [ESPECIFICACIÓN / FEATURE]
+- **Dedicatorias en Pantalla con Filtro Anti-Ofensivo en Tiempo Real:**
+  - **Filtro Estricto de Contenido Ofensivo (`client/src/utils/profanityFilter.ts`):** Motor de filtrado que analiza insultos, groserías y frases ofensivas en español (regionalismos de Sudamérica/España/México) e inglés, con normalización fonética y de caracteres leetspeak (`p@t0`, `m1erd@`, etc.). Límite máximo de 70 caracteres con feedback visual en vivo antes de enviar.
+  - **Modal de Confirmación de Pedido (`client/src/components/guest/GuestSongConfirmModal.tsx`):** Al tocar un resultado de búsqueda en YouTube, el invitado puede escribir una dedicatoria opcional (ej: *"¡Feliz cumple Sofía! Mesa 4 🎂"*) y seleccionar su tipo de pase.
+  - **Banner Neon Glassmorphism en TV (`client/src/components/tv/TvDedicationBanner.tsx`):** La TV proyecta un banner elegante y translúcido en la parte superior con el mensaje de dedicatoria durante los primeros 12 segundos de la canción con animación fluida.
+  - **Suite de Pruebas Automatizadas (`server/testProfanityFilter.js`):** 12 casos de prueba unitarios validando frases legítimas aprobadas y bloqueo certero de insultos y textos excesivos.
+
+- **Banners de Promociones del Local en la Pantalla TV:**
+  - **Gestor de Promociones en Consola DJ (`client/src/components/host/HostBannersModal.tsx`):** El dueño del local puede crear y administrar hasta 4 promociones activas simultáneas con título, descripción y paleta cromática neon (oro, esmeralda, púrpura, rubí).
+  - **Botón Directo en Cabecera (`client/src/components/host/HostHeader.tsx`):** Acceso con 1 toque al panel de promociones desde el celular del dueño.
+  - **Ticker Sutil de Promociones en Reproducción (`client/src/components/tv/TvPromoTicker.tsx`):** Durante la música, la TV muestra un cintillo discreto y estilizado en la esquina inferior cada 75 segundos, sin tapar letras de karaoke ni controles.
+  - **Carrusel de Ofertas en Pantalla Inactiva (`client/src/components/tv/TvIdleScreen.tsx`):** Cuando la cola está vacía, las promociones rotan bajo el código QR central invitando al consumo en la barra.
+
+- **Pase VIP ("Fast Pass / Tocar Siguiente"):**
+  - **Priorización Automática en Cola (`client/src/services/karaokeApi.ts`):** Los temas pedidos con Pase VIP se ubican automáticamente en la posición #1 (siguiente a tocar) o tras pases VIP preexistentes (máximo 2 VIPs consecutivos), desplazando ordenadamente los turnos normales sin romper su secuencia relativa.
+  - **Insignia Distintiva `VIP ⚡`:** Visualización dorada de alto impacto en la Consola DJ (`HostQueueItem.tsx`), la fila personal del invitado (`GuestMyQueue.tsx`) y la cola general de la fiesta (`GuestPartyQueue.tsx`).
+  - **Test E2E Automatizado (`server/testVipAndDedication.js`):** Verificación integral contra Supabase de inserción VIP, desplazamiento atómico de cola y persistencia de metadatos.
+
+- **Codificación y Desacoplamiento Resiliente (`client/src/utils/songMeta.ts`):**
+  - Mapeo y codificación de metadatos (`dedication`, `isVip`) en el hash de thumbnail de YouTube (`#d=...&vip=1`), permitiendo despliegue productivo inmediato con 100% de compatibilidad con esquemas existentes.
+
+### 🔧 [AFINAMIENTO / REFINAMIENTO]
+- **Estándar Clean-by-Design ($\le 120$ líneas):** Todos los 15 archivos nuevos y modificados se mantuvieron de forma estricta por debajo de 120 líneas de código fuente.
+- **Compilación de Producción:** Vite 8 y TypeScript en modo estricto compilaron con 0 errores (`tsc -b && vite build`).
+
+---
+
 ## [1.5.0] - 2026-09-09
 
 ### 🚀 [ESPECIFICACIÓN / FEATURE]
