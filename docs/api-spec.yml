@@ -1,0 +1,283 @@
+openapi: 3.1.0
+info:
+  title: API de Karaoke Colaborativo en Tiempo Real
+  version: 1.0.0
+  description: >
+    Especificación de la API REST y canales Realtime para la plataforma de Karaoke.
+    Conecta dispositivos de TV, celulares de invitados en redes 4G/5G y consolas DJ de anfitrión.
+
+paths:
+  /api/search:
+    get:
+      summary: Buscar canciones en YouTube con filtro de karaoke
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Término de búsqueda (ej. "La Incondicional")
+        - name: karaoke
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: true
+          description: Si es true, prioriza pistas de karaoke con letra
+      responses:
+        '200':
+          description: Lista de resultados de video
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/VideoSearchResult'
+
+  /api/rooms/{code}:
+    get:
+      summary: Obtener información y estado de una sala por su código
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: string
+            example: FIESTA
+      responses:
+        '200':
+          description: Estado actual de la sala
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoomState'
+        '404':
+          description: Sala no encontrada
+
+  /api/rooms/{code}/queue:
+    get:
+      summary: Obtener la cola de canciones activa ordenada por prioridad
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Lista de canciones en cola
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/QueueItem'
+    post:
+      summary: Agregar una canción a la cola de la fiesta
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [videoId, title, requestedBy, sessionToken]
+              properties:
+                videoId:
+                  type: string
+                title:
+                  type: string
+                author:
+                  type: string
+                thumbnailUrl:
+                  type: string
+                durationSeconds:
+                  type: integer
+                durationText:
+                  type: string
+                requestedBy:
+                  type: string
+                sessionToken:
+                  type: string
+      responses:
+        '201':
+          description: Canción agregada exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  position:
+                    type: integer
+                  estimatedWaitMinutes:
+                    type: integer
+
+  /api/rooms/{code}/queue/reorder:
+    post:
+      summary: Reordenar una canción en la cola (Exclusivo Anfitrión)
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: x-host-pin
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [songId, newPosition]
+              properties:
+                songId:
+                  type: string
+                  format: uuid
+                newPosition:
+                  type: integer
+      responses:
+        '200':
+          description: Cola reordenada exitosamente
+
+  /api/rooms/{code}/queue/purge-guest:
+    post:
+      summary: Eliminar todas las canciones de un invitado ausente (Exclusivo Anfitrión)
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: x-host-pin
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [guestName]
+              properties:
+                guestName:
+                  type: string
+      responses:
+        '200':
+          description: Canciones del invitado eliminadas exitosamente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  purgedCount:
+                    type: integer
+
+  /api/rooms/{code}/commands:
+    post:
+      summary: Enviar comando de reproducción a la Android TV (Exclusivo Anfitrión)
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: x-host-pin
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [command]
+              properties:
+                command:
+                  type: string
+                  enum: [play, pause, skip, previous, seek, volume]
+                payload:
+                  type: object
+      responses:
+        '200':
+          description: Comando enviado a la TV
+
+components:
+  schemas:
+    VideoSearchResult:
+      type: object
+      properties:
+        videoId:
+          type: string
+        title:
+          type: string
+        author:
+          type: string
+        thumbnail:
+          type: string
+        durationSeconds:
+          type: integer
+        durationText:
+          type: string
+
+    RoomState:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        roomCode:
+          type: string
+        name:
+          type: string
+        status:
+          type: string
+        isPlaying:
+          type: boolean
+        currentTimeSeconds:
+          type: integer
+        currentSong:
+          $ref: '#/components/schemas/QueueItem'
+
+    QueueItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        videoId:
+          type: string
+        title:
+          type: string
+        author:
+          type: string
+        thumbnailUrl:
+          type: string
+        durationSeconds:
+          type: integer
+        durationText:
+          type: string
+        requestedBy:
+          type: string
+        priorityOrder:
+          type: integer
+        status:
+          type: string
+          enum: [queued, playing, finished, skipped, purged_by_host, cancelled_by_guest]

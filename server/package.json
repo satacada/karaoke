@@ -1,0 +1,24 @@
+{
+  "name": "karaoke-server",
+  "version": "1.0.0",
+  "description": "Servidor de Karaoke en tiempo real con YouTube y Socket.io",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.116.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.4.2",
+    "express": "^4.21.2",
+    "qrcode": "^1.5.4",
+    "socket.io": "^4.8.1",
+    "yt-search": "^2.12.1"
+  },
+  "devDependencies": {
+    "vitest": "^5.0.0"
+  }
+}
