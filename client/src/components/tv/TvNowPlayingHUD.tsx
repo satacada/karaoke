@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import { Mic, Music2, Clock } from 'lucide-react';
+import { Disc3, Music2, Clock } from 'lucide-react';
 import type { QueueItem } from '../../types';
 
 interface TvNowPlayingHUDProps {
@@ -29,8 +29,8 @@ export const TvNowPlayingHUD: FC<TvNowPlayingHUDProps> = ({
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2.5 px-4 py-2 rounded-2xl bg-gradient-to-r from-purple-600 via-pink-600 to-rose-600 text-white font-bold text-lg md:text-xl shadow-lg shadow-pink-500/30 animate-pulse-glow">
-              <Mic className="w-6 h-6 animate-bounce" />
-              <span>Canta: {song.requested_by}</span>
+              <Disc3 className="w-6 h-6 animate-spin" style={{ animationDuration: '4s' }} />
+              <span>Pidió: {song.requested_by}</span>
             </div>
 
             <div className="min-w-0">

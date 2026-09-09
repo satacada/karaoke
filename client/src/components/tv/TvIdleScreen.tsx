@@ -1,6 +1,6 @@
 import { useState, useEffect, type FC } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
-import { Mic, Sparkles, Smartphone, Signal, Tag, Disc3 } from 'lucide-react';
+import { Disc3, Sparkles, Smartphone, Signal, Tag, Music2 } from 'lucide-react';
 import type { PromoBanner } from '../../types';
 
 interface TvIdleScreenProps {
@@ -16,6 +16,7 @@ export const TvIdleScreen: FC<TvIdleScreenProps> = ({
 }) => {
   const activeBanners = banners.filter((b) => b.is_active);
   const [promoIdx, setPromoIdx] = useState(0);
+  const cleanRoomName = (!roomName || roomName.toLowerCase().includes('karaoke')) ? 'Rockola Digital Live' : roomName;
 
   useEffect(() => {
     if (activeBanners.length <= 1) return;
@@ -34,8 +35,8 @@ export const TvIdleScreen: FC<TvIdleScreenProps> = ({
 
       <main className="relative z-10 flex flex-col items-center max-w-4xl text-center">
         <div className="relative mb-4">
-          <div className="w-20 h-20 rounded-3xl bg-gradient-to-tr from-purple-600 to-pink-500 flex items-center justify-center shadow-2xl shadow-purple-500/50 animate-bounce">
-            <Mic className="w-10 h-10 text-white" />
+          <div className="w-20 h-20 rounded-3xl bg-gradient-to-tr from-purple-600 via-pink-600 to-amber-500 flex items-center justify-center shadow-2xl shadow-purple-500/50 animate-bounce">
+            <Disc3 className="w-11 h-11 text-white animate-spin" style={{ animationDuration: '6s' }} />
           </div>
           <Sparkles className="w-7 h-7 text-amber-300 absolute -top-2 -right-2 animate-spin" />
         </div>
@@ -46,7 +47,7 @@ export const TvIdleScreen: FC<TvIdleScreenProps> = ({
           </div>
         )}
         <h1 className="text-3xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-amber-300 tracking-tight mb-2">
-          {roomName}
+          {cleanRoomName}
         </h1>
         <p className="text-lg md:text-xl text-zinc-300 font-medium max-w-xl mb-6">
           Escanea el código con tu celular para poner tus temas y videos favoritos
@@ -68,7 +69,7 @@ export const TvIdleScreen: FC<TvIdleScreenProps> = ({
             <div className="flex flex-col gap-2 text-left text-xs text-zinc-300">
               <div className="flex items-center gap-2"><Smartphone className="w-4 h-4 text-pink-400 shrink-0" /><span>1. Abre la cámara de tu celular</span></div>
               <div className="flex items-center gap-2"><Signal className="w-4 h-4 text-emerald-400 shrink-0" /><span>2. Usa tus datos móviles (sin Wi-Fi)</span></div>
-              <div className="flex items-center gap-2"><Mic className="w-4 h-4 text-purple-400 shrink-0" /><span>3. Busca tu canción favorita y pide turno</span></div>
+              <div className="flex items-center gap-2"><Music2 className="w-4 h-4 text-purple-400 shrink-0" /><span>3. Busca tu canción favorita y pon tu música</span></div>
             </div>
 
             {currentPromo && (

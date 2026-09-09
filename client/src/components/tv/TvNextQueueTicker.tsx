@@ -16,7 +16,7 @@ export const TvNextQueueTicker: FC<TvNextQueueTickerProps> = ({ queue }) => {
         className="absolute top-6 left-6 z-30 flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-zinc-950/80 backdrop-blur-md border border-zinc-800 text-zinc-400 text-sm font-medium shadow-xl"
       >
         <ListMusic className="w-4 h-4 text-purple-400" />
-        <span>Cola libre: ¡sé el próximo en cantar!</span>
+        <span>Cola libre: ¡sé el próximo en poner música!</span>
       </aside>
     );
   }

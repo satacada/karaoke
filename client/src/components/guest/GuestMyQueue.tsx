@@ -39,7 +39,7 @@ export const GuestMyQueue: FC<GuestMyQueueProps> = ({
             <Sparkles className="w-4 h-4 text-amber-300" /><span>¡Tu turno en vivo en la TV!</span>
           </div>
           <h3 className="text-base font-bold truncate">{currentSong.title}</h3>
-          <p className="text-xs text-pink-200">¡Canta con todo, {guestName}! 🎤</p>
+          <p className="text-xs text-pink-200">¡Tu música sonando en vivo, {guestName}! 🎶</p>
         </div>
       )}
 

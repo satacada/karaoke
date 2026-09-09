@@ -1,5 +1,5 @@
 import { useState, type FC, type FormEvent } from 'react';
-import { Mic, Sparkles, MapPin } from 'lucide-react';
+import { Disc3, Sparkles, MapPin } from 'lucide-react';
 
 interface GuestWelcomeModalProps {
   isOpen: boolean;
@@ -9,47 +9,45 @@ interface GuestWelcomeModalProps {
 
 export const GuestWelcomeModal: FC<GuestWelcomeModalProps> = ({ isOpen, roomCode, onJoin }) => {
   const [name, setName] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isGettingLocation, setIsGettingLocation] = useState(false);
 
   if (!isOpen) return null;
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    const cleanName = name.trim();
-    if (!cleanName) return;
+    if (!name.trim()) return;
 
-    setIsSubmitting(true);
     if ('geolocation' in navigator) {
+      setIsGettingLocation(true);
       navigator.geolocation.getCurrentPosition(
         (pos) => {
-          onJoin(cleanName, { lat: pos.coords.latitude, lng: pos.coords.longitude });
-          setIsSubmitting(false);
+          setIsGettingLocation(false);
+          onJoin(name.trim(), { lat: pos.coords.latitude, lng: pos.coords.longitude });
         },
         () => {
-          onJoin(cleanName);
-          setIsSubmitting(false);
+          setIsGettingLocation(false);
+          onJoin(name.trim());
         },
-        { timeout: 2000, enableHighAccuracy: true }
+        { enableHighAccuracy: true, timeout: 4000 }
       );
     } else {
-      onJoin(cleanName);
-      setIsSubmitting(false);
+      onJoin(name.trim());
     }
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-in fade-in duration-200">
       <div className="relative w-full max-w-sm bg-zinc-900 border border-zinc-800 rounded-3xl p-6 shadow-2xl text-center">
-        <div className="mx-auto w-16 h-16 bg-gradient-to-tr from-emerald-600 to-teal-400 rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-500/20 mb-4">
-          <Mic className="w-8 h-8 text-white" />
+        <div className="mx-auto w-16 h-16 bg-gradient-to-tr from-purple-600 via-pink-600 to-amber-500 rounded-2xl flex items-center justify-center shadow-lg shadow-purple-500/20 mb-4">
+          <Disc3 className="w-8 h-8 text-white animate-spin" style={{ animationDuration: '6s' }} />
         </div>
 
         <h2 className="text-xl font-black text-white tracking-tight mb-1">
-          ¡Bienvenido a la Fiesta!
+          ¡Bienvenido a la Rockola!
         </h2>
         <p className="text-xs text-zinc-400 mb-6">
           Estás en la sala <span className="text-emerald-400 font-mono font-bold">{roomCode}</span>.
-          Ingresa tu nombre para pedir canciones y cantar.
+          Ingresa tu nombre o apodo para poner tus canciones favoritas.
         </p>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -76,11 +74,11 @@ export const GuestWelcomeModal: FC<GuestWelcomeModalProps> = ({ isOpen, roomCode
 
           <button
             type="submit"
-            disabled={!name.trim() || isSubmitting}
+            disabled={!name.trim() || isGettingLocation}
             className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 disabled:opacity-50 disabled:cursor-not-allowed text-zinc-950 font-black text-sm py-3.5 px-6 rounded-2xl shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 transition-all active:scale-98"
           >
             <Sparkles className="w-4 h-4 text-zinc-950 fill-zinc-950" />
-            <span>{isSubmitting ? 'Conectando...' : '¡Empezar a pedir temas!'}</span>
+            <span>{isGettingLocation ? 'Conectando...' : '¡Empezar a pedir temas!'}</span>
           </button>
         </form>
       </div>
