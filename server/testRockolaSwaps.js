@@ -119,14 +119,57 @@ async function testSwapsAndReplacement() {
 
     console.log('\n   🎉 ¡PERFECTO! El orden de María (#11) no fue tocado y las dos de Juan se intercambiaron.');
 
-    // 4. Limpieza
-    console.log('\n4️⃣ Limpiando canciones y sala de prueba...');
+    // 4. Probar SWAPS CONSECUTIVOS MÚLTIPLES (más de 3 veces) para garantizar que no se trabe
+    console.log('\n4️⃣ Probando 6 swaps consecutivos sin atascarse...');
+    async function doRobustSwap(idA, idB) {
+      const { data: items } = await supabase.from('karaoke_queue').select('id, room_id, priority_order').in('id', [idA, idB]);
+      const itA = items.find(x => x.id === idA);
+      const itB = items.find(x => x.id === idB);
+      let oA = itA.priority_order;
+      let oB = itB.priority_order;
+
+      if (oA === oB) {
+        const { data: allQ } = await supabase.from('karaoke_queue').select('id').eq('room_id', itA.room_id).eq('status', 'queued').order('priority_order', { ascending: true });
+        for (let i = 0; i < allQ.length; i++) {
+          await supabase.from('karaoke_queue').update({ priority_order: i + 1 }).eq('id', allQ[i].id);
+        }
+        oA = allQ.findIndex(q => q.id === idA) + 1;
+        oB = allQ.findIndex(q => q.id === idB) + 1;
+      }
+
+      const temp = 900000 + Math.floor(Math.random() * 10000);
+      await supabase.from('karaoke_queue').update({ priority_order: temp }).eq('id', idA);
+      await supabase.from('karaoke_queue').update({ priority_order: oA }).eq('id', idB);
+      await supabase.from('karaoke_queue').update({ priority_order: oB }).eq('id', idA);
+    }
+
+    for (let i = 1; i <= 6; i++) {
+      await doRobustSwap(s1.id, s3.id);
+      const { data: qLoop } = await supabase.from('karaoke_queue').select('id, priority_order').in('id', [s1.id, s3.id]).order('priority_order', { ascending: true });
+      if (qLoop[0].priority_order === qLoop[1].priority_order) {
+        throw new Error(`Colisión detectada en swap #${i}`);
+      }
+      console.log(`   ✅ Swap #${i} completado con éxito: #${qLoop[0].priority_order} <-> #${qLoop[1].priority_order}`);
+    }
+
+    // 5. Probar AUTO-REPARACIÓN de colisión forzada (ambas en prioridad 99)
+    console.log('\n5️⃣ Probando auto-reparación tras colisión forzada...');
+    await supabase.from('karaoke_queue').update({ priority_order: 99 }).in('id', [s1.id, s3.id]);
+    await doRobustSwap(s1.id, s3.id);
+    const { data: qHealed } = await supabase.from('karaoke_queue').select('id, priority_order').in('id', [s1.id, s3.id]).order('priority_order', { ascending: true });
+    if (qHealed[0].priority_order === qHealed[1].priority_order) {
+      throw new Error('Falló auto-reparación de colisión');
+    }
+    console.log(`   ✅ Colisión auto-reparada exitosamente: #${qHealed[0].priority_order} y #${qHealed[1].priority_order}`);
+
+    // 6. Limpieza
+    console.log('\n6️⃣ Limpiando canciones y sala de prueba...');
     await supabase.from('karaoke_queue').delete().in('id', [s1.id, s2.id, s3.id]);
     await supabase.from('karaoke_rooms').delete().eq('id', testRoomId);
     console.log('   ✅ Limpieza completada.');
 
     console.log('\n======================================================');
-    console.log('🎉 TODAS LAS PRUEBAS DE REEMPLAZO Y SWAP PASARON');
+    console.log('🎉 TODAS LAS PRUEBAS DE REEMPLAZO, MULTI-SWAP Y AUTO-REPARACIÓN PASARON');
     console.log('======================================================\n');
   } catch (err) {
     if (testRoomId) {

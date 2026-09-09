@@ -270,44 +270,69 @@ export async function replaceGuestSong(
   return !error;
 }
 
+let isSwappingInFlight = false;
+
 export async function swapGuestSongs(
   songId1: string,
   songId2: string
 ): Promise<boolean> {
-  const { data: rpcData, error: rpcError } = await supabase.rpc('fn_swap_guest_songs', {
-    p_song_id_1: songId1,
-    p_song_id_2: songId2,
-  });
+  if (isSwappingInFlight) return false;
+  isSwappingInFlight = true;
 
-  if (!rpcError && typeof rpcData === 'boolean') {
-    return rpcData;
+  try {
+    const { data: rpcData, error: rpcError } = await supabase.rpc('fn_swap_guest_songs', {
+      p_song_id_1: songId1,
+      p_song_id_2: songId2,
+    });
+
+    if (!rpcError && typeof rpcData === 'boolean') {
+      return rpcData;
+    }
+
+    const { data: songs, error: fetchErr } = await supabase
+      .from('karaoke_queue')
+      .select('id, room_id, priority_order, status, requested_at')
+      .in('id', [songId1, songId2]);
+
+    if (fetchErr || !songs || songs.length !== 2) return false;
+    const s1 = songs.find((s) => s.id === songId1);
+    const s2 = songs.find((s) => s.id === songId2);
+    if (!s1 || !s2 || s1.status !== 'queued' || s2.status !== 'queued') return false;
+
+    let order1 = s1.priority_order;
+    let order2 = s2.priority_order;
+
+    // Reparación de colisión: si ambos tienen el mismo priority_order, recompactar ordinales de la sala
+    if (order1 === order2) {
+      const { data: allQueued } = await supabase
+        .from('karaoke_queue')
+        .select('id')
+        .eq('room_id', s1.room_id)
+        .eq('status', 'queued')
+        .order('priority_order', { ascending: true })
+        .order('requested_at', { ascending: true });
+
+      if (allQueued && allQueued.length > 0) {
+        for (let i = 0; i < allQueued.length; i++) {
+          await supabase.from('karaoke_queue').update({ priority_order: i + 1 }).eq('id', allQueued[i].id);
+        }
+        const idx1 = allQueued.findIndex((q) => q.id === songId1);
+        const idx2 = allQueued.findIndex((q) => q.id === songId2);
+        order1 = idx1 >= 0 ? idx1 + 1 : 1;
+        order2 = idx2 >= 0 ? idx2 + 1 : 2;
+      }
+    }
+
+    // Intercambio seguro con offset temporal para evitar colisiones intermedias
+    const tempOffset = 900000 + Math.floor(Math.random() * 10000);
+    await supabase.from('karaoke_queue').update({ priority_order: tempOffset }).eq('id', songId1);
+    const { error: err2 } = await supabase.from('karaoke_queue').update({ priority_order: order1 }).eq('id', songId2);
+    const { error: err1 } = await supabase.from('karaoke_queue').update({ priority_order: order2 }).eq('id', songId1);
+
+    return !err1 && !err2;
+  } finally {
+    isSwappingInFlight = false;
   }
-
-  const { data: songs, error: fetchErr } = await supabase
-    .from('karaoke_queue')
-    .select('id, priority_order, status, requested_by')
-    .in('id', [songId1, songId2]);
-
-  if (fetchErr || !songs || songs.length !== 2) return false;
-  const s1 = songs.find((s) => s.id === songId1);
-  const s2 = songs.find((s) => s.id === songId2);
-  if (!s1 || !s2) return false;
-  if (s1.status !== 'queued' || s2.status !== 'queued') return false;
-
-  const order1 = s1.priority_order;
-  const order2 = s2.priority_order;
-
-  const { error: err1 } = await supabase
-    .from('karaoke_queue')
-    .update({ priority_order: order2 })
-    .eq('id', songId1);
-
-  const { error: err2 } = await supabase
-    .from('karaoke_queue')
-    .update({ priority_order: order1 })
-    .eq('id', songId2);
-
-  return !err1 && !err2;
 }
 
 export async function updateRoomSettings(

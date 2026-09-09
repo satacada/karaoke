@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo, type FC } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef, type FC } from 'react';
 import { supabase } from '../../lib/supabaseClient';
 import { getRoomByCode, getQueueForRoom, addSongToQueue, deleteQueueItem, replaceGuestSong, swapGuestSongs, searchVideos, registerGuest } from '../../services/karaokeApi';
 import { useGuestPresence } from '../../hooks/useGuestPresence';
@@ -26,10 +26,21 @@ export const GuestView: FC<{ roomCode?: string }> = ({ roomCode = 'FIESTA' }) =>
   const [songToReplace, setSongToReplace] = useState<QueueItem | null>(null);
   const [geoBlockedDist, setGeoBlockedDist] = useState<number | undefined>();
   const [lastReqTime, setLastReqTime] = useState(0);
+  const isSwappingRef = useRef(false);
 
   const { session, status: presenceStatus, saveSession, verifyPresence } = useGuestPresence();
   const showToast = useCallback((msg: string) => { setToast(msg); setTimeout(() => setToast(null), 3000); }, []);
   const refreshQueue = useCallback(async (roomId: string) => { setQueue(await getQueueForRoom(roomId)); }, []);
+  const handleSwap = useCallback(async (id1: string, id2: string) => {
+    if (isSwappingRef.current) return;
+    isSwappingRef.current = true;
+    try {
+      if (await swapGuestSongs(id1, id2)) {
+        if (room) await refreshQueue(room.id);
+        showToast('¡Orden invertido! ↕️');
+      }
+    } finally { setTimeout(() => { isSwappingRef.current = false; }, 400); }
+  }, [room, refreshQueue, showToast]);
 
   useEffect(() => {
     getRoomByCode(roomCode).then((r) => {
@@ -87,7 +98,7 @@ export const GuestView: FC<{ roomCode?: string }> = ({ roomCode = 'FIESTA' }) =>
               </div>
             )}
             {activeTab === 'my-turn' && (
-              <GuestMyQueue mySongs={mySongs} currentSong={currentSong} guestName={session.guestName} turnStatus={turnStatus} onCancelSong={setSongToCancel} onReplaceSong={setSongToReplace} onSwapSongs={async (id1, id2) => { if (await swapGuestSongs(id1, id2)) { if (room) refreshQueue(room.id); showToast('¡Orden de tus canciones invertido! ↕️'); } }} onGoToSearch={() => setActiveTab('search')} />
+              <GuestMyQueue mySongs={mySongs} currentSong={currentSong} guestName={session.guestName} turnStatus={turnStatus} onCancelSong={setSongToCancel} onReplaceSong={setSongToReplace} onSwapSongs={handleSwap} onGoToSearch={() => setActiveTab('search')} />
             )}
             {activeTab === 'party-queue' && <GuestPartyQueue currentSong={currentSong} queuedSongs={queuedSongs} currentGuestName={session.guestName} />}
           </main>

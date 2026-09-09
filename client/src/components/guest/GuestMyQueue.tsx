@@ -13,20 +13,27 @@ export const GuestMyQueue: FC<GuestMyQueueProps> = ({
   mySongs, currentSong, guestName, turnStatus, onCancelSong, onReplaceSong, onSwapSongs, onGoToSearch,
 }) => {
   const [activeIdx, setActiveIdx] = useState<number | null>(null);
+  const [isBusy, setIsBusy] = useState(false);
   const startYRef = useRef(0);
+  const touchDoneRef = useRef(false);
 
-  const handleTouchStart = (idx: number, e: TouchEvent) => { startYRef.current = e.touches[0].clientY; setActiveIdx(idx); };
+  const handleTouchStart = (idx: number, e: TouchEvent) => {
+    startYRef.current = e.touches[0].clientY; touchDoneRef.current = false; setActiveIdx(idx);
+  };
   const handleTouchMove = (idx: number, e: TouchEvent) => {
-    if (!startYRef.current || !onSwapSongs) return;
+    if (!startYRef.current || !onSwapSongs || touchDoneRef.current || isBusy) return;
     const dy = e.touches[0].clientY - startYRef.current;
-    if (dy > 35 && idx < mySongs.length - 1) {
-      onSwapSongs(mySongs[idx].id, mySongs[idx + 1].id);
-      startYRef.current = e.touches[0].clientY; setActiveIdx(idx + 1);
-    } else if (dy < -35 && idx > 0) {
-      onSwapSongs(mySongs[idx].id, mySongs[idx - 1].id);
-      startYRef.current = e.touches[0].clientY; setActiveIdx(idx - 1);
+    if (Math.abs(dy) > 35) {
+      touchDoneRef.current = true; setIsBusy(true);
+      if (dy > 35 && idx < mySongs.length - 1) {
+        onSwapSongs(mySongs[idx].id, mySongs[idx + 1].id);
+      } else if (dy < -35 && idx > 0) {
+        onSwapSongs(mySongs[idx].id, mySongs[idx - 1].id);
+      }
+      setTimeout(() => setIsBusy(false), 600);
     }
   };
+  const handleTouchEnd = () => { setActiveIdx(null); startYRef.current = 0; touchDoneRef.current = false; };
 
   return (
     <div className="space-y-4">
@@ -68,7 +75,7 @@ export const GuestMyQueue: FC<GuestMyQueueProps> = ({
             {mySongs.map((song, idx) => (
               <div key={song.id} className={`bg-zinc-900/90 border rounded-2xl p-3 flex items-center gap-2 select-none transition-all ${activeIdx === idx ? 'border-emerald-400 bg-zinc-800 shadow-lg scale-[1.02]' : 'border-zinc-800'}`}>
                 {mySongs.length >= 2 && (
-                  <div onTouchStart={(e) => handleTouchStart(idx, e)} onTouchMove={(e) => handleTouchMove(idx, e)} onTouchEnd={() => { setActiveIdx(null); startYRef.current = 0; }} className="p-1 text-zinc-500 hover:text-zinc-300 touch-none cursor-grab active:cursor-grabbing" title="Arrastra con el dedo">
+                  <div onTouchStart={(e) => handleTouchStart(idx, e)} onTouchMove={(e) => handleTouchMove(idx, e)} onTouchEnd={handleTouchEnd} className="p-1 text-zinc-500 hover:text-zinc-300 touch-none cursor-grab active:cursor-grabbing" title="Arrastra con el dedo">
                     <GripVertical className="w-5 h-5 text-emerald-400" />
                   </div>
                 )}
@@ -83,8 +90,8 @@ export const GuestMyQueue: FC<GuestMyQueueProps> = ({
                 <div className="flex items-center gap-1 shrink-0">
                   {mySongs.length >= 2 && onSwapSongs && (
                     <div className="flex flex-col gap-0.5">
-                      <button disabled={idx === 0} onClick={() => onSwapSongs(song.id, mySongs[idx - 1].id)} className="p-1 text-zinc-400 hover:text-white disabled:opacity-20 active:scale-90" aria-label="Mover arriba"><ArrowUp className="w-3.5 h-3.5" /></button>
-                      <button disabled={idx === mySongs.length - 1} onClick={() => onSwapSongs(song.id, mySongs[idx + 1].id)} className="p-1 text-zinc-400 hover:text-white disabled:opacity-20 active:scale-90" aria-label="Mover abajo"><ArrowDown className="w-3.5 h-3.5" /></button>
+                      <button disabled={idx === 0 || isBusy} onClick={() => onSwapSongs(song.id, mySongs[idx - 1].id)} className="p-1 text-zinc-400 hover:text-white disabled:opacity-20 active:scale-90" aria-label="Mover arriba"><ArrowUp className="w-3.5 h-3.5" /></button>
+                      <button disabled={idx === mySongs.length - 1 || isBusy} onClick={() => onSwapSongs(song.id, mySongs[idx + 1].id)} className="p-1 text-zinc-400 hover:text-white disabled:opacity-20 active:scale-90" aria-label="Mover abajo"><ArrowDown className="w-3.5 h-3.5" /></button>
                     </div>
                   )}
                   <button type="button" onClick={() => onReplaceSong(song)} className="px-2 py-1 bg-zinc-800 hover:bg-zinc-700 text-emerald-400 text-[11px] font-bold rounded-lg flex items-center gap-1"><RefreshCw className="w-3 h-3" /><span>Cambiar</span></button>

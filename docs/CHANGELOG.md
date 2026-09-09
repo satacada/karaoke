@@ -13,10 +13,13 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
   - **Toque Directo para Sustituir Canción:** Tocar cualquier parte de la tarjeta o el botón verde "Cambiar" abre el modal de sustitución de YouTube para cambiar de canción manteniendo intacto el turno en la cola.
   - **Reordenamiento Táctil en Consola de Anfitrión / DJ Móvil (`client/src/components/host/HostQueueItem.tsx`):** Añadido soporte de arrastre con el dedo sobre el control `GripVertical` (`touch-none`) para que el anfitrión pueda mover temas hacia arriba o abajo en la cola completa simplemente deslizando su dedo por la pantalla de su teléfono.
 
-### 🔧 [AFINAMIENTO / REFINAMIENTO]
-- **Cumplimiento Estricto de Clean-by-Design:** `GuestMyQueue.tsx` optimizado a 108 líneas y `HostQueueItem.tsx` a 104 líneas, cumpliendo el límite inquebrantable de $\le 120$ líneas por archivo.
-- **Aislamiento en Pruebas Automatizadas:** `server/testRockolaSwaps.js` actualizado para ejecutar pruebas contra salas temporales dedicadas con limpieza automática, garantizando ejecución determinista al 100%.
-- **Validación de Compilación:** Compilación de producción limpia en Vite y TypeScript sin errores.
+### 🐛 [CORRECCIÓN / FIX]
+- **Solución Definitiva al Bloqueo de Reordenamiento tras 3 Swaps Rápidos:**
+  - **Detección Causa Raíz:** Al intercambiar canciones rápidamente con el dedo o toques continuos, múltiples peticiones concurrentes leían el estado intermedio de la base de datos, provocando que ambas canciones terminaran con el mismo número de turno (`priority_order: 1` o `2`), bloqueando cualquier swap posterior.
+  - **Semáforo de Exclusión Mutua en Vuelo (`isSwappingInFlight` e `isSwappingRef`):** Bloquea llamadas simultáneas hasta que el intercambio actual y la actualización de estado concluyan.
+  - **Desacoplamiento Atómico con Offset Temporal (`tempOffset = 900000 + rand`):** Elimina cualquier ventana de tiempo donde dos canciones compartan temporalmente la misma posición.
+  - **Auto-Reparación de Colisiones (Self-Healing):** Si el sistema detecta que dos temas tienen idéntica prioridad, recompacta automáticamente los ordinales de la sala (1, 2, 3...) antes de ejecutar el swap.
+  - **Control de Gesto Único (`touchDoneRef`):** Un deslizamiento con el dedo ejecuta un solo intercambio hasta soltar la pantalla, y desactiva temporalmente las flechas para evitar saturación.
 
 ---
 
