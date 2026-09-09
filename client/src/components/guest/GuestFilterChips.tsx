@@ -18,7 +18,7 @@ export const GuestFilterChips: FC<GuestFilterChipsProps> = ({
   onSelectFilter,
 }) => {
   return (
-    <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
+    <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1 w-full max-w-full">
       {FILTERS.map((f) => {
         const isSelected = selectedFilter === f.id;
         return (

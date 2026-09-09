@@ -26,12 +26,13 @@ export const App: FC = () => {
   }, []);
 
   return (
-    <div className="relative min-h-screen bg-zinc-950 text-zinc-100 flex flex-col">
-      {/* Dev Mode Switcher Bar */}
-      <nav
-        aria-label="Barra de selección de rol"
-        className="fixed top-2 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1 bg-zinc-900/90 backdrop-blur-md border border-zinc-800/80 rounded-full px-3 py-1 shadow-lg opacity-40 hover:opacity-100 transition-opacity"
-      >
+    <div className="relative min-h-screen bg-zinc-950 text-zinc-100 flex flex-col w-full overflow-x-hidden">
+      {/* Dev Mode Switcher Bar (solo visible en modo TV o Host para desarrollo) */}
+      {currentMode !== 'guest' && (
+        <nav
+          aria-label="Barra de selección de rol"
+          className="fixed top-2 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1 bg-zinc-900/90 backdrop-blur-md border border-zinc-800/80 rounded-full px-3 py-1 shadow-lg opacity-40 hover:opacity-100 transition-opacity"
+        >
         <button
           onClick={() => setCurrentMode('tv')}
           className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold transition-all ${
@@ -58,16 +59,13 @@ export const App: FC = () => {
 
         <button
           onClick={() => setCurrentMode('guest')}
-          className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold transition-all ${
-            currentMode === 'guest'
-              ? 'bg-emerald-600 text-white shadow-md'
-              : 'text-zinc-400 hover:text-white'
-          }`}
+          className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold text-zinc-400 hover:text-white transition-all"
         >
           <Smartphone className="w-3.5 h-3.5" />
           <span>Invitado</span>
         </button>
       </nav>
+      )}
 
       {/* View router */}
       {currentMode === 'tv' && <TvView roomCode={roomCode} />}

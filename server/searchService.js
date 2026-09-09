@@ -75,6 +75,7 @@ export async function searchYouTubeVideos(query, filterOrKaraokeOnly = 'karaoke'
         title: v.title,
         author: v.author ? v.author.name : 'Desconocido',
         thumbnail: v.thumbnail,
+        thumbnailUrl: v.thumbnail,
         durationSeconds: v.seconds,
         durationText: v.timestamp,
         views: v.views,

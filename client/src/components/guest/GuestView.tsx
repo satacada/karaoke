@@ -79,13 +79,13 @@ export const GuestView: FC<{ roomCode?: string }> = ({ roomCode = 'FIESTA' }) =>
     const check = await verifyPresence();
     if (!check.allowed && check.reason === 'distance') { setGeoBlockedDist(check.distanceMeters); return; }
     setLastReqTime(Date.now());
-    await addSongToQueue({ roomId: room.id, videoId: item.videoId, title: item.title, author: item.author, thumbnailUrl: item.thumbnailUrl, durationSeconds: item.durationSeconds, durationText: item.durationText, requestedBy: session.guestName });
+    await addSongToQueue({ roomId: room.id, videoId: item.videoId, title: item.title, author: item.author, thumbnailUrl: item.thumbnailUrl || (item as unknown as { thumbnail?: string }).thumbnail, durationSeconds: item.durationSeconds, durationText: item.durationText, requestedBy: session.guestName });
     showToast('¡Canción agregada a la fila! 🎤');
     setActiveTab('my-turn');
   };
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col max-w-md mx-auto relative pb-10">
+    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col w-full max-w-md mx-auto relative pb-10 overflow-x-hidden">
       <GuestWelcomeModal isOpen={!session} roomCode={roomCode} onJoin={(name, coords) => {
         saveSession(name, undefined, coords);
         if (room) registerGuest(room.id, name, crypto.randomUUID());
@@ -93,7 +93,7 @@ export const GuestView: FC<{ roomCode?: string }> = ({ roomCode = 'FIESTA' }) =>
       {session && (
         <>
           <GuestHeader roomCode={roomCode} guestName={session.guestName} activeTab={activeTab} onSelectTab={setActiveTab} mySongsCount={mySongs.length} isSingingNow={isSingingNow} isWithinGracePeriod={presenceStatus.isWithinGracePeriod} remainingGraceMinutes={presenceStatus.remainingGraceMinutes} />
-          <main className="flex-1 p-4">
+          <main className="flex-1 px-2.5 py-3 w-full min-w-0 overflow-x-hidden">
             {toast && <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-emerald-500 text-zinc-950 px-4 py-2 rounded-full font-bold text-xs shadow-xl">{toast}</div>}
             {activeTab === 'search' && (
               <div className="space-y-4">
