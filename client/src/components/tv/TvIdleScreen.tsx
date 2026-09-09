@@ -7,12 +7,14 @@ interface TvIdleScreenProps {
   roomCode: string;
   joinUrl: string;
   roomName?: string;
+  zoneName?: string;
+  status?: 'active' | 'paused' | 'closed';
   banners?: PromoBanner[];
   autoDjActive?: boolean;
 }
 
 export const TvIdleScreen: FC<TvIdleScreenProps> = ({
-  roomCode, joinUrl, roomName = 'Rockola Digital Live', banners = [], autoDjActive = false,
+  roomCode, joinUrl, roomName = 'Rockola Digital Live', zoneName, status = 'active', banners = [], autoDjActive = false,
 }) => {
   const activeBanners = banners.filter((b) => b.is_active);
   const [promoIdx, setPromoIdx] = useState(0);
@@ -46,13 +48,17 @@ export const TvIdleScreen: FC<TvIdleScreenProps> = ({
             <Disc3 className="w-3.5 h-3.5 animate-spin" /> Modo Auto-DJ Ambiente Activo
           </div>
         )}
-        <h1 className="text-3xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-amber-300 tracking-tight mb-2">
+        <h1 className="text-3xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-amber-300 tracking-tight mb-1">
           {cleanRoomName}
         </h1>
+        {zoneName && zoneName !== 'Salón Principal' && (
+          <span className="text-sm font-bold text-purple-300 font-mono tracking-widest uppercase mb-2 block">Sector: {zoneName}</span>
+        )}
         <p className="text-lg md:text-xl text-zinc-300 font-medium max-w-xl mb-6">
-          Escanea el código con tu celular para poner tus temas y videos favoritos
+          {status === 'closed' ? 'Este ambiente ha cerrado pedidos por hoy. ¡Te esperamos en el salón principal!' : 'Escanea el código con tu celular para poner tus temas y videos favoritos'}
         </p>
 
+        {status !== 'closed' && (
         <div className="flex flex-col md:flex-row items-center gap-6 bg-zinc-900/80 backdrop-blur-xl border border-purple-500/30 p-6 rounded-3xl shadow-2xl shadow-purple-950/60">
           <div className="bg-white p-3 rounded-2xl shadow-xl border-4 border-purple-500/20 shrink-0">
             <QRCodeSVG value={joinUrl} size={190} level="H" includeMargin={false} />
@@ -83,6 +89,7 @@ export const TvIdleScreen: FC<TvIdleScreenProps> = ({
             )}
           </div>
         </div>
+        )}
       </main>
     </div>
   );

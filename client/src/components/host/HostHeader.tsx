@@ -1,8 +1,9 @@
 import type { FC } from 'react';
-import { RotateCcw, Users, Settings, Crown, ShieldCheck, Megaphone, Lock, LockOpen } from 'lucide-react';
+import { RotateCcw, Users, Settings, Crown, ShieldCheck, Megaphone, Lock, LockOpen, SlidersHorizontal } from 'lucide-react';
 
 interface HostHeaderProps {
   roomCode: string;
+  zoneName?: string;
   isOwner?: boolean;
   isSuperAdmin?: boolean;
   isQueueLocked?: boolean;
@@ -12,10 +13,12 @@ interface HostHeaderProps {
   onOpenSuperAdmin?: () => void;
   onOpenBanners?: () => void;
   onToggleQueueLock?: () => void;
+  onOpenMasterHub?: () => void;
 }
 
 export const HostHeader: FC<HostHeaderProps> = ({
   roomCode,
+  zoneName,
   isOwner,
   isSuperAdmin,
   isQueueLocked,
@@ -25,6 +28,7 @@ export const HostHeader: FC<HostHeaderProps> = ({
   onOpenSuperAdmin,
   onOpenBanners,
   onToggleQueueLock,
+  onOpenMasterHub,
 }) => {
   return (
     <header className="flex items-center justify-between py-2 border-b border-zinc-800 mb-4">
@@ -37,9 +41,22 @@ export const HostHeader: FC<HostHeaderProps> = ({
             </span>
           )}
         </div>
-        <h1 className="text-lg font-black text-white font-mono">{roomCode}</h1>
+        <h1 className="text-lg font-black text-white font-mono flex items-center gap-1.5">
+          <span>{roomCode}</span>
+          {zoneName && <span className="text-xs font-medium text-purple-300 font-sans tracking-normal truncate max-w-[120px]">({zoneName})</span>}
+        </h1>
       </div>
       <div className="flex gap-1.5">
+        {onOpenMasterHub && (
+          <button
+            onClick={onOpenMasterHub}
+            className="p-2 rounded-xl bg-purple-950/80 border border-purple-600/50 text-purple-300 active:scale-95 transition-transform hover:text-white"
+            title="Master Hub (Ambientes)"
+            aria-label="Panel Multi-Ambientes"
+          >
+            <SlidersHorizontal className="w-4 h-4 text-purple-300" />
+          </button>
+        )}
         {onToggleQueueLock && (
           <button
             onClick={onToggleQueueLock}

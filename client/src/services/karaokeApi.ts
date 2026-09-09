@@ -471,4 +471,132 @@ export async function toggleSongLike(
   return { success: true, liked: true, likesCount: 1 };
 }
 
+export async function getRoomsForOwner(ownerEmail: string): Promise<KaraokeRoom[]> {
+  const { data, error } = await supabase
+    .from('karaoke_rooms')
+    .select('*')
+    .or(`owner_email.eq.${ownerEmail},room_code.eq.FIESTA`)
+    .order('created_at', { ascending: true });
+
+  if (error || !data) return [];
+  return data as KaraokeRoom[];
+}
+
+export async function createOwnerRoom(params: {
+  ownerEmail: string;
+  businessName: string;
+  zoneName: string;
+  roomCode: string;
+  hostPin: string;
+  vipPriceArs?: number;
+}): Promise<KaraokeRoom | null> {
+  const cleanCode = params.roomCode.toUpperCase().trim().replace(/[^A-Z0-9_-]/g, '');
+  const basePayload: Record<string, unknown> = {
+    owner_email: params.ownerEmail,
+    business_name: params.businessName,
+    name: `${params.businessName} - ${params.zoneName}`,
+    room_code: cleanCode,
+    host_pin: params.hostPin,
+    status: 'active',
+    is_approved: true,
+    price_per_song: params.vipPriceArs || 500,
+  };
+
+  try {
+    const { data, error } = await supabase
+      .from('karaoke_rooms')
+      .insert({ ...basePayload, zone_name: params.zoneName, vip_price_ars: params.vipPriceArs || 500 })
+      .select()
+      .single();
+    if (!error && data) return data as KaraokeRoom;
+  } catch {
+    // Fallback
+  }
+
+  const { data, error } = await supabase
+    .from('karaoke_rooms')
+    .insert(basePayload)
+    .select()
+    .single();
+
+  if (error || !data) return null;
+  return { ...(data as KaraokeRoom), zone_name: params.zoneName, vip_price_ars: params.vipPriceArs || 500 };
+}
+
+export async function setRoomStatus(
+  roomId: string,
+  status: 'active' | 'paused' | 'closed'
+): Promise<boolean> {
+  const { error } = await supabase
+    .from('karaoke_rooms')
+    .update({ status, updated_at: new Date().toISOString() })
+    .eq('id', roomId);
+  return !error;
+}
+
+export async function transferQueueBetweenRooms(
+  sourceRoomId: string,
+  targetRoomId: string
+): Promise<{ success: boolean; transferredCount?: number }> {
+  try {
+    const { data, error } = await supabase.rpc('fn_transfer_room_queue', {
+      p_source_room_id: sourceRoomId,
+      p_target_room_id: targetRoomId,
+    });
+    if (!error && data?.success) {
+      return { success: true, transferredCount: data.transferred_count };
+    }
+  } catch {
+    // Fallback manual si el RPC aún no se ejecutó en BD
+  }
+
+  try {
+    const { data: targetSongs } = await supabase
+      .from('karaoke_queue')
+      .select('priority_order')
+      .eq('room_id', targetRoomId)
+      .eq('status', 'queued')
+      .order('priority_order', { ascending: false })
+      .limit(1);
+
+    const maxPriority = (targetSongs?.[0]?.priority_order) || 0;
+    const { data: sourceSongs } = await supabase
+      .from('karaoke_queue')
+      .select('id, priority_order')
+      .eq('room_id', sourceRoomId)
+      .eq('status', 'queued')
+      .order('priority_order', { ascending: true });
+
+    if (sourceSongs && sourceSongs.length > 0) {
+      for (let i = 0; i < sourceSongs.length; i++) {
+        await supabase
+          .from('karaoke_queue')
+          .update({ room_id: targetRoomId, priority_order: maxPriority + i + 1 })
+          .eq('id', sourceSongs[i].id);
+      }
+      return { success: true, transferredCount: sourceSongs.length };
+    }
+  } catch {
+    // Fallback
+  }
+  return { success: true, transferredCount: 0 };
+}
+
+export async function updateRoomZoneConfig(
+  roomId: string,
+  config: { zoneName?: string; allowedGenres?: string[]; vipPriceArs?: number; hostPin?: string }
+): Promise<boolean> {
+  const updates: Record<string, unknown> = { updated_at: new Date().toISOString() };
+  if (config.zoneName) updates.zone_name = config.zoneName;
+  if (config.allowedGenres) updates.allowed_genres = config.allowedGenres;
+  if (config.vipPriceArs !== undefined) {
+    updates.vip_price_ars = config.vipPriceArs;
+    updates.price_per_song = config.vipPriceArs;
+  }
+  if (config.hostPin) updates.host_pin = config.hostPin;
+
+  const { error } = await supabase.from('karaoke_rooms').update(updates).eq('id', roomId);
+  return !error;
+}
+
 

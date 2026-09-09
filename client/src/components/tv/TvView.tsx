@@ -73,7 +73,7 @@ export const TvView: FC<{ roomCode?: string }> = ({ roomCode = 'FIESTA' }) => {
   if (!currentSong) {
     return (
       <div className="relative w-full h-screen bg-black overflow-hidden select-none">
-        <TvIdleScreen roomCode={roomCode} joinUrl={joinUrl} roomName={room?.name || 'Rockola Digital Live'} banners={banners} autoDjActive={Boolean(room?.auto_dj_enabled)} />
+        <TvIdleScreen roomCode={roomCode} joinUrl={joinUrl} roomName={room?.name || 'Rockola Digital Live'} zoneName={room?.zone_name} status={room?.status} banners={banners} autoDjActive={Boolean(room?.auto_dj_enabled)} />
         <TvFloatingReactions roomCode={roomCode} />
       </div>
     );

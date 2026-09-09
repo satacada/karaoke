@@ -1,16 +1,17 @@
-﻿import { useState, type FC } from 'react';
+import { useState, type FC } from 'react';
 import { Zap, Copy, Check, ExternalLink, X, ShieldCheck } from 'lucide-react';
 import { MERCADO_PAGO_ALIAS, VIP_PRICE_ARS } from '../../utils/deviceId';
 
 interface GuestMercadoPagoModalProps {
   isOpen: boolean;
   songTitle: string;
+  priceArs?: number;
   onConfirmPayment: () => void;
   onClose: () => void;
 }
 
 export const GuestMercadoPagoModal: FC<GuestMercadoPagoModalProps> = ({
-  isOpen, songTitle, onConfirmPayment, onClose,
+  isOpen, songTitle, priceArs = VIP_PRICE_ARS, onConfirmPayment, onClose,
 }) => {
   const [copied, setCopied] = useState(false);
 
@@ -45,7 +46,7 @@ export const GuestMercadoPagoModal: FC<GuestMercadoPagoModalProps> = ({
         <div className="bg-zinc-950 p-3 rounded-2xl border border-zinc-800 text-center space-y-1">
           <span className="text-[10px] text-zinc-400 uppercase font-bold tracking-wider">Canción seleccionada</span>
           <p className="text-xs font-bold text-white truncate">{songTitle}</p>
-          <div className="text-2xl font-black text-amber-400 pt-1">${VIP_PRICE_ARS} <span className="text-xs text-zinc-400 font-normal">ARS</span></div>
+          <div className="text-2xl font-black text-amber-400 pt-1">${priceArs} <span className="text-xs text-zinc-400 font-normal">ARS</span></div>
         </div>
 
         <div className="space-y-2">
@@ -81,7 +82,7 @@ export const GuestMercadoPagoModal: FC<GuestMercadoPagoModalProps> = ({
             className="w-full py-3 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 hover:brightness-110 text-zinc-950 font-black text-xs shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2 active:scale-95 transition-all"
           >
             <ShieldCheck className="w-4 h-4" />
-            <span>Ya transferí ${VIP_PRICE_ARS} • Enviar VIP ⚡</span>
+            <span>Ya transferí ${priceArs} • Enviar VIP ⚡</span>
           </button>
         </div>
       </div>

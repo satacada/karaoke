@@ -14,6 +14,7 @@ interface GuestModalsProps {
   geoBlockedDist: number | undefined;
   guestName: string;
   canRequestVip: boolean;
+  vipPriceArs?: number;
   onConfirmSong: (dedication: string | null, isVip: boolean) => void;
   onConfirmVipPayment: () => void;
   onCloseConfirm: () => void;
@@ -27,7 +28,7 @@ interface GuestModalsProps {
 
 export const GuestModals: FC<GuestModalsProps> = ({
   songToConfirm, pendingVipItem, songToCancel, songToReplace, geoBlockedDist,
-  guestName, canRequestVip, onConfirmSong, onConfirmVipPayment, onCloseConfirm,
+  guestName, canRequestVip, vipPriceArs, onConfirmSong, onConfirmVipPayment, onCloseConfirm,
   onCloseMp, onConfirmCancel, onCloseCancel, onReplace, onCloseReplace, onCloseGeoBlocked,
 }) => {
   return (
@@ -43,6 +44,7 @@ export const GuestModals: FC<GuestModalsProps> = ({
       <GuestMercadoPagoModal
         isOpen={Boolean(pendingVipItem)}
         songTitle={pendingVipItem?.item.title || ''}
+        priceArs={vipPriceArs}
         onConfirmPayment={onConfirmVipPayment}
         onClose={onCloseMp}
       />

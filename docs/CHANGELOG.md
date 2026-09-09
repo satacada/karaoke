@@ -4,6 +4,32 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.8.0] - 2026-09-09
+
+### 🚀 [ESPECIFICACIÓN / FEATURE]
+- **Sistema Multi-Ambientes para Locales (Master Venue Hub):**
+  - **Progressive Disclosure (Anti-Saturación):** Los dueños con un solo ambiente disfrutan de una interfaz minimalista y limpia sin sobrecarga visual. La barra de ambientes (`HostMultiRoomBar`) se activa de forma totalmente automática y fluida únicamente cuando el local cuenta con dos o más salas configuradas (`client/src/components/host/multiroom/HostMultiRoomBar.tsx`).
+  - **Panel de Control Centralizado del Dueño (`client/src/components/host/multiroom/HostMasterHubModal.tsx`):**
+    1. *Ambientes y Estado Operativo:* Gestión individual de estado por sala (`Abierto` 🟢, `Pausado` 🟡, `Cerrado` 🔴). Al cerrar un sector (ej: Terraza exterior), la pantalla TV informa el cese de actividad de forma amigable (`TvIdleScreen.tsx`).
+    2. *Traspaso Atómico de Colas (`client/src/components/host/multiroom/HostTransferQueueModal.tsx`):* Permite migrar en bloque las canciones pendientes de un ambiente que cierra hacia otra sala activa (ej: Terraza -> Salón Principal), recalculando la prioridad para agregarlas de manera ordenada al final de la cola destino.
+    3. *Identidad Sonora por Sector:* Configuración de géneros permitidos por sala (ej: Terraza acústica vs Salón bailable).
+    4. *Precios VIP Diferenciados:* Configuración de tarifa personalizada en ARS por sala (ej: Terraza $800 vs Salón Principal $500).
+    5. *Fiesta Unificada / Sincronización Global:* Control broadcast para replicar reproducción simultánea en todas las pantallas del local.
+    6. *PIN Staff Delegado:* Clave de 4 dígitos independiente por sala para el personal asignado a cada sector.
+- **Creación de Nuevos Sectores (`client/src/components/host/multiroom/HostCreateRoomModal.tsx`):**
+  - Formulario intuitivo con validación de código de sala (3 a 8 caracteres alfanuméricos) y PIN de 4 dígitos.
+- **Suite de Pruebas Automatizadas de Traspaso de Colas (`server/testMultiRoomTransfer.js`):**
+  - Validación completa con inserción de ambiente secundario, encolado de temas, migración y verificación atómica de recepción en la sala principal.
+
+### 🔧 [AFINAMIENTO / REFINAMIENTO]
+- **Arquitectura Clean-by-Design Estricta ($\le 120$ líneas):**
+  - Descomposición modular de modales en `HostModals.tsx` (53 líneas), `HostMasterHubModal.tsx` (115 líneas), `HostCreateRoomModal.tsx` (84 líneas), `HostTransferQueueModal.tsx` (79 líneas) y `HostMultiRoomBar.tsx` (64 líneas).
+- **Compatibilidad Resiliente de Base de Datos:**
+  - Fallback transparente en el cliente (`client/src/services/karaokeApi.ts`) para operar sin interrupciones tanto antes como después de ejecutar la migración SQL `06_multiroom_management.sql`.
+- **Compilación Limpia:** 0 errores TypeScript (`tsc -b`) y bundle optimizado con Vite 8.
+
+---
+
 ## [1.7.0] - 2026-09-09
 
 ### 🚀 [ESPECIFICACIÓN / FEATURE]

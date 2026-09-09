@@ -16,6 +16,7 @@ export interface KaraokeRoom {
   is_approved?: boolean; approved_at?: string | null; approved_by?: string | null;
   promo_banners?: PromoBanner[]; allow_vip_boost?: boolean;
   is_queue_locked?: boolean; auto_dj_enabled?: boolean; auto_dj_genre?: string;
+  zone_name?: string; allowed_genres?: string[]; vip_price_ars?: number; is_synced_master?: boolean; master_room_id?: string | null;
 }
 
 export type QueueStatus =
@@ -33,7 +34,7 @@ export interface KaraokeGuest {
   is_active: boolean; joined_at: string; last_seen_at: string;
 }
 
-export type CommandType = 'play' | 'pause' | 'skip' | 'previous' | 'seek' | 'volume' | 'set_promo_banners' | 'toggle_queue_lock';
+export type CommandType = 'play' | 'pause' | 'skip' | 'previous' | 'seek' | 'volume' | 'set_promo_banners' | 'toggle_queue_lock' | 'sync_master_track';
 
 export interface LiveReaction {
   id: string;
