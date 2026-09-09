@@ -11,7 +11,7 @@ interface TvIdleScreenProps {
 export const TvIdleScreen: FC<TvIdleScreenProps> = ({
   roomCode,
   joinUrl,
-  roomName = 'Fiesta Karaoke',
+  roomName = 'Rockola Digital Live',
 }) => {
   return (
     <div className="relative w-full h-screen bg-gradient-to-br from-zinc-950 via-purple-950/40 to-zinc-950 flex flex-col items-center justify-center p-8 overflow-hidden">
@@ -32,7 +32,7 @@ export const TvIdleScreen: FC<TvIdleScreenProps> = ({
           {roomName}
         </h1>
         <p className="text-xl md:text-2xl text-zinc-300 font-medium max-w-xl mb-8">
-          Escanea el código con tu celular para elegir canciones y cantar
+          Escanea el código con tu celular para poner tus temas y videos favoritos
         </p>
 
         {/* Central Card with QR & Instructions */}

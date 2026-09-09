@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import { Sparkles, Trash2, Clock, Music } from 'lucide-react';
+import { Sparkles, Trash2, Clock, Music, RefreshCw } from 'lucide-react';
 import type { QueueItem, GuestTurnStatus } from '../../types';
 
 interface GuestMyQueueProps {
@@ -8,16 +8,13 @@ interface GuestMyQueueProps {
   guestName: string;
   turnStatus: GuestTurnStatus;
   onCancelSong: (song: QueueItem) => void;
+  onReplaceSong: (song: QueueItem) => void;
+  onSwapSongs?: (songId1: string, songId2: string) => void;
   onGoToSearch: () => void;
 }
 
 export const GuestMyQueue: FC<GuestMyQueueProps> = ({
-  mySongs,
-  currentSong,
-  guestName,
-  turnStatus,
-  onCancelSong,
-  onGoToSearch,
+  mySongs, currentSong, guestName, turnStatus, onCancelSong, onReplaceSong, onSwapSongs, onGoToSearch,
 }) => {
   const isSinging = turnStatus.isSingingNow;
 
@@ -39,46 +36,61 @@ export const GuestMyQueue: FC<GuestMyQueueProps> = ({
           <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-4 flex items-center justify-between">
             <div>
               <span className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">Tu Posición</span>
-              <div className="text-2xl font-black text-emerald-400">
-                #{turnStatus.queuePosition > 0 ? turnStatus.queuePosition : 1}
-              </div>
+              <div className="text-2xl font-black text-emerald-400">#{turnStatus.queuePosition > 0 ? turnStatus.queuePosition : 1}</div>
             </div>
             <div className="text-right">
               <span className="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">Espera Estimada</span>
               <div className="flex items-center gap-1 text-sm font-bold text-white justify-end">
-                <Clock className="w-3.5 h-3.5 text-emerald-400" />
-                <span>~{turnStatus.estimatedWaitMinutes} min</span>
+                <Clock className="w-3.5 h-3.5 text-emerald-400" /><span>~{turnStatus.estimatedWaitMinutes} min</span>
               </div>
             </div>
           </div>
 
           <div className="space-y-2">
-            <h4 className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Tus Temas Solicitados</h4>
+            <div className="flex items-center justify-between">
+              <h4 className="text-xs font-bold text-zinc-400 uppercase tracking-wider">Tus Temas Solicitados ({mySongs.length})</h4>
+              {mySongs.length >= 2 && onSwapSongs && (
+                <button
+                  type="button"
+                  onClick={() => onSwapSongs(mySongs[0].id, mySongs[1].id)}
+                  className="text-[11px] text-emerald-400 font-bold hover:underline flex items-center gap-1"
+                >
+                  <RefreshCw className="w-3 h-3" /> Invertir orden
+                </button>
+              )}
+            </div>
             {mySongs.map((song, idx) => (
               <div
                 key={song.id}
-                className="bg-zinc-900/80 border border-zinc-800/80 rounded-2xl p-3 flex items-center gap-3"
+                className="bg-zinc-900/80 border border-zinc-800/80 rounded-2xl p-3 flex items-center gap-2.5"
               >
-                <div className="w-6 text-center font-bold text-xs text-zinc-500">#{idx + 1}</div>
+                <div className="w-5 text-center font-bold text-xs text-zinc-500">#{idx + 1}</div>
                 {song.thumbnail_url && (
-                  <img
-                    src={song.thumbnail_url}
-                    alt={song.title}
-                    className="w-14 h-10 object-cover rounded-lg shrink-0"
-                  />
+                  <img src={song.thumbnail_url} alt={song.title} className="w-12 h-9 object-cover rounded-lg shrink-0" />
                 )}
                 <div className="flex-1 min-w-0">
                   <h5 className="text-xs font-semibold text-white truncate">{song.title}</h5>
-                  <p className="text-[11px] text-zinc-400 truncate">{song.duration_text}</p>
+                  <p className="text-[10px] text-zinc-400 truncate">{song.duration_text}</p>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => onCancelSong(song)}
-                  className="p-2 text-zinc-500 hover:text-rose-400 transition-colors"
-                  aria-label="Cancelar canción"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
+                <div className="flex items-center gap-1 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => onReplaceSong(song)}
+                    title="Cambiar canción por otra sin perder tu turno"
+                    className="px-2 py-1 bg-zinc-800 hover:bg-zinc-700 text-emerald-400 text-[11px] font-bold rounded-lg transition-colors flex items-center gap-1"
+                  >
+                    <RefreshCw className="w-3 h-3" />
+                    <span>Cambiar</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onCancelSong(song)}
+                    className="p-1.5 text-zinc-500 hover:text-rose-400 transition-colors"
+                    aria-label="Cancelar canción"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               </div>
             ))}
           </div>

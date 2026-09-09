@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo, type FC } from 'react';
 import { supabase } from '../../lib/supabaseClient';
-import { getRoomByCode, getQueueForRoom, addSongToQueue, deleteQueueItem, searchVideos, registerGuest } from '../../services/karaokeApi';
+import { getRoomByCode, getQueueForRoom, addSongToQueue, deleteQueueItem, replaceGuestSong, swapGuestSongs, searchVideos, registerGuest } from '../../services/karaokeApi';
 import { useGuestPresence } from '../../hooks/useGuestPresence';
 import { GuestWelcomeModal } from './GuestWelcomeModal';
 import { GuestHeader } from './GuestHeader';
@@ -9,6 +9,7 @@ import { GuestSearchResultCard } from './GuestSearchResultCard';
 import { GuestMyQueue } from './GuestMyQueue';
 import { GuestPartyQueue } from './GuestPartyQueue';
 import { GuestCancelSongModal } from './GuestCancelSongModal';
+import { GuestReplaceSongModal } from './GuestReplaceSongModal';
 import { GuestGeoBlockedModal } from './GuestGeoBlockedModal';
 import type { KaraokeRoom, QueueItem, SearchResultItem, SearchFilterType, GuestTurnStatus } from '../../types';
 
@@ -22,30 +23,20 @@ export const GuestView: FC<{ roomCode?: string }> = ({ roomCode = 'FIESTA' }) =>
   const [isSearching, setIsSearching] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [songToCancel, setSongToCancel] = useState<QueueItem | null>(null);
+  const [songToReplace, setSongToReplace] = useState<QueueItem | null>(null);
   const [geoBlockedDist, setGeoBlockedDist] = useState<number | undefined>();
   const [lastReqTime, setLastReqTime] = useState(0);
 
   const { session, status: presenceStatus, saveSession, verifyPresence } = useGuestPresence();
-
-  const showToast = useCallback((msg: string) => {
-    setToast(msg);
-    setTimeout(() => setToast(null), 3000);
-  }, []);
-
-  const refreshQueue = useCallback(async (roomId: string) => {
-    const q = await getQueueForRoom(roomId);
-    setQueue(q);
-  }, []);
+  const showToast = useCallback((msg: string) => { setToast(msg); setTimeout(() => setToast(null), 3000); }, []);
+  const refreshQueue = useCallback(async (roomId: string) => { setQueue(await getQueueForRoom(roomId)); }, []);
 
   useEffect(() => {
     getRoomByCode(roomCode).then((r) => {
       if (r) {
-        setRoom(r);
-        refreshQueue(r.id);
-        const chan = supabase.channel(`guest-room-${r.id}`)
-          .on('postgres_changes', { event: '*', schema: 'public', table: 'karaoke_queue', filter: `room_id=eq.${r.id}` }, () => refreshQueue(r.id))
-          .subscribe();
-        return () => { supabase.removeChannel(chan); };
+        setRoom(r); refreshQueue(r.id);
+        const ch = supabase.channel(`guest-room-${r.id}`).on('postgres_changes', { event: '*', schema: 'public', table: 'karaoke_queue', filter: `room_id=eq.${r.id}` }, () => refreshQueue(r.id)).subscribe();
+        return () => { supabase.removeChannel(ch); };
       }
     });
   }, [roomCode, refreshQueue]);
@@ -53,10 +44,8 @@ export const GuestView: FC<{ roomCode?: string }> = ({ roomCode = 'FIESTA' }) =>
   useEffect(() => {
     if (!query.trim()) { setResults([]); return; }
     setIsSearching(true);
-    const timer = setTimeout(() => {
-      searchVideos(query, filter).then((res) => { setResults(res); setIsSearching(false); });
-    }, 350);
-    return () => clearTimeout(timer);
+    const t = setTimeout(() => { searchVideos(query, filter).then((res) => { setResults(res); setIsSearching(false); }); }, 350);
+    return () => clearTimeout(t);
   }, [query, filter]);
 
   const guestNameNorm = session?.guestName.trim().toLowerCase() || '';
@@ -80,16 +69,12 @@ export const GuestView: FC<{ roomCode?: string }> = ({ roomCode = 'FIESTA' }) =>
     if (!check.allowed && check.reason === 'distance') { setGeoBlockedDist(check.distanceMeters); return; }
     setLastReqTime(Date.now());
     await addSongToQueue({ roomId: room.id, videoId: item.videoId, title: item.title, author: item.author, thumbnailUrl: item.thumbnailUrl || (item as unknown as { thumbnail?: string }).thumbnail, durationSeconds: item.durationSeconds, durationText: item.durationText, requestedBy: session.guestName });
-    showToast('¡Canción agregada a la fila! 🎤');
-    setActiveTab('my-turn');
+    showToast('¡Canción agregada a la fila! 🎤'); setActiveTab('my-turn');
   };
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col w-full max-w-md mx-auto relative pb-10 overflow-x-hidden">
-      <GuestWelcomeModal isOpen={!session} roomCode={roomCode} onJoin={(name, coords) => {
-        saveSession(name, undefined, coords);
-        if (room) registerGuest(room.id, name, crypto.randomUUID());
-      }} />
+      <GuestWelcomeModal isOpen={!session} roomCode={roomCode} onJoin={(name, coords) => { saveSession(name, undefined, coords); if (room) registerGuest(room.id, name, crypto.randomUUID()); }} />
       {session && (
         <>
           <GuestHeader roomCode={roomCode} guestName={session.guestName} activeTab={activeTab} onSelectTab={setActiveTab} mySongsCount={mySongs.length} isSingingNow={isSingingNow} isWithinGracePeriod={presenceStatus.isWithinGracePeriod} remainingGraceMinutes={presenceStatus.remainingGraceMinutes} />
@@ -98,13 +83,16 @@ export const GuestView: FC<{ roomCode?: string }> = ({ roomCode = 'FIESTA' }) =>
             {activeTab === 'search' && (
               <div className="space-y-4">
                 <GuestSearchBar query={query} onQueryChange={setQuery} selectedFilter={filter} onFilterChange={setFilter} isLoading={isSearching} />
-                <div className="space-y-2">{results.map((song) => <GuestSearchResultCard key={song.videoId} item={song} onSelectSong={handleSelectSong} />)}</div>
+                <div className="space-y-2">{results.map((s) => <GuestSearchResultCard key={s.videoId} item={s} onSelectSong={handleSelectSong} />)}</div>
               </div>
             )}
-            {activeTab === 'my-turn' && <GuestMyQueue mySongs={mySongs} currentSong={currentSong} guestName={session.guestName} turnStatus={turnStatus} onCancelSong={setSongToCancel} onGoToSearch={() => setActiveTab('search')} />}
+            {activeTab === 'my-turn' && (
+              <GuestMyQueue mySongs={mySongs} currentSong={currentSong} guestName={session.guestName} turnStatus={turnStatus} onCancelSong={setSongToCancel} onReplaceSong={setSongToReplace} onSwapSongs={async (id1, id2) => { if (await swapGuestSongs(id1, id2)) { if (room) refreshQueue(room.id); showToast('¡Orden de tus canciones invertido! ↕️'); } }} onGoToSearch={() => setActiveTab('search')} />
+            )}
             {activeTab === 'party-queue' && <GuestPartyQueue currentSong={currentSong} queuedSongs={queuedSongs} currentGuestName={session.guestName} />}
           </main>
           <GuestCancelSongModal isOpen={Boolean(songToCancel)} songTitle={songToCancel?.title || ''} onConfirm={async () => { if (songToCancel) { await deleteQueueItem(songToCancel.id); setSongToCancel(null); showToast('Canción cancelada'); } }} onCancel={() => setSongToCancel(null)} />
+          <GuestReplaceSongModal isOpen={Boolean(songToReplace)} targetSong={songToReplace} onClose={() => setSongToReplace(null)} onReplace={async (sid, item) => { if (await replaceGuestSong(sid, { videoId: item.videoId, title: item.title, author: item.author, thumbnailUrl: item.thumbnailUrl, durationSeconds: item.durationSeconds, durationText: item.durationText })) { if (room) refreshQueue(room.id); showToast('¡Canción cambiada en tu turno! 🔄'); } }} />
           <GuestGeoBlockedModal isOpen={geoBlockedDist !== undefined} distanceMeters={geoBlockedDist} onClose={() => setGeoBlockedDist(undefined)} />
         </>
       )}

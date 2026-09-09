@@ -1,8 +1,8 @@
-# 📊 PLAN MAESTRO DEL PROYECTO: SISTEMA DE KARAOKE COLABORATIVO EN TIEMPO REAL
+# 📊 PLAN MAESTRO DEL PROYECTO: ROCKOLA DIGITAL LIVE (SISTEMA MULTI-TENANT EN TIEMPO REAL)
 
-**Versión del Plan:** 2.3.0 (Consolidado de Ingeniería)  
+**Versión del Plan:** 2.4.0 (Consolidado de Ingeniería)  
 **Fecha de Emisión:** Septiembre 2026  
-**Estado:** 🟢 Fase 4 (Nodo Celulares Invitados PWA - Completa y Verificada)  
+**Estado:** 🟢 Fase 4 (Nodo Invitados Rockola + Swaps + Multi-Tenant Google OAuth - Completa y Verificada)  
 **Metodología:** Agile / BDD / Clean Architecture con Compuertas de Control Formales  
 **Alineación:** Estructura inspirada en `boot-ventas-saas` y `aplicacion para ofertas`  
 
@@ -10,16 +10,16 @@
 
 ## 1. RESUMEN EJECUTIVO Y VISIÓN DEL PRODUCTO
 
-El **Sistema de Karaoke Colaborativo** es una plataforma SaaS/On-Premise distribuida que resuelve la fricción tradicional de las reuniones y fiestas hogareñas donde la música se interrumpe por anuncios o se vuelve caótica al gestionar pedidos.
+La **Rockola Digital Live** es una plataforma SaaS multi-tenant distribuida para locales comerciales, bares y fiestas que convierte cualquier pantalla en una rockola interactiva moderna donde los usuarios piden videoclips, temas en vivo y karaoke desde sus celulares.
 
 ### Pilares Fundamentales:
 1. **Tríada de Dispositivos Desacoplada:**
-   - **Nodo TV / Reproductor (Android TV o Monitor HDMI):** Reproduce videos de YouTube a pantalla completa, de forma continua y **sin cortes publicitarios**. Proyecta el estado en vivo y el Código QR de la sala. **No requiere usar el control remoto físico de la TV**.
-   - **Nodo Celular del Anfitrión (Consola DJ Táctil):** El dueño de casa entra con un PIN y controla la fiesta con una mano: reordena temas arrastrando con el dedo (Drag-and-Drop), pausa, salta temas y expulsa las canciones de invitados que se retiraron.
-   - **Nodo Celulares de Invitados (PWA en Redes 4G/5G):** Los invitados escanean el QR y acceden al instante con su plan de datos móviles sin tocar ni pedir la contraseña del Wi-Fi de la casa. Buscan en YouTube (modo karaoke con letra) y monitorean su posición en la fila (*"Faltan 2 canciones (~6 min)"*).
-2. **Infraestructura Cloud Realtime:**
-   - Base de datos dedicada en **Supabase (PostgreSQL 16)** alojada en `pfhjrplnfuupftgzdnop.supabase.co`.
-   - WebSockets bidireccionales con **Supabase Realtime** (< 50ms de latencia) que sirven de puente transparente entre los celulares en redes celulares 4G/5G y la TV conectada al Wi-Fi doméstico.
+   - **Nodo TV / Reproductor (Android TV o Navegador):** Reproduce videos de YouTube a pantalla completa, de forma continua y **sin cortes publicitarios**. Proyecta el estado en vivo y el Código QR de la sala. **No requiere usar el control remoto físico de la TV**.
+   - **Nodo Celular del Anfitrión (Consola DJ Táctil y Administración del Dueño):** Acceso para administradores/dueños vía Google OAuth con potestad para cambiar el nombre comercial y el PIN de 4 dígitos. Consola operativa para DJs con drag-and-drop y control de volumen/saltos.
+   - **Nodo Celulares de Invitados (PWA en Redes 4G/5G):** Los invitados escanean el QR y acceden al instante con su plan de datos móviles. Buscan en YouTube (videoclips, en vivo o karaoke), monitorean su posición en la fila, **reemplazan canciones sin perder su turno** e **intercambian el orden de sus propios temas** respetando las canciones de los demás.
+2. **Infraestructura Cloud Realtime & Multi-Tenancy:**
+   - Base de datos dedicada en **Supabase (PostgreSQL 16)** alojada en `pfhjrplnfuupftgzdnop.supabase.co` con partición por salas multi-tenant (`owner_id`, `owner_email`, `business_name`).
+   - WebSockets bidireccionales con **Supabase Realtime** (< 50ms de latencia) que sincronizan TV, consola DJ y clientes móviles.
 
 ---
 
@@ -27,15 +27,15 @@ El **Sistema de Karaoke Colaborativo** es una plataforma SaaS/On-Premise distrib
 
 | Capa / Subsistema | Tecnología Seleccionada | Versión | Justificación Técnica | Estado |
 | :--- | :--- | :--- | :--- | :--- |
-| **Base de Datos** | PostgreSQL (Supabase) | 16 | Relacional ACID, funciones RPC transaccionales, índices parciales y RLS. | 🟢 Desplegado y Operativo |
+| **Base de Datos** | PostgreSQL (Supabase) | 16 | Relacional ACID, funciones RPC transaccionales, soporte multi-tenant. | 🟢 Desplegado y Operativo |
 | **Motor de Tiempo Real** | Supabase Realtime | Elixir WSS | Conecta redes disjuntas (4G invitados vs Wi-Fi TV) sin abrir puertos LAN. | 🟢 Activo con Full Replica |
 | **Backend / Edge** | Node.js / Express | 22 LTS | Servidor de búsqueda de YouTube sin cuotas y proxy de metadatos. | 🟢 Operativo |
-| **Frontend Framework** | React + Vite | 19 / 8.x | Single Page Application ultra-rápida con carga en < 1.5s en redes móviles. | 🟢 Compilado (751ms) |
+| **Frontend Framework** | React + Vite | 19 / 8.x | Single Page Application ultra-rápida con carga en < 1.5s en redes móviles. | 🟢 Compilado (código 0) |
 | **Lenguaje** | TypeScript | 6.0+ | Modo estricto obligatorio (`noImplicitAny`, cero `any`, tipos nominales). | 🟢 Estandarizado 100% |
-| **Estilos & UI** | Tailwind CSS + Lucide | 4.x | Design System Neón Karaoke Dark Party con glassmorphism accesible. | 🟢 Estandarizado |
-| **Motor de Búsqueda** | yt-search / Invidious | 2.12+ | Búsqueda directa de videos y pistas con letra sin cuotas de Google Cloud. | 🟢 Probado y Cacheado |
+| **Estilos & UI** | Tailwind CSS + Lucide | 4.x | Design System Rockola Neon Dark con glassmorphism accesible. | 🟢 Estandarizado |
+| **Motor de Búsqueda** | yt-search / Invidious | 2.12+ | Búsqueda directa de videos oficiales, karaoke y en vivo sin cuotas. | 🟢 Probado y Cacheado |
 | **Reproductor Video** | YouTube IFrame API | v3 Embed | Reproductor embebido sin telemetría publicitaria ni pausas comerciales. | 🟢 Operativo y Verificado |
-| **Testing** | Vitest + Node Suite | 5.x | Pruebas unitarias de cola, ordenamiento, concurrencia y flujo TV/Host. | 🟢 10/10 tests + E2E OK |
+| **Testing** | Vitest + Node Suite | 5.x | Pruebas unitarias y de integración de reemplazo y swaps de cola. | 🟢 10/10 Vitest + 2 E2E OK |
 | **Skills Importadas** | Supabase Best Practices, Dotenv | 1.1.1 | Buenas prácticas de PostgreSQL, índices FK, tipos y gestión de entorno. | 🟢 Importado |
 
 ---
@@ -48,8 +48,8 @@ El **Sistema de Karaoke Colaborativo** es una plataforma SaaS/On-Premise distrib
 | **1** | **Motor de Nube, Supabase Realtime y Búsqueda** | 1 semana | 🟢 **COMPLETA** | Migración DDL aplicada, búsqueda y tests (10/10 OK). |
 | **2** | **Nodo TV / Android TV (Reproductor Sin Anuncios)** | 1.5 semanas | 🟢 **COMPLETA** | Reproducción continua, HUD, QR y comandos verificados. |
 | **3** | **Nodo Celular Anfitrión (Consola DJ Táctil)** | 1 semana | 🟢 **COMPLETA** | Drag-and-Drop, purga de ausentes y reset a cero verificados. |
-| **4** | **Nodo Celulares Invitados (PWA 4G/5G + Mi Turno)** | 1.5 semanas | ⚪ Pendiente | Solicitud desde red 4G reflejada en la TV en < 200ms. |
-| **5** | **Empaquetado APK Android TV y Pruebas E2E** | 1 semana | ⚪ Pendiente | APK funcional en Android TV y prueba de estrés con 15 clientes. |
+| **4** | **PWA Invitados Rockola + Swaps + Google Auth** | 1.5 semanas | 🟢 **COMPLETA** | Reemplazo de temas, swap propio y admin Google verificados. |
+| **5** | **Empaquetado APK Android TV y Pasarela de Pagos** | 1 semana | 🟡 **PAUSADA** | En pausa por indicación del usuario (prioridad afinamiento). |
 
 ---
 

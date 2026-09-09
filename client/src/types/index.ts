@@ -12,6 +12,11 @@ export interface KaraokeRoom {
   volume_percent: number;
   created_at: string;
   updated_at: string;
+  owner_id?: string | null;
+  owner_email?: string | null;
+  business_name?: string | null;
+  pricing_mode?: 'free' | 'paid_per_song';
+  price_per_song?: number;
 }
 
 export type QueueStatus =

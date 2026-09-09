@@ -4,6 +4,29 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.4.0] - 2026-09-09
+
+### 🚀 [ESPECIFICACIÓN / FEATURE]
+- **Rebranding Oficial a "Rockola Digital Live":**
+  - Actualización de identidad de marca en `client/index.html`, pantalla central de TV (`TvIdleScreen.tsx`), QR flotante (`TvFloatingQr.tsx`) y cabecera de invitados (`GuestHeader.tsx`).
+  - Admisión completa de catálogo YouTube libre (videoclips oficiales, recitales en vivo y karaoke instrumental).
+- **Poderes de Cola para Invitados (Rockola Turn Management):**
+  - **Reemplazo de Canción Sin Perder Turno (`client/src/components/guest/GuestReplaceSongModal.tsx`):** Permite al invitado buscar en YouTube y sustituir una canción en espera por otra, conservando de forma estricta su turno ordinal (`priority_order`) en la fila sin retrasar su turno.
+  - **Intercambio de Orden Propio (Swap de Temas Propios):** Cuando un usuario tiene $\ge 2$ canciones en cola, puede invertir o intercambiar el orden entre sus propios turnos mediante `swapGuestSongs` en `GuestMyQueue.tsx`. Las canciones de otros invitados situadas en medio de sus pedidos quedan 100% intactas y preservadas.
+  - **Cancelación Directa y Recompactación:** Posibilidad de quitar temas propios con modal accesible y liberación de turno.
+- **Multi-Tenancy y Autenticación Google para Dueños de Locales:**
+  - Acceso para administradores/dueños vía Google OAuth (`client/src/components/host/HostAuth.tsx`).
+  - Modal de Configuración del Local (`client/src/components/host/HostSettingsModal.tsx`): administración del nombre del local/bar (`business_name`) y actualización del PIN numérico de 4 dígitos para el personal de barra y DJs.
+  - Trazabilidad en base de datos: las salas quedan vinculadas a su dueño con `owner_id` y `owner_email`.
+  - Migración DDL `supabase/migrations/03_rockola_multitenant_and_swaps.sql` con columnas multi-tenant y procedimientos `fn_replace_guest_song` y `fn_swap_guest_songs`.
+  - Script de prueba automatizado `server/testRockolaSwaps.js` validando reemplazo y swaps intercalados con 100% de éxito.
+
+### 🔧 [AFINAMIENTO / REFINAMIENTO]
+- Regla Clean-by-Design rigurosamente mantenida: todos los nuevos componentes (`GuestReplaceSongModal.tsx`, `HostSettingsModal.tsx`) y vistas actualizadas (`GuestView.tsx`, `HostView.tsx`, `GuestMyQueue.tsx`, `HostAuth.tsx`) se mantuvieron estrictamente por debajo del límite de 120 líneas.
+- Compilación de producción limpia (`tsc -b && vite build`) con código de salida 0.
+
+---
+
 ## [1.3.0] - 2026-09-09
 
 ### 🚀 [ESPECIFICACIÓN / FEATURE]

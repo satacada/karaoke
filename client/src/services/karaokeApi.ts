@@ -229,3 +229,99 @@ export async function searchVideos(
   }
 }
 
+export async function replaceGuestSong(
+  songId: string,
+  newVideo: {
+    videoId: string;
+    title: string;
+    author: string;
+    thumbnailUrl?: string | null;
+    durationSeconds: number;
+    durationText: string;
+  }
+): Promise<boolean> {
+  const { data: rpcData, error: rpcError } = await supabase.rpc('fn_replace_guest_song', {
+    p_song_id: songId,
+    p_new_video_id: newVideo.videoId,
+    p_new_title: newVideo.title,
+    p_new_author: newVideo.author,
+    p_new_thumbnail: newVideo.thumbnailUrl || null,
+    p_new_duration_secs: newVideo.durationSeconds,
+    p_new_duration_text: newVideo.durationText,
+  });
+
+  if (!rpcError && typeof rpcData === 'boolean') {
+    return rpcData;
+  }
+
+  const { error } = await supabase
+    .from('karaoke_queue')
+    .update({
+      video_id: newVideo.videoId,
+      title: newVideo.title,
+      author: newVideo.author,
+      thumbnail_url: newVideo.thumbnailUrl || null,
+      duration_seconds: newVideo.durationSeconds,
+      duration_text: newVideo.durationText,
+    })
+    .eq('id', songId)
+    .eq('status', 'queued');
+
+  return !error;
+}
+
+export async function swapGuestSongs(
+  songId1: string,
+  songId2: string
+): Promise<boolean> {
+  const { data: rpcData, error: rpcError } = await supabase.rpc('fn_swap_guest_songs', {
+    p_song_id_1: songId1,
+    p_song_id_2: songId2,
+  });
+
+  if (!rpcError && typeof rpcData === 'boolean') {
+    return rpcData;
+  }
+
+  const { data: songs, error: fetchErr } = await supabase
+    .from('karaoke_queue')
+    .select('id, priority_order, status, requested_by')
+    .in('id', [songId1, songId2]);
+
+  if (fetchErr || !songs || songs.length !== 2) return false;
+  const s1 = songs.find((s) => s.id === songId1);
+  const s2 = songs.find((s) => s.id === songId2);
+  if (!s1 || !s2) return false;
+  if (s1.status !== 'queued' || s2.status !== 'queued') return false;
+
+  const order1 = s1.priority_order;
+  const order2 = s2.priority_order;
+
+  const { error: err1 } = await supabase
+    .from('karaoke_queue')
+    .update({ priority_order: order2 })
+    .eq('id', songId1);
+
+  const { error: err2 } = await supabase
+    .from('karaoke_queue')
+    .update({ priority_order: order1 })
+    .eq('id', songId2);
+
+  return !err1 && !err2;
+}
+
+export async function updateRoomSettings(
+  roomId: string,
+  updates: Partial<KaraokeRoom>
+): Promise<boolean> {
+  const { error } = await supabase
+    .from('karaoke_rooms')
+    .update({
+      ...updates,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', roomId);
+
+  return !error;
+}
+

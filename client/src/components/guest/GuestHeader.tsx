@@ -49,7 +49,7 @@ export const GuestHeader: FC<GuestHeaderProps> = ({
 
         {isSingingNow && (
           <span className="animate-pulse bg-pink-500 text-zinc-950 text-[11px] font-black px-2.5 py-1 rounded-full shadow-lg shadow-pink-500/30">
-            ¡CANTANDO! 🎤
+            ¡TU TURNO! 🎶
           </span>
         )}
       </div>
@@ -98,7 +98,7 @@ export const GuestHeader: FC<GuestHeaderProps> = ({
           }`}
         >
           <ListMusic className="w-3.5 h-3.5" />
-          <span>Cola Fiesta</span>
+          <span>Cola Rockola</span>
         </button>
       </nav>
     </header>
