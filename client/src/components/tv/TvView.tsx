@@ -25,7 +25,9 @@ export const TvView: FC<{ roomCode?: string; onUnlink?: () => void }> = ({ roomC
       case 'unlink_tv': try { localStorage.removeItem('tv_paired_room'); } catch {} onUnlink?.(); break;
       case 'flash_identify': setIsFlashing(true); setTimeout(() => setIsFlashing(false), 4500); break;
       case 'volume':
-        if (cmd.payload?.action === 'set_tv_theme' && cmd.payload.theme) {
+        if (cmd.payload?.action === 'unlink_tv') { try { localStorage.removeItem('tv_paired_room'); } catch {} onUnlink?.(); }
+        else if (cmd.payload?.action === 'flash_identify') { setIsFlashing(true); setTimeout(() => setIsFlashing(false), 4500); }
+        else if (cmd.payload?.action === 'set_tv_theme' && cmd.payload.theme) {
           const t = cmd.payload.theme as 'vintage' | 'modern'; setTvTheme(t);
           try { localStorage.setItem(`tv_theme_${roomCode}`, t); } catch {}
         } else if (cmd.payload?.action === 'set_promo_banners' && cmd.payload.banners) {

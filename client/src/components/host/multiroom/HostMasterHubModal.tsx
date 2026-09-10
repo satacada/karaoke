@@ -57,8 +57,8 @@ export const HostMasterHubModal: FC<HostMasterHubModalProps> = ({
                         {st === 'active' ? '🟢' : st === 'paused' ? '🟡' : '🔴'}
                       </button>
                     ))}
-                    <button onClick={() => sendRemoteCommand(r.id, 'flash_identify')} title="Identificar pantalla TV" className="p-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-amber-400 hover:text-white"><Sparkles className="w-3.5 h-3.5" /></button>
-                    <button onClick={() => sendRemoteCommand(r.id, 'unlink_tv')} title="Desvincular pantalla TV" className="p-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-rose-400 hover:text-white"><Tv className="w-3.5 h-3.5" /></button>
+                    <button onClick={() => sendRemoteCommand(r.id, 'volume', { action: 'flash_identify' })} title="Identificar pantalla TV" className="p-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-amber-400 hover:text-white"><Sparkles className="w-3.5 h-3.5" /></button>
+                    <button onClick={() => sendRemoteCommand(r.id, 'volume', { action: 'unlink_tv' })} title="Desvincular pantalla TV" className="p-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-rose-400 hover:text-white"><Tv className="w-3.5 h-3.5" /></button>
                     <button onClick={() => onOpenTransfer(r)} title="Traspasar cola" className="p-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-purple-400 hover:text-white"><ArrowRightLeft className="w-3.5 h-3.5" /></button>
                   </div>
                 </div>
