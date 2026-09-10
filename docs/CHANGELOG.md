@@ -4,6 +4,30 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.18.0] - 2026-09-10
+
+### 🚀 [ESPECIFICACIÓN / FEATURE]
+- **Ciclo Intermitente de Dedicatorias en Pantalla TV (12s visible / 33s descanso):**
+  - **Ubicación Lateral Derecha (`TvDedicationBanner.tsx`):** La tarjeta de dedicatoria ahora se ubica en el lateral derecho de la pantalla, justo debajo de las promociones del local, en armonía con el código QR.
+  - **Frecuencia y Desaparición Cíclica:** Aparece durante 12 segundos (tiempo ideal para leer el mensaje con calma) y se oculta durante 33 segundos (~45 segundos en total), repitiéndose durante toda la duración de la canción.
+  - **Cese Automático al Terminar la Canción:** Al finalizar la canción o saltar al siguiente tema, la dedicatoria desaparece de inmediato y se cancelan todos los temporizadores. Si la nueva canción no tiene dedicatoria, el espacio queda completamente limpio.
+- **Frecuencia Óptima de Promociones Basada en Neuromarketing y DOOH (14s visible / 46s descanso):**
+  - **Eliminación del Banner Fijo Permanente:** Para combatir la *Ceguera de Banners (Banner Blindness)* y la fatiga visual de los asistentes en el bar, las promociones del administrador ya no son estáticas ni permanentes.
+  - **Fundamentación Científica y Psicológica (DOOH / Hospitality):**
+    - **14 segundos en pantalla:** Tiempo de exposición óptimo para lectura, comprensión y procesamiento social sin generar rechazo (el tiempo de fijación cognitiva promedio para un titular y precio de barra es de 5 a 8 segundos).
+    - **46 segundos de descanso:** Deja la pantalla completamente despejada para el video de YouTube (75% del tiempo pantalla limpia, 25% presencia publicitaria).
+    - **Ciclo de 60 segundos (1 impacto por minuto):** En cada nueva aparición, el sistema avanza automáticamente a la siguiente promoción activa del local con una animación de entrada suave que reactiva la atención focal de los clientes.
+
+### 🔧 [AFINAMIENTO / REFINAMIENTO]
+- **Tipado Estricto de Navegador:** Uso de `ReturnType<typeof setTimeout>` para compatibilidad con TypeScript estricto en el cliente web.
+- **Estricto Cumplimiento Clean-by-Design ($\le 120$ líneas por archivo):**
+  - `client/src/components/tv/TvDedicationBanner.tsx`: 71 líneas.
+  - `client/src/components/tv/TvPromoTicker.tsx`: 104 líneas.
+  - `client/src/components/tv/TvView.tsx`: 118 líneas.
+- **Compilación Limpia:** 0 errores TypeScript (`tsc -b`) y build de producción exitoso.
+
+---
+
 ## [1.17.0] - 2026-09-10
 
 ### 🚀 [ESPECIFICACIÓN / FEATURE]

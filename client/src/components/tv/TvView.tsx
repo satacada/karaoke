@@ -98,10 +98,9 @@ export const TvView: FC<{ roomCode?: string; onUnlink?: () => void }> = ({ roomC
           <TvVintageFrame active={tvTheme === 'vintage'}><TvPlayer ref={playerRef} videoId={currentSong.video_id} onEnded={handleNextSong} onError={handlePlayerError} onTimeUpdate={handleTimeUpdate} onPlayingStateChange={(pl) => { if (room) updatePlaybackTick(room.id, pl, currentTime).catch(() => {}); }} /></TvVintageFrame>
           <TvNextQueueTicker queue={nextSongs} />
           <TvNowPlayingHUD song={currentSong} currentTime={currentTime} duration={duration} />
-          <TvDedicationBanner currentSong={currentSong} />
         </>
       )}
-      <aside className="absolute top-6 right-6 z-40 flex flex-col gap-2.5 w-52 pointer-events-none">
+      <aside className="absolute top-6 right-6 z-40 flex flex-col gap-2.5 w-60 sm:w-64 pointer-events-none">
         <div className="flex justify-end pointer-events-auto">
           <button type="button" onClick={() => setShowUnlinkModal(true)} title="Configuración de pantalla" className="p-1.5 rounded-xl bg-black/40 hover:bg-black/80 text-zinc-400 hover:text-white border border-white/10 transition-colors">
             <Settings className="w-3.5 h-3.5" />
@@ -109,6 +108,7 @@ export const TvView: FC<{ roomCode?: string; onUnlink?: () => void }> = ({ roomC
         </div>
         <div className="pointer-events-auto"><TvFloatingQr roomCode={roomCode} joinUrl={joinUrl} currentSongId={currentSong?.id} /></div>
         <TvPromoTicker banners={banners} roomCode={roomCode} />
+        <TvDedicationBanner currentSong={currentSong} />
       </aside>
       <TvFloatingReactions roomCode={roomCode} />
       <TvUnlinkModal isOpen={showUnlinkModal} roomCode={roomCode} roomName={room?.zone_name || room?.name} onClose={() => setShowUnlinkModal(false)} onConfirmUnlink={() => { try { localStorage.removeItem('tv_paired_room'); } catch {} setShowUnlinkModal(false); onUnlink?.(); }} />

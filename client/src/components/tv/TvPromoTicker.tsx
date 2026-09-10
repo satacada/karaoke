@@ -51,15 +51,25 @@ export const TvPromoTicker: FC<TvPromoTickerProps> = ({ banners = [], roomCode =
 
   const activeBanners = localBanners.filter((b) => b.is_active && (!b.expires_at || b.expires_at > now));
 
-  useEffect(() => {
-    if (activeBanners.length <= 1) return;
-    const interval = setInterval(() => {
-      setCurrentIdx((prev) => (prev + 1) % activeBanners.length);
-    }, 12000);
-    return () => clearInterval(interval);
-  }, [activeBanners.length]);
+  const [isVisible, setIsVisible] = useState(true);
 
-  if (activeBanners.length === 0) return null;
+  useEffect(() => {
+    if (activeBanners.length === 0) return;
+    let timer: ReturnType<typeof setTimeout>;
+    if (isVisible) {
+      timer = setTimeout(() => {
+        setIsVisible(false);
+      }, 14000);
+    } else {
+      timer = setTimeout(() => {
+        setCurrentIdx((prev) => (prev + 1) % activeBanners.length);
+        setIsVisible(true);
+      }, 46000);
+    }
+    return () => clearTimeout(timer);
+  }, [isVisible, activeBanners.length]);
+
+  if (activeBanners.length === 0 || !isVisible) return null;
 
   const current = activeBanners[currentIdx % activeBanners.length];
   const s = STYLES[current.color] || STYLES.gold;

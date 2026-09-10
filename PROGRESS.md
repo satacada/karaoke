@@ -1,8 +1,8 @@
 # 📊 PLAN MAESTRO DEL PROYECTO: ROCKOLA DIGITAL LIVE (SISTEMA MULTI-TENANT EN TIEMPO REAL)
 
-**Versión del Plan:** 2.14.0 (Sistema de Activación y Emparejamiento TV Estilo Netflix con Código Corto y Destello Neón)  
+**Versión del Plan:** 2.15.0 (Ciclo Intermitente de Dedicatorias y Promociones en TV Basado en Neuromarketing DOOH)  
 **Fecha de Emisión:** Septiembre 2026  
-**Estado:** 🟢 Fase 2 y Fase 3 (Emparejamiento TV + Control DJ Multi-Sala - Completo y Verificado)  
+**Estado:** 🟢 Fase 2 (HUD TV con Dedicatorias Cíclicas y Promociones Dinámicas - Completo y Verificado)  
 **Metodología:** Agile / BDD / Clean Architecture con Compuertas de Control Formales  
 **Alineación:** Estructura inspirada en `boot-ventas-saas` y `aplicacion para ofertas`  
 
