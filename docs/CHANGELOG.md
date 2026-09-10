@@ -4,6 +4,27 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.33.0] - 2026-09-10
+
+### 🚀 [ESPECIFICACIÓN / FEATURE]
+- **Arquitectura Rockola Portátil Bluetooth y Pestañas Duales en Celular (`App.tsx`, `HostHeader.tsx`, `HostView.tsx`):**
+  - **Celular como Rockola Central:** La aplicación instalada en un smartphone Android ahora actúa como reproductor de sonido central conectado a parlante Bluetooth.
+  - **Pestañas de Navegación para el Administrador:** El anfitrión puede alternar fluidamente entre `🎧 Administrador` (consola DJ con drag-and-drop, volumen, pausas y saltos), `🎵 Cliente` (buscador de YouTube para pedir temas él mismo) y `📲 Código QR` (pantalla con el QR visible para que sus amigos lo escaneen).
+  - **Reproducción Continua Bluetooth sin Cortes:** El reproductor se mantiene montado en segundo plano en el DOM mientras el anfitrión navega entre la consola DJ y el catálogo de temas, asegurando que la música nunca se detenga.
+  - **Audio con Pantalla Apagada en Android (`configure-tv-manifest.js`, `MainActivity.java`):** Incorporados permisos `FOREGROUND_SERVICE_MEDIA_PLAYBACK`, `BLUETOOTH`, `BLUETOOTH_CONNECT` y `resumeTimers()` en el ciclo de vida `onPause()` de Android para que la música continúe sonando por Bluetooth aunque el teléfono se bloquee o apague la pantalla.
+
+### 🔧 [AFINAMIENTO / REFINAMIENTO]
+- **Código QR y Cola en TV Ultra-Compactos y No Invasivos (`TvFloatingQr.tsx`, `TvNextQueueTicker.tsx`, `TvSidebarOverlay.tsx`):**
+  - El recuadro del QR se redujo a formato micro-card con fondo translúcido (`bg-black/35 backdrop-blur-sm`), dejando despejado el video musical.
+  - La lista de espera lateral muestra únicamente hasta 2 canciones en píldoras compactas translúcidas.
+  - La leyenda `powered : David Taboada` se reubicó en la esquina inferior izquierda, eliminando cualquier superposición con el reloj `1:21 / 4:00` y el botón de pausa.
+- **Aislamiento 100% de la Interfaz de Invitados:** Los clientes que escanean el QR desde sus mesas entran exclusivamente en modo invitado (`GuestView`) sin acceso ni visibilidad alguna a botones o pestañas de administrador ("Soy DJ" eliminado para invitados).
+
+### 🐛 [CORRECCIÓN / FIX]
+- **Restauración de Visibilidad del QR y Reacciones en TV (`TvView.tsx`):** Asignada posición `absolute` a los contenedores transformacionales superiores (`top-0 left-0` y `top-0 right-0`), corrigiendo el desplazamiento que empujaba los elementos fuera de la pantalla visible.
+
+---
+
 ## [1.32.0] - 2026-09-10
 
 ### 🚀 [ESPECIFICACIÓN / FEATURE]

@@ -8,10 +8,14 @@ if (fs.existsSync(manifestPath)) {
   let content = fs.readFileSync(manifestPath, 'utf8');
 
   const tvFeatures = `
-    <!-- Configuración para Android TV (Leanback UI) y Celular Móvil -->
+    <!-- Configuración para Android TV (Leanback UI) y Celular Móvil Bluetooth -->
     <uses-feature android:name="android.software.leanback" android:required="false" />
     <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
 `;
 
   if (!content.includes('android.software.leanback')) {
@@ -27,10 +31,10 @@ if (fs.existsSync(manifestPath)) {
   }
 
   fs.writeFileSync(manifestPath, content, 'utf8');
-  console.log('✅ AndroidManifest.xml configurado para Android TV.');
+  console.log('✅ AndroidManifest.xml configurado para Android TV y Bluetooth.');
 }
 
-// 2. Configuración de MainActivity.java para detección nativa de Android TV
+// 2. Configuración de MainActivity.java para detección nativa de Android TV y Bluetooth
 const activityPath = path.resolve(process.cwd(), 'android/app/src/main/java/com/karaoke/party/MainActivity.java');
 
 if (fs.existsSync(activityPath)) {
@@ -57,16 +61,23 @@ public class MainActivity extends BridgeActivity {
             if (this.bridge != null && this.bridge.getWebView() != null) {
                 WebSettings settings = this.bridge.getWebView().getSettings();
                 String ua = settings.getUserAgentString();
-                if (isTv) {
-                    settings.setUserAgentString(ua + " AndroidTV SmartTV Leanback");
-                }
+                if (isTv) settings.setUserAgentString(ua + " AndroidTV SmartTV Leanback");
+                settings.setMediaPlaybackRequiresUserGesture(false);
             }
         } catch (Exception ignored) {}
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (this.bridge != null && this.bridge.getWebView() != null) {
+            this.bridge.getWebView().resumeTimers();
+        }
     }
 }
 `;
   fs.writeFileSync(activityPath, javaCode, 'utf8');
-  console.log('✅ MainActivity.java configurado para detección nativa de Android TV.');
+  console.log('✅ MainActivity.java configurado para background audio Bluetooth.');
 }
 
 // 3. Inyección de Íconos Oficiales (Rockola Jukebox) y Banner Android TV

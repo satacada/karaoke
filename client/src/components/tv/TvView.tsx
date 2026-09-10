@@ -97,19 +97,21 @@ export const TvView: FC<{ roomCode?: string; onUnlink?: () => void }> = ({ roomC
     <div className="relative w-full h-screen bg-black overflow-hidden select-none">
       {isFlashing && (<div className="absolute inset-0 border-8 border-emerald-400 pointer-events-none z-50 flex items-center justify-center bg-emerald-950/20 animate-pulse"><span className="px-6 py-3 rounded-2xl bg-emerald-500 text-zinc-950 font-black text-xl shadow-2xl flex items-center gap-2"><Sparkles className="w-6 h-6" />⚡ PANTALLA IDENTIFICADA: {room?.zone_name || room?.name}</span></div>)}
       {errorNotice && <div className="absolute top-20 left-1/2 -translate-x-1/2 z-50 bg-rose-600/90 backdrop-blur-md text-white px-5 py-2 rounded-2xl shadow-2xl border border-rose-400/40 text-sm font-semibold flex items-center gap-2"><AlertCircle className="w-4 h-4 text-amber-300 animate-pulse" /><span>{errorNotice}</span></div>}
-      <div style={{ transform: `scale(${scaleFactor})`, transformOrigin: 'top left' }}><TvRentalBadge rentalSession={rentalSession} className="absolute top-4 left-4 z-40" /></div>
+      <div className="absolute top-0 left-0 z-40 pointer-events-none" style={{ transform: `scale(${scaleFactor})`, transformOrigin: 'top left' }}>
+        <TvRentalBadge rentalSession={rentalSession} className="absolute top-4 left-4 z-40 pointer-events-auto" />
+        {currentSong && <TvNextQueueTicker queue={nextSongs} />}
+      </div>
       <TvVoiceHUD isSupported={isSupported} isListening={isListening} lastCommand={lastCommand} onToggleVoice={startVoice} />
       {!currentSong ? (
         <TvIdleScreen roomCode={roomCode} joinUrl={joinUrl} roomName={room?.name || 'Rockola Digital Live'} zoneName={room?.zone_name} status={room?.status} banners={banners} autoDjActive={Boolean(room?.auto_dj_enabled)} onStartAutoDj={handleStartAutoDj} isStartingAutoDj={isStartingAutoDj} />
       ) : (
         <>
           <TvThemeFrame theme={tvTheme}><TvPlayer ref={playerRef} videoId={currentSong.video_id} onEnded={handleNextSong} onError={handlePlayerError} onTimeUpdate={handleTimeUpdate} rentalSession={rentalSession} onPlayingStateChange={(pl) => { setIsPaused(!pl); if (room) updatePlaybackTick(room.id, pl, currentTime).catch(() => {}); }} /></TvThemeFrame>
-          <div style={{ transform: `scale(${scaleFactor})`, transformOrigin: 'top left' }}><TvNextQueueTicker queue={nextSongs} /></div>
-          <div style={{ transform: `scale(${scaleFactor})`, transformOrigin: 'bottom center' }}><TvNowPlayingHUD song={currentSong} currentTime={currentTime} duration={duration} isPaused={isPaused} onTogglePlayPause={() => playerRef.current?.togglePlayPause()} /></div>
+          <div className="absolute bottom-0 left-0 right-0 z-30 pointer-events-none" style={{ transform: `scale(${scaleFactor})`, transformOrigin: 'bottom center' }}><TvNowPlayingHUD song={currentSong} currentTime={currentTime} duration={duration} isPaused={isPaused} onTogglePlayPause={() => playerRef.current?.togglePlayPause()} /></div>
         </>
       )}
-      <div style={{ transform: `scale(${scaleFactor})`, transformOrigin: 'top right' }}><TvViewOverlays roomCode={roomCode} roomName={room?.zone_name || room?.name} joinUrl={joinUrl} currentSong={currentSong} banners={banners} showUnlinkModal={showUnlinkModal} setShowUnlinkModal={setShowUnlinkModal} onUnlink={onUnlink} /></div>
-      <div className="absolute bottom-1 right-3 z-30 pointer-events-none select-none text-[clamp(8px,0.65vw,10px)] font-mono text-zinc-400/80 tracking-widest uppercase tv-text-outline-sm">powered : David Taboada</div>
+      <div className="absolute top-0 right-0 z-40 pointer-events-none" style={{ transform: `scale(${scaleFactor})`, transformOrigin: 'top right' }}><TvViewOverlays roomCode={roomCode} roomName={room?.zone_name || room?.name} joinUrl={joinUrl} currentSong={currentSong} banners={banners} showUnlinkModal={showUnlinkModal} setShowUnlinkModal={setShowUnlinkModal} onUnlink={onUnlink} /></div>
+      <div className="absolute bottom-1.5 left-4 z-30 pointer-events-none select-none text-[clamp(8px,0.65vw,10px)] font-mono text-zinc-400/80 tracking-widest uppercase tv-text-outline-sm">powered : David Taboada</div>
     </div>
   );
 };

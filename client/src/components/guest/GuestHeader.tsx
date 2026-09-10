@@ -42,8 +42,8 @@ export const GuestHeader: FC<GuestHeaderProps> = ({
 
         <div className="flex items-center gap-1.5">
           {onSwitchToHost && (
-            <button type="button" onClick={onSwitchToHost} className="flex items-center gap-1 px-2 py-1 rounded-xl border border-pink-500/40 bg-pink-950/30 text-pink-300 text-xs hover:bg-pink-900/40 transition-all active:scale-95 font-bold shadow-sm" title="Ir a Consola DJ / Anfitrión" aria-label="Soy DJ">
-              <Sliders className="w-3.5 h-3.5 text-pink-400" /><span className="text-[10px] font-bold">Soy DJ</span>
+            <button type="button" onClick={onSwitchToHost} className="flex items-center gap-1 px-2 py-1 rounded-xl border border-purple-500/40 bg-purple-950/30 text-purple-300 text-xs hover:bg-purple-900/40 transition-all active:scale-95 font-bold shadow-sm" title="Volver a Consola de Administrador" aria-label="Volver a Administrador">
+              <Sliders className="w-3.5 h-3.5 text-purple-400" /><span className="text-[10px] font-bold">Admin</span>
             </button>
           )}
           {onToggleFontSize && (

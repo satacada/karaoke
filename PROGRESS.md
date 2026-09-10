@@ -1,8 +1,8 @@
 # 📊 PLAN MAESTRO DEL PROYECTO: ROCKOLA DIGITAL LIVE (SISTEMA MULTI-TENANT EN TIEMPO REAL)
 
-**Versión del Plan:** 2.29.0 (Calibrador Remoto de Escala TV e Iconos Oficiales Rockola Jukebox)  
+**Versión del Plan:** 2.30.0 (Rockola Portátil Bluetooth, Pestañas Duales en Celular y QR Compacto en TV)  
 **Fecha de Emisión:** Septiembre 2026  
-**Estado:** 🟢 Fase 2, Fase 3 y Fase 5 (Escala Transform TV, Iconos Jukebox, Banner TV y CI/CD APK)  
+**Estado:** 🟢 Fase 2, Fase 3, Fase 4 y Fase 5 (Bluetooth Background Audio, Pestañas Móvil, QR Compacto)  
 **Metodología:** Agile / BDD / Clean Architecture con Compuertas de Control Formales  
 **Alineación:** Estructura inspirada en `boot-ventas-saas` y `aplicacion para ofertas`  
 

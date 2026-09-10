@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import { RotateCcw, Users, Settings, Crown, ShieldCheck, Megaphone, Lock, LockOpen, SlidersHorizontal, Disc3, Sun, Moon, Sparkles, Droplets, Type, Tv, Clock } from 'lucide-react';
+import { RotateCcw, Users, Settings, Megaphone, Lock, LockOpen, Disc3, Sun, Moon, Sparkles, Droplets, Clock, Music, QrCode, Crown, Type, SlidersHorizontal, ShieldCheck } from 'lucide-react';
 
 interface HostHeaderProps {
   roomCode: string; zoneName?: string; isOwner?: boolean; isSuperAdmin?: boolean;
@@ -9,14 +9,14 @@ interface HostHeaderProps {
   onOpenGuests: () => void; onOpenReset: () => void; onOpenSettings: () => void;
   onOpenSuperAdmin?: () => void; onOpenBanners?: () => void; onOpenAutoDj?: () => void;
   onToggleQueueLock?: () => void; onOpenMasterHub?: () => void; onSwitchToTv?: () => void;
-  onOpenRental?: () => void; isRentalActive?: boolean;
+  onSwitchToGuest?: () => void; onOpenRental?: () => void; isRentalActive?: boolean;
 }
 
 export const HostHeader: FC<HostHeaderProps> = ({
   roomCode, zoneName, isOwner, isSuperAdmin, isQueueLocked, isAutoDjActive = false,
   userName, ownerEmail, currentTheme = 'dark', onToggleTheme, currentFontSize = 'normal', onToggleFontSize, onLogout,
   onOpenGuests, onOpenReset, onOpenSettings, onOpenSuperAdmin, onOpenBanners,
-  onOpenAutoDj, onToggleQueueLock, onOpenMasterHub, onSwitchToTv, onOpenRental, isRentalActive = false,
+  onOpenAutoDj, onToggleQueueLock, onOpenMasterHub, onSwitchToTv, onSwitchToGuest, onOpenRental, isRentalActive = false,
 }) => {
   return (
     <header className="py-2 border-b border-zinc-800/80 mb-3 space-y-2">
@@ -70,9 +70,14 @@ export const HostHeader: FC<HostHeaderProps> = ({
       </div>
 
       <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1 w-full">
+        {onSwitchToGuest && (
+          <button type="button" onClick={onSwitchToGuest} className="p-2 rounded-xl bg-pink-600/20 border border-pink-500/50 text-pink-300 active:scale-95 transition-all flex items-center gap-1.5 shrink-0" title="Pedir canciones en la sala">
+            <Music className="w-4 h-4 text-pink-400" /><span className="text-[11px] font-bold">Pedir Música</span>
+          </button>
+        )}
         {onSwitchToTv && (
-          <button type="button" onClick={onSwitchToTv} className="p-2 rounded-xl bg-purple-600/20 border border-purple-500/50 text-purple-300 active:scale-95 transition-all flex items-center gap-1.5 shrink-0" title="Ver pantalla y código QR para invitados">
-            <Tv className="w-4 h-4 text-pink-400" /><span className="text-[11px] font-bold">Modo Android (QR)</span>
+          <button type="button" onClick={onSwitchToTv} className="p-2 rounded-xl bg-purple-600/20 border border-purple-500/50 text-purple-300 active:scale-95 transition-all flex items-center gap-1.5 shrink-0" title="Ver código QR para invitados">
+            <QrCode className="w-4 h-4 text-purple-400" /><span className="text-[11px] font-bold">Ver QR</span>
           </button>
         )}
         {onOpenRental && (
