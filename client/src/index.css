@@ -72,3 +72,99 @@
 .animate-float-reaction {
   animation: float-reaction 3.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
+
+/* Guest Themes */
+.theme-light {
+  background-color: #f8fafc !important;
+  color: #0f172a !important;
+}
+.theme-light header,
+.theme-light main,
+.theme-light footer {
+  color: #0f172a !important;
+}
+.theme-light .bg-zinc-950,
+.theme-light .bg-zinc-950\/90,
+.theme-light .bg-zinc-950\/80 {
+  background-color: #f8fafc !important;
+}
+.theme-light .bg-zinc-900,
+.theme-light .bg-zinc-900\/80,
+.theme-light .bg-zinc-900\/70,
+.theme-light .bg-zinc-900\/40 {
+  background-color: #ffffff !important;
+}
+.theme-light .bg-zinc-800 {
+  background-color: #e2e8f0 !important;
+}
+.theme-light .border-zinc-800,
+.theme-light .border-zinc-800\/80,
+.theme-light .border-zinc-800\/50,
+.theme-light .border-zinc-700,
+.theme-light .border-zinc-700\/50 {
+  border-color: #cbd5e1 !important;
+}
+.theme-light .text-white,
+.theme-light .text-zinc-100,
+.theme-light .text-zinc-200,
+.theme-light .text-zinc-300 {
+  color: #0f172a !important;
+}
+.theme-light .text-zinc-400,
+.theme-light .text-zinc-500 {
+  color: #475569 !important;
+}
+.theme-light input,
+.theme-light textarea {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #cbd5e1 !important;
+}
+.theme-light input::placeholder,
+.theme-light textarea::placeholder {
+  color: #94a3b8 !important;
+}
+.theme-light nav button.text-zinc-400 {
+  color: #64748b !important;
+}
+
+.theme-neon {
+  background-color: #0d031a !important;
+  color: #fdf4ff !important;
+}
+.theme-neon .bg-zinc-950,
+.theme-neon .bg-zinc-950\/90,
+.theme-neon .bg-zinc-950\/80 {
+  background-color: #0d031a !important;
+}
+.theme-neon .bg-zinc-900,
+.theme-neon .bg-zinc-900\/80,
+.theme-neon .bg-zinc-900\/40 {
+  background-color: #1a0830 !important;
+}
+.theme-neon .bg-zinc-800 {
+  background-color: #2b0e4f !important;
+}
+.theme-neon .border-zinc-800,
+.theme-neon .border-zinc-800\/80,
+.theme-neon .border-zinc-800\/50 {
+  border-color: rgba(236, 72, 153, 0.3) !important;
+}
+.theme-neon .text-white,
+.theme-neon .text-zinc-100 {
+  color: #ffffff !important;
+}
+.theme-neon .text-zinc-400,
+.theme-neon .text-zinc-500 {
+  color: #d8b4fe !important;
+}
+.theme-neon input,
+.theme-neon textarea {
+  background-color: #1a0830 !important;
+  color: #ffffff !important;
+  border-color: #ec4899 !important;
+}
+.theme-neon input::placeholder,
+.theme-neon textarea::placeholder {
+  color: #c084fc !important;
+}

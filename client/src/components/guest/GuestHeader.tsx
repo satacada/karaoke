@@ -1,5 +1,4 @@
-import type { FC } from 'react';
-import { Search, Clock, ListMusic, UserCheck } from 'lucide-react';
+import type { FC } from 'react'; import { Search, Clock, ListMusic, UserCheck, Sun, Moon, Sparkles } from 'lucide-react';
 
 interface GuestHeaderProps {
   roomCode: string;
@@ -10,17 +9,13 @@ interface GuestHeaderProps {
   isSingingNow: boolean;
   isWithinGracePeriod: boolean;
   remainingGraceMinutes: number;
+  currentTheme?: 'dark' | 'light' | 'neon';
+  onToggleTheme?: () => void;
 }
 
 export const GuestHeader: FC<GuestHeaderProps> = ({
-  roomCode,
-  guestName,
-  activeTab,
-  onSelectTab,
-  mySongsCount,
-  isSingingNow,
-  isWithinGracePeriod,
-  remainingGraceMinutes,
+  roomCode, guestName, activeTab, onSelectTab, mySongsCount, isSingingNow,
+  isWithinGracePeriod, remainingGraceMinutes, currentTheme = 'dark', onToggleTheme,
 }) => {
   return (
     <header className="sticky top-0 z-40 bg-zinc-950/90 backdrop-blur-md border-b border-zinc-800/80 px-4 pt-3 pb-2 space-y-2.5">
@@ -47,11 +42,25 @@ export const GuestHeader: FC<GuestHeaderProps> = ({
           </div>
         </div>
 
-        {isSingingNow && (
-          <span className="animate-pulse bg-pink-500 text-zinc-950 text-[11px] font-black px-2.5 py-1 rounded-full shadow-lg shadow-pink-500/30">
-            ¡TU TURNO! 🎶
-          </span>
-        )}
+        <div className="flex items-center gap-1.5">
+          {onToggleTheme && (
+            <button
+              type="button"
+              onClick={onToggleTheme}
+              className="flex items-center gap-1 px-2 py-1 rounded-xl border border-zinc-800 bg-zinc-900/90 text-xs hover:border-zinc-700 transition-all active:scale-95"
+              title="Cambiar tema de color"
+              aria-label="Cambiar tema visual"
+            >
+              {currentTheme === 'light' ? <Sun className="w-3.5 h-3.5 text-amber-500" /> : currentTheme === 'neon' ? <Sparkles className="w-3.5 h-3.5 text-pink-400 animate-spin" style={{ animationDuration: '6s' }} /> : <Moon className="w-3.5 h-3.5 text-indigo-400" />}
+              <span className="text-[10px] font-bold capitalize">{currentTheme}</span>
+            </button>
+          )}
+          {isSingingNow && (
+            <span className="animate-pulse bg-pink-500 text-zinc-950 text-[11px] font-black px-2 py-1 rounded-full shadow-lg shadow-pink-500/30">
+              ¡TU TURNO! 🎶
+            </span>
+          )}
+        </div>
       </div>
 
       <nav className="grid grid-cols-3 gap-1 bg-zinc-900 p-1 rounded-xl border border-zinc-800">

@@ -4,8 +4,7 @@ import { supabase } from '../../lib/supabaseClient';
 import { getRoomByCode, getQueueForRoom, addSongToQueue, deleteQueueItem, replaceGuestSong, swapGuestSongs, searchVideos, registerGuest } from '../../services/karaokeApi';
 import { useGuestPresence } from '../../hooks/useGuestPresence';
 import { canRequestVip } from '../../utils/deviceId';
-import { GuestWelcomeModal } from './GuestWelcomeModal';
-import { GuestHeader } from './GuestHeader';
+import { GuestWelcomeModal } from './GuestWelcomeModal'; import { GuestHeader } from './GuestHeader';
 import { GuestSearchBar } from './GuestSearchBar';
 import { GuestSearchResultCard } from './GuestSearchResultCard';
 import { GuestMyQueue } from './GuestMyQueue';
@@ -23,6 +22,7 @@ export const GuestView: FC<{ roomCode?: string }> = ({ roomCode = 'FIESTA' }) =>
   const [songToCancel, setSongToCancel] = useState<QueueItem | null>(null); const [songToReplace, setSongToReplace] = useState<QueueItem | null>(null);
   const [songToConfirm, setSongToConfirm] = useState<SearchResultItem | null>(null); const [pendingVipItem, setPendingVipItem] = useState<{ item: SearchResultItem; dedication: string | null } | null>(null);
   const [lastReqTime, setLastReqTime] = useState(0); const isSwappingRef = useRef(false);
+  const [theme, setTheme] = useState<'dark' | 'light' | 'neon'>(() => (localStorage.getItem('guest_theme') as 'dark' | 'light' | 'neon') || 'dark');
 
   const { session, status: presenceStatus, saveSession, verifyPresence } = useGuestPresence();
   const showToast = useCallback((msg: string) => { setToast(msg); setTimeout(() => setToast(null), 3000); }, []);
@@ -87,11 +87,11 @@ export const GuestView: FC<{ roomCode?: string }> = ({ roomCode = 'FIESTA' }) =>
     if (isVip) setPendingVipItem({ item, dedication }); else executeAddSong(item, dedication, false); };
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col w-full max-w-md mx-auto relative pb-16 overflow-x-hidden">
+    <div className={`theme-${theme} min-h-screen bg-zinc-950 text-zinc-100 flex flex-col w-full max-w-md mx-auto relative pb-16 overflow-x-hidden transition-colors duration-200`}>
       <GuestWelcomeModal isOpen={!session} roomCode={roomCode} onJoin={(name, coords) => { saveSession(name, undefined, coords); if (room) registerGuest(room.id, name, crypto.randomUUID()); }} />
       {session && (
         <>
-          <GuestHeader roomCode={roomCode} guestName={session.guestName} activeTab={activeTab} onSelectTab={setActiveTab} mySongsCount={mySongs.length} isSingingNow={isSingingNow} isWithinGracePeriod={presenceStatus.isWithinGracePeriod} remainingGraceMinutes={presenceStatus.remainingGraceMinutes} />
+          <GuestHeader roomCode={roomCode} guestName={session.guestName} activeTab={activeTab} onSelectTab={setActiveTab} mySongsCount={mySongs.length} isSingingNow={isSingingNow} isWithinGracePeriod={presenceStatus.isWithinGracePeriod} remainingGraceMinutes={presenceStatus.remainingGraceMinutes} currentTheme={theme} onToggleTheme={() => { const n = theme === 'dark' ? 'light' : theme === 'light' ? 'neon' : 'dark'; setTheme(n); try { localStorage.setItem('guest_theme', n); } catch {} }} />
           <main className="flex-1 px-2.5 py-3 w-full min-w-0 overflow-x-hidden">
             {toast && <div className="fixed bottom-16 left-1/2 -translate-x-1/2 z-50 bg-emerald-500 text-zinc-950 px-4 py-2 rounded-full font-bold text-xs shadow-xl">{toast}</div>}
             {activeTab === 'search' && (

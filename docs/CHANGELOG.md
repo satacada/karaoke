@@ -4,6 +4,25 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.10.0] - 2026-09-10
+
+### 🚀 [ESPECIFICACIÓN / FEATURE]
+- **Selector de Temas Visuales para Clientes (Modo Claro, Modo Oscuro y Modo Neón):**
+  - **☀️ Modo Claro (Luz / Café):** Fondo blanco/marfil suave (`#f8fafc`) con tarjetas blancas limpias y textos oscuros de alto contraste (`#0f172a`), diseñado para personas mayores, personas con visión cansada o locales iluminados.
+  - **🌙 Modo Oscuro (Boliche / Noche):** Fondo oscuro con contrastes tenues para ambientes nocturnos.
+  - **💜 Modo Neón (Fiesta / Púrpura):** Paleta moderna estilo rockola con acentos violeta y fucsia.
+  - **Botón Rápido en Cabecera (`client/src/components/guest/GuestHeader.tsx`):** Alternador táctil con iconos (`Sun`, `Moon`, `Sparkles`) que cicla entre temas y persiste la elección en `localStorage`.
+- **Búsqueda por Voz con Micrófono 🎙️ (`client/src/hooks/useSpeechToText.ts` y `GuestSearchBar.tsx`):**
+  - Integración nativa con Web Speech API (`SpeechRecognition` / `webkitSpeechRecognition`).
+  - Botón de micrófono táctil con animación pulsante y feedback en vivo (*"🎤 Escuchando... Di el tema"*).
+  - Permite a clientes de cualquier edad buscar su música favorita hablando al teléfono sin necesidad de tipear en el teclado táctil pequeño.
+
+### 🔧 [AFINAMIENTO / REFINAMIENTO]
+- **Clean-by-Design Estricto ($\le 120$ líneas):** Todos los componentes y hooks involucrados (`GuestView.tsx`, `GuestHeader.tsx`, `GuestSearchBar.tsx`, `useSpeechToText.ts`) cumplen rigurosamente el límite de 120 líneas.
+- **Compilación de Producción:** 0 errores TypeScript (`tsc -b`) y build exitoso en Vite 8.
+
+---
+
 ## [1.9.0] - 2026-09-10
 
 ### 🚀 [ESPECIFICACIÓN / FEATURE]
