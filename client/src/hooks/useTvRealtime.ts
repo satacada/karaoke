@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import type { KaraokeRoom, QueueItem, RemoteCommand } from '../types';
 import { getRoomByCode, getQueueForRoom, advanceNextSong, markCommandExecuted } from '../services/karaokeApi';
+import { isLocalAutoDjActive, setLocalAutoDjActive, getLocalAutoDjGenre } from '../services/autoDjStateService';
 
 export function useTvRealtime(roomCode: string, onRemoteCommand?: (command: RemoteCommand) => void) {
   const [room, setRoom] = useState<KaraokeRoom | null>(null);
@@ -9,10 +10,8 @@ export function useTvRealtime(roomCode: string, onRemoteCommand?: (command: Remo
   const [nextSongs, setNextSongs] = useState<QueueItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const roomRef = useRef<KaraokeRoom | null>(null);
-  roomRef.current = room;
-  const onCommandRef = useRef(onRemoteCommand);
-  onCommandRef.current = onRemoteCommand;
+  const roomRef = useRef<KaraokeRoom | null>(null); roomRef.current = room;
+  const onCommandRef = useRef(onRemoteCommand); onCommandRef.current = onRemoteCommand;
 
   const refreshState = useCallback(async (currentRoomId: string) => {
     const queue = await getQueueForRoom(currentRoomId);
@@ -30,14 +29,22 @@ export function useTvRealtime(roomCode: string, onRemoteCommand?: (command: Remo
     return next;
   }, [refreshState]);
 
+  const refreshRoomState = useCallback(async () => {
+    if (roomRef.current) await refreshState(roomRef.current.id);
+  }, [refreshState]);
+
   useEffect(() => {
     let isMounted = true;
     async function init() {
       setIsLoading(true);
-      const loadedRoom = await getRoomByCode(roomCode);
-      if (!isMounted || !loadedRoom) { setIsLoading(false); return; }
-      setRoom(loadedRoom);
-      await refreshState(loadedRoom.id);
+      const loaded = await getRoomByCode(roomCode);
+      if (!isMounted || !loaded) { setIsLoading(false); return; }
+      if (isLocalAutoDjActive(roomCode)) {
+        loaded.auto_dj_enabled = true;
+        loaded.auto_dj_genre = getLocalAutoDjGenre(roomCode) || loaded.auto_dj_genre;
+      }
+      setRoom(loaded);
+      await refreshState(loaded.id);
       setIsLoading(false);
     }
     init();
@@ -66,41 +73,33 @@ export function useTvRealtime(roomCode: string, onRemoteCommand?: (command: Remo
         if (onCommandRef.current && payload?.theme) onCommandRef.current({ id: 'b_theme', room_id: roomId, command: 'volume', payload: { action: 'set_tv_theme', theme: payload.theme }, is_executed: true, created_at: new Date().toISOString() });
       })
       .on('broadcast', { event: 'set_auto_dj' }, ({ payload }) => {
-        if (payload) setRoom((p) => p ? { ...p, auto_dj_enabled: payload.enabled, auto_dj_genre: payload.genre } : p);
+        if (payload) {
+          setLocalAutoDjActive(roomCode, Boolean(payload.enabled), payload.genre);
+          setRoom((p) => p ? { ...p, auto_dj_enabled: payload.enabled, auto_dj_genre: payload.genre } : p);
+        }
       })
       .on('broadcast', { event: 'set_rental_time' }, ({ payload }) => {
         if (onCommandRef.current && payload) onCommandRef.current({ id: 'b_rent', room_id: roomId, command: 'set_rental_time', payload: { rental_session: payload }, is_executed: true, created_at: new Date().toISOString() });
       })
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'karaoke_rooms', filter: `id=eq.${roomId}` }, (payload) => {
         const updated = payload.new as KaraokeRoom;
-        setRoom((prev) => {
-          if (!prev) return updated;
-          if (
-            prev.current_song_id !== updated.current_song_id || prev.status !== updated.status ||
-            prev.is_queue_locked !== updated.is_queue_locked || prev.is_playing !== updated.is_playing ||
-            prev.auto_dj_enabled !== updated.auto_dj_enabled || prev.auto_dj_genre !== updated.auto_dj_genre ||
-            JSON.stringify(prev.promo_banners) !== JSON.stringify(updated.promo_banners)
-          ) return updated;
-          return prev;
-        });
+        if (isLocalAutoDjActive(roomCode)) {
+          updated.auto_dj_enabled = true;
+          updated.auto_dj_genre = getLocalAutoDjGenre(roomCode) || updated.auto_dj_genre;
+        }
+        setRoom((prev) => (!prev || JSON.stringify(prev) !== JSON.stringify(updated)) ? updated : prev);
       })
       .subscribe();
 
     const pollTimer = setInterval(() => { if (!document.hidden) refreshState(roomId); }, 3500);
     const onVis = () => { if (!document.hidden) refreshState(roomId); };
-    window.addEventListener('focus', onVis);
-    document.addEventListener('visibilitychange', onVis);
+    window.addEventListener('focus', onVis); document.addEventListener('visibilitychange', onVis);
 
     return () => {
-      clearInterval(pollTimer);
-      window.removeEventListener('focus', onVis);
-      document.removeEventListener('visibilitychange', onVis);
+      clearInterval(pollTimer); window.removeEventListener('focus', onVis); document.removeEventListener('visibilitychange', onVis);
       supabase.removeChannel(channel);
     };
-  }, [roomId, refreshState]);
+  }, [roomId, roomCode, refreshState]);
 
-  return {
-    room, currentSong, nextSongs, isLoading, handleNextSong,
-    refreshState: () => (roomRef.current ? refreshState(roomRef.current.id) : Promise.resolve()),
-  };
+  return { room, currentSong, nextSongs, isLoading, handleNextSong, refreshState: refreshRoomState };
 }

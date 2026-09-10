@@ -1,8 +1,8 @@
 # 📊 PLAN MAESTRO DEL PROYECTO: ROCKOLA DIGITAL LIVE (SISTEMA MULTI-TENANT EN TIEMPO REAL)
 
-**Versión del Plan:** 2.22.0 (Diversidad y Rotación de Múltiples Artistas en Auto-DJ)  
+**Versión del Plan:** 2.23.0 (Auto-DJ Ininterrumpido Resiliente + Control por Voz en Smart TV)  
 **Fecha de Emisión:** Septiembre 2026  
-**Estado:** 🟢 Fase 2 y Fase 3 (Anti-Clustering y Rotación de Artistas en Música Inteligente - Completo y Verificado)  
+**Estado:** 🟢 Fase 2 y Fase 3 (Flujo Continuo Infinito y Control por Voz Integrado - Completo y Verificado)  
 **Metodología:** Agile / BDD / Clean Architecture con Compuertas de Control Formales  
 **Alineación:** Estructura inspirada en `boot-ventas-saas` y `aplicacion para ofertas`  
 
@@ -119,6 +119,7 @@ La **Rockola Digital Live** es una plataforma SaaS multi-tenant distribuida para
 - Contador de tiempo de sala alquilada condicional (`TvPauseOverlay` y `TvRentalBadge`) visible únicamente cuando la sala opera bajo tiempo contratado por horas. (✅ COMPLETADO)
 - Señalética D-Pad en pantalla para pausa de Auto-DJ con control remoto físico y poster imprimible para mesas (`docs/poster_karaoke_clientes.html`). (✅ COMPLETADO)
 - Algoritmo Anti-Clustering y Rotación de Artistas en Auto-DJ: Intercalado round-robin y descarte en caliente de temas repetidos del mismo artista (`artistDiversityService.ts`). (✅ COMPLETADO)
+- Control por Voz en Pantalla Smart TV y mandos compatibles (Web Speech API) con reconocimiento en español para pausa, play, skip y Auto-DJ (`TvVoiceHUD.tsx` y `useTvVoiceControl.ts`). (✅ COMPLETADO)
 - Compilación de producción Vite 8 exitosa (código 0). (✅ COMPLETADO)
 - Script de prueba end-to-end contra Supabase pasando al 100% (`server/testTvFlow.js`). (✅ COMPLETADO)
 

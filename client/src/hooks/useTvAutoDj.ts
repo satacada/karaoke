@@ -11,44 +11,41 @@ export function useTvAutoDj(
 ) {
   const isQueueingRef = useRef(false);
   const lastQueuedAtRef = useRef(0);
-  const hasUserStartedRef = useRef(false);
+  const refreshRef = useRef(refreshState); refreshRef.current = refreshState;
+  const advanceRef = useRef(onAdvanceIfIdle); advanceRef.current = onAdvanceIfIdle;
+
+  const isAutoDjEnabled = Boolean(room?.auto_dj_enabled);
+  const roomId = room?.id;
+  const genre = room?.auto_dj_genre;
+  const status = room?.status;
+  const hasCurrentSong = Boolean(currentSong);
+  const nextCount = nextSongs.length;
 
   useEffect(() => {
-    if (room?.auto_dj_enabled && currentSong) {
-      hasUserStartedRef.current = true;
-    } else if (!room?.auto_dj_enabled) {
-      hasUserStartedRef.current = false;
-    }
-  }, [room?.auto_dj_enabled, currentSong?.id]);
-
-  useEffect(() => {
-    if (!room || !room.auto_dj_enabled) return;
-    if (room.status === 'closed' || room.status === 'paused') return;
-    if (nextSongs.length > 0) return;
+    if (!roomId || !isAutoDjEnabled) return;
+    if (status === 'closed' || status === 'paused') return;
+    if (nextCount > 0) return;
     if (isQueueingRef.current) return;
 
-    // Solo auto-encolar si ya inició la sesión activa de música inteligente
-    if (!currentSong && !hasUserStartedRef.current) return;
-
     const now = Date.now();
-    if (now - lastQueuedAtRef.current < 4000) return;
+    if (now - lastQueuedAtRef.current < 2500) return;
 
     let isMounted = true;
     isQueueingRef.current = true;
     lastQueuedAtRef.current = now;
 
-    const delayMs = currentSong ? 2000 : 500;
+    const delayMs = hasCurrentSong ? 1500 : 300;
     const timer = setTimeout(async () => {
       try {
-        const ok = await enqueueAutoDjSong(room.id, room.auto_dj_genre);
+        const ok = await enqueueAutoDjSong(roomId, genre);
         if (ok && isMounted) {
-          await refreshState();
-          if (!currentSong && onAdvanceIfIdle) {
-            onAdvanceIfIdle();
+          await refreshRef.current();
+          if (!hasCurrentSong && advanceRef.current) {
+            advanceRef.current();
           }
         }
       } catch (err) {
-        console.error('Auto-DJ queueing error:', err);
+        console.error('Auto-DJ continuous queueing error:', err);
       } finally {
         if (isMounted) isQueueingRef.current = false;
       }
@@ -59,14 +56,5 @@ export function useTvAutoDj(
       clearTimeout(timer);
       isQueueingRef.current = false;
     };
-  }, [
-    room?.id,
-    room?.auto_dj_enabled,
-    room?.auto_dj_genre,
-    room?.status,
-    currentSong?.id,
-    nextSongs.length,
-    refreshState,
-    onAdvanceIfIdle,
-  ]);
+  }, [roomId, isAutoDjEnabled, genre, status, hasCurrentSong, nextCount]);
 }

@@ -4,6 +4,39 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.26.0] - 2026-09-10
+
+### 🚀 [ESPECIFICACIÓN / FEATURE]
+- **Auto-DJ Ininterrumpido y Cadena Continua Sin Silencios:**
+  - **Persistencia Local y Sincronización Realtime (`autoDjStateService.ts`):** Resuelve el problema donde la música inteligente se detenía tras un solo tema. La TV ahora retiene y sincroniza `auto_dj_enabled` y la semilla musical tanto en almacenamiento local como a través del canal Realtime de Supabase, sin depender de DDL en la base de datos remota.
+  - **Corrección de Cancelación de Temporizador (`useTvAutoDj.ts`):** Estabilización de referencias con `useRef` para evitar que las actualizaciones periódicas de tiempo (`currentTime`) aborten la preparación en segundo plano del siguiente tema.
+  - **Encolado Preventivo Permanente:** Mientras suena una canción, el sistema asegura que siempre haya un tema preparado en la cola (`nextSongs.length > 0`). Si una canción finaliza sin cola previa, el sistema arranca automáticamente la siguiente sin regresar a la pantalla de espera (`TvIdleScreen`).
+- **Control por Voz Integrado en Pantalla Smart TV (`useTvVoiceControl.ts` & `TvVoiceHUD.tsx`):**
+  - Integración nativa con Web Speech API para mandos a distancia con micrófono o televisores Smart TV compatibles.
+  - Reconocimiento de comandos por voz en español:
+    - *"Pausa"*, *"Parar"*, *"Detener"* -> Pausa inmediata y despliegue del cronómetro de pausa.
+    - *"Continuar"*, *"Reanudar"*, *"Play"*, *"Reproducir"* -> Reanudación fluida.
+    - *"Siguiente"*, *"Saltar"*, *"Pasar"* -> Salto a la próxima pista.
+    - *"DJ Automático"*, *"Música Inteligente"*, *"Activar DJ"* -> Activación de música continua sin fin.
+    - *"Apagar DJ"*, *"Quitar DJ"*, *"Detener DJ"* -> Apagado de Auto-DJ y purga de cola automática.
+  - **HUD Visual en TV (`TvVoiceHUD.tsx`):** Distintivo en esquina superior y notificación emergente (*toast*) con confirmación del comando de voz interpretado.
+
+### 🔧 [AFINAMIENTO / REFINAMIENTO]
+- **Clean-by-Design Compliance:**
+  - `client/src/services/autoDjStateService.ts`: 27 líneas ($\le 120$).
+  - `client/src/components/tv/TvVoiceHUD.tsx`: 63 líneas ($\le 120$).
+  - `client/src/components/tv/TvViewOverlays.tsx`: 51 líneas ($\le 120$).
+  - `client/src/hooks/useTvVoiceControl.ts`: 81 líneas ($\le 120$).
+  - `client/src/hooks/useTvAutoDj.ts`: 60 líneas ($\le 120$).
+  - `client/src/hooks/useTvRealtime.ts`: 105 líneas ($\le 120$).
+  - `client/src/components/tv/TvView.tsx`: 119 líneas ($\le 120$).
+  - `client/src/components/tv/TvIdleScreen.tsx`: 116 líneas ($\le 120$).
+- **Validación Automatizada:**
+  - `npm run build` en cliente completado con código 0.
+  - 14/14 tests unitarios de Vitest pasando al 100%.
+
+---
+
 ## [1.25.0] - 2026-09-10
 
 ### 🚀 [ESPECIFICACIÓN / FEATURE]

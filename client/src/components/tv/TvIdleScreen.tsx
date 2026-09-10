@@ -100,7 +100,7 @@ export const TvIdleScreen: FC<TvIdleScreenProps> = ({
                     <span>{isStartingAutoDj ? 'Iniciando sonido...' : '▶ Iniciar Música Inteligente'}</span>
                   </button>
                   <p className="text-[10px] text-zinc-400 mt-1 flex items-center justify-center gap-1">
-                    <Pause className="w-3 h-3 text-pink-400" /> Puedes pausar con botón <b>Pausa</b> u <b>OK</b> del control remoto
+                    <Pause className="w-3 h-3 text-pink-400" /> Pausa con botón <b>Pausa / OK</b> del mando o diciendo <b>"Pausa"</b>
                   </p>
                 </div>
               )}
