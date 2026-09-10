@@ -1,8 +1,8 @@
 # 📊 PLAN MAESTRO DEL PROYECTO: ROCKOLA DIGITAL LIVE (SISTEMA MULTI-TENANT EN TIEMPO REAL)
 
-**Versión del Plan:** 2.26.0 (Detección Nativa de Android TV y Corrección de QR a Nube Vercel en APK)  
+**Versión del Plan:** 2.27.0 (Optimización Visual TV 50", QR Translúcido y Retorno DJ en Móvil)  
 **Fecha de Emisión:** Septiembre 2026  
-**Estado:** 🟢 Fase 2, Fase 3 y Fase 5 (Resolución QR en Vercel, Detección Nativa TV y Limpieza CI/CD)  
+**Estado:** 🟢 Fase 2, Fase 3 y Fase 5 (QR Compacto, HUD Cinematográfico, Retorno DJ y CI/CD APK)  
 **Metodología:** Agile / BDD / Clean Architecture con Compuertas de Control Formales  
 **Alineación:** Estructura inspirada en `boot-ventas-saas` y `aplicacion para ofertas`  
 

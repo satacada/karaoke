@@ -99,7 +99,7 @@ export const App: FC = () => {
 
       {currentMode === 'host' && <HostView roomCode={roomCode || 'FIESTA'} onSwitchToTv={() => handleSelectMode('tv')} />}
 
-      {currentMode === 'guest' && <GuestView roomCode={roomCode || 'FIESTA'} />}
+      {currentMode === 'guest' && <GuestView roomCode={roomCode || 'FIESTA'} onSwitchToHost={() => handleSelectMode('host')} />}
     </div>
   );
 };

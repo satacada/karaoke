@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import { Search, Clock, ListMusic, UserCheck, Sun, Moon, Sparkles, Droplets, Type } from 'lucide-react';
+import { Search, Clock, ListMusic, UserCheck, Sun, Moon, Sparkles, Droplets, Type, Sliders } from 'lucide-react';
 
 interface GuestHeaderProps {
   roomCode: string; guestName: string; activeTab: 'search' | 'my-turn' | 'party-queue';
@@ -7,12 +7,13 @@ interface GuestHeaderProps {
   mySongsCount: number; isSingingNow: boolean; isWithinGracePeriod: boolean; remainingGraceMinutes: number;
   currentTheme?: 'dark' | 'blue' | 'light' | 'neon'; onToggleTheme?: () => void;
   currentFontSize?: 'normal' | 'large' | 'xl'; onToggleFontSize?: () => void;
+  onSwitchToHost?: () => void;
 }
 
 export const GuestHeader: FC<GuestHeaderProps> = ({
   roomCode, guestName, activeTab, onSelectTab, mySongsCount, isSingingNow,
   isWithinGracePeriod, remainingGraceMinutes, currentTheme = 'dark', onToggleTheme,
-  currentFontSize = 'normal', onToggleFontSize,
+  currentFontSize = 'normal', onToggleFontSize, onSwitchToHost,
 }) => {
   return (
     <header className="sticky top-0 z-40 bg-zinc-950/90 backdrop-blur-md border-b border-zinc-800/80 px-4 pt-3 pb-2 space-y-2.5">
@@ -40,6 +41,11 @@ export const GuestHeader: FC<GuestHeaderProps> = ({
         </div>
 
         <div className="flex items-center gap-1.5">
+          {onSwitchToHost && (
+            <button type="button" onClick={onSwitchToHost} className="flex items-center gap-1 px-2 py-1 rounded-xl border border-pink-500/40 bg-pink-950/30 text-pink-300 text-xs hover:bg-pink-900/40 transition-all active:scale-95 font-bold shadow-sm" title="Ir a Consola DJ / Anfitrión" aria-label="Soy DJ">
+              <Sliders className="w-3.5 h-3.5 text-pink-400" /><span className="text-[10px] font-bold">Soy DJ</span>
+            </button>
+          )}
           {onToggleFontSize && (
             <button type="button" onClick={onToggleFontSize} className="flex items-center gap-1 px-2 py-1 rounded-xl border border-zinc-800 bg-zinc-900/90 text-xs hover:border-zinc-700 transition-all active:scale-95 text-zinc-300" title="Aumentar tamaño de letra" aria-label="Tamaño de letra">
               <Type className="w-3.5 h-3.5 text-emerald-400" /><span className="text-[10px] font-bold">{currentFontSize === 'xl' ? 'A++' : currentFontSize === 'large' ? 'A+' : 'A'}</span>

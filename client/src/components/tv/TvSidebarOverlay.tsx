@@ -16,15 +16,15 @@ interface TvSidebarOverlayProps {
 export const TvSidebarOverlay: FC<TvSidebarOverlayProps> = ({
   roomCode, joinUrl, currentSong, banners, onOpenSettings
 }) => (
-  <aside className="absolute top-12 right-2 sm:top-6 sm:right-6 z-40 flex flex-col gap-2 w-44 xs:w-52 sm:w-64 pointer-events-none transition-all">
+  <aside className="absolute top-4 right-4 z-40 flex flex-col items-end gap-1.5 w-36 sm:w-40 pointer-events-none transition-all">
     <div className="flex justify-end pointer-events-auto">
       <button
         type="button"
         onClick={onOpenSettings}
         title="Configuración de pantalla"
-        className="p-1.5 rounded-xl bg-black/50 hover:bg-black/80 text-zinc-400 hover:text-white border border-white/10 transition-colors"
+        className="p-1 rounded-lg bg-black/40 hover:bg-black/70 text-zinc-400 hover:text-white border border-white/10 transition-colors"
       >
-        <Settings className="w-3.5 h-3.5" />
+        <Settings className="w-3 h-3" />
       </button>
     </div>
     <div className="pointer-events-auto">

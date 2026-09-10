@@ -4,6 +4,35 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.30.0] - 2026-09-10
+
+### 🚀 [ESPECIFICACIÓN / FEATURE]
+- **Retorno Directo a Modo Administrador / Consola DJ desde Celular (`GuestHeader.tsx`, `GuestView.tsx`, `App.tsx`):**
+  - **Problema Solucionado:** Cuando el dueño o anfitrión escaneaba el código QR de cliente con su propio celular, la interfaz cambiaba a modo invitado (`GuestView`) sin opción para regresar al panel de DJ.
+  - **Solución:** Incorporado el botón interactivo accesible `[ 🎛️ Soy DJ ]` en la barra superior de `GuestHeader`. Al ser presionado, invoca `onSwitchToHost()` en `App.tsx`, solicitando la verificación de credenciales/PIN de seguridad (`1234`) y restituyendo el control total de la Rockola al anfitrión sin necesidad de limpiar cookies ni reinstalar la app.
+
+### 🔧 [AFINAMIENTO / REFINAMIENTO]
+- **Código QR Compacto y Glassmorphism Translúcido en TV de 50" (`TvFloatingQr.tsx`, `TvSidebarOverlay.tsx`):**
+  - Reducido el tamaño del código QR proyectado en pantalla de `140px` a `96px` con nivel de corrección `M` (alta legibilidad a distancia).
+  - Reducción del ancho del sidebar de `w-64` a `w-36 sm:w-40` y ubicación discreta en `top-4 right-4`.
+  - Tarjeta estilizada con `bg-black/40 backdrop-blur-md` (ultra-translúcida): el video musical y los videoclips se aprecian a través de ella sin oclusión de pantalla.
+  - Removido el bloque redundante de botones de reacciones estáticos en la TV (las reacciones de los invitados ya flotan dinámicamente con animaciones en `TvFloatingReactions`).
+- **HUD Inferior Cinematográfico y Tipografía Adaptada (`TvNowPlayingHUD.tsx`):**
+  - Se redujo el gradiente oscuro inferior a `pt-8 px-5 py-2.5` (cubre solo el 10-12% inferior de la pantalla en vez del 30%), liberando el área visual del video musical.
+  - Jerarquía tipográfica adaptada para pantallas de 50" y monitores: título `text-sm md:text-base lg:text-lg font-bold`, autor `text-[11px] md:text-xs`, badge "Pidió" `text-xs md:text-sm`, botón de pausa compacto `px-2.5 py-1 text-[11px]` y barra de progreso fina de `h-1.5`.
+- **Cintillo de Próximas Canciones Compacto (`TvNextQueueTicker.tsx`):**
+  - Ajustado de `max-w-md` a `max-w-xs sm:max-w-sm` en `top-4 left-4`, con tarjetas y textos compactos para evitar distracciones durante la reproducción.
+- **Cumplimiento Clean-by-Design ($\le 120$ líneas):**
+  - `TvFloatingQr.tsx`: 41 líneas.
+  - `TvSidebarOverlay.tsx`: 37 líneas.
+  - `TvNowPlayingHUD.tsx`: 94 líneas.
+  - `TvNextQueueTicker.tsx`: 67 líneas.
+  - `GuestHeader.tsx`: 117 líneas.
+  - `GuestView.tsx`: 115 líneas.
+  - `App.tsx`: 105 líneas.
+
+---
+
 ## [1.29.0] - 2026-09-10
 
 ### 🐛 [CORRECCIÓN / FIX]

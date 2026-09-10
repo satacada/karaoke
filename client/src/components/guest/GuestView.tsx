@@ -10,7 +10,7 @@ import { GuestMyQueue } from './GuestMyQueue'; import { GuestPartyQueue } from '
 import { GuestLiveReactionsBar } from './GuestLiveReactionsBar'; import { GuestModals } from './GuestModals';
 import type { QueueItem, SearchResultItem, SearchFilterType, GuestTurnStatus } from '../../types';
 
-export const GuestView: FC<{ roomCode?: string }> = ({ roomCode = 'FIESTA' }) => {
+export const GuestView: FC<{ roomCode?: string; onSwitchToHost?: () => void }> = ({ roomCode = 'FIESTA', onSwitchToHost }) => {
   const { room, queue, refreshQueue } = useGuestRealtime(roomCode);
   const [activeTab, setActiveTab] = useState<'search' | 'my-turn' | 'party-queue'>('search');
   const [query, setQuery] = useState(() => { try { return sessionStorage.getItem('guest_last_query') || ''; } catch { return ''; } });
@@ -93,7 +93,7 @@ export const GuestView: FC<{ roomCode?: string }> = ({ roomCode = 'FIESTA' }) =>
       <GuestWelcomeModal isOpen={!session} roomCode={roomCode} onJoin={(name, coords) => { saveSession(name, undefined, coords); if (room) registerGuest(room.id, name, crypto.randomUUID()); }} />
       {session && (
         <>
-          <GuestHeader roomCode={roomCode} guestName={session.guestName} activeTab={activeTab} onSelectTab={handleTabChange} mySongsCount={mySongs.length} isSingingNow={isSingingNow} isWithinGracePeriod={presenceStatus.isWithinGracePeriod} remainingGraceMinutes={presenceStatus.remainingGraceMinutes} currentTheme={theme} onToggleTheme={() => { const n = theme === 'dark' ? 'blue' : theme === 'blue' ? 'neon' : theme === 'neon' ? 'light' : 'dark'; setTheme(n); try { localStorage.setItem('guest_theme', n); } catch {} }} currentFontSize={fontSize} onToggleFontSize={() => { const n = fontSize === 'normal' ? 'large' : fontSize === 'large' ? 'xl' : 'normal'; setFontSize(n); try { localStorage.setItem('guest_font_size', n); } catch {} }} />
+          <GuestHeader roomCode={roomCode} guestName={session.guestName} activeTab={activeTab} onSelectTab={handleTabChange} mySongsCount={mySongs.length} isSingingNow={isSingingNow} isWithinGracePeriod={presenceStatus.isWithinGracePeriod} remainingGraceMinutes={presenceStatus.remainingGraceMinutes} currentTheme={theme} onToggleTheme={() => { const n = theme === 'dark' ? 'blue' : theme === 'blue' ? 'neon' : theme === 'neon' ? 'light' : 'dark'; setTheme(n); try { localStorage.setItem('guest_theme', n); } catch {} }} currentFontSize={fontSize} onToggleFontSize={() => { const n = fontSize === 'normal' ? 'large' : fontSize === 'large' ? 'xl' : 'normal'; setFontSize(n); try { localStorage.setItem('guest_font_size', n); } catch {} }} onSwitchToHost={onSwitchToHost} />
           <main className="flex-1 px-2.5 py-3 w-full min-w-0 overflow-x-hidden">
             {toast && <div className="fixed bottom-16 left-1/2 -translate-x-1/2 z-50 bg-emerald-500 text-zinc-950 px-4 py-2 rounded-full font-bold text-xs shadow-xl">{toast}</div>}
             {activeTab === 'search' && (
