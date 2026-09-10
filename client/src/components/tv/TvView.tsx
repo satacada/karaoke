@@ -71,6 +71,10 @@ export const TvView: FC<{ roomCode?: string }> = ({ roomCode = 'FIESTA' }) => {
     }
   }, [room]);
 
+  const handlePlayingStateChange = useCallback((playing: boolean) => {
+    if (room) updatePlaybackTick(room.id, playing, currentTime).catch(() => {});
+  }, [room, currentTime]);
+
   if (isLoading) {
     return (
       <div className="w-full h-screen bg-zinc-950 flex items-center justify-center">
@@ -92,10 +96,6 @@ export const TvView: FC<{ roomCode?: string }> = ({ roomCode = 'FIESTA' }) => {
       </div>
     );
   }
-
-  const handlePlayingStateChange = useCallback((playing: boolean) => {
-    if (room) updatePlaybackTick(room.id, playing, currentTime).catch(() => {});
-  }, [room, currentTime]);
 
   return (
     <div className="relative w-full h-screen bg-black overflow-hidden select-none">
