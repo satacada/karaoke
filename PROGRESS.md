@@ -1,8 +1,8 @@
 # 📊 PLAN MAESTRO DEL PROYECTO: ROCKOLA DIGITAL LIVE (SISTEMA MULTI-TENANT EN TIEMPO REAL)
 
-**Versión del Plan:** 2.21.0 (Indicador de Pausa en TV + Manual Psicológico de Clientes + Afiche Imprimible)  
+**Versión del Plan:** 2.22.0 (Diversidad y Rotación de Múltiples Artistas en Auto-DJ)  
 **Fecha de Emisión:** Septiembre 2026  
-**Estado:** 🟢 Fase 2 y Fase 3 (Indicador de Control Remoto en Pantalla y Material Imprimible - Completo y Verificado)  
+**Estado:** 🟢 Fase 2 y Fase 3 (Anti-Clustering y Rotación de Artistas en Música Inteligente - Completo y Verificado)  
 **Metodología:** Agile / BDD / Clean Architecture con Compuertas de Control Formales  
 **Alineación:** Estructura inspirada en `boot-ventas-saas` y `aplicacion para ofertas`  
 
@@ -118,6 +118,7 @@ La **Rockola Digital Live** es una plataforma SaaS multi-tenant distribuida para
 - Cronómetro de tiempo en pausa en tiempo real (`mm:ss`) al pausar la pantalla. (✅ COMPLETADO)
 - Contador de tiempo de sala alquilada condicional (`TvPauseOverlay` y `TvRentalBadge`) visible únicamente cuando la sala opera bajo tiempo contratado por horas. (✅ COMPLETADO)
 - Señalética D-Pad en pantalla para pausa de Auto-DJ con control remoto físico y poster imprimible para mesas (`docs/poster_karaoke_clientes.html`). (✅ COMPLETADO)
+- Algoritmo Anti-Clustering y Rotación de Artistas en Auto-DJ: Intercalado round-robin y descarte en caliente de temas repetidos del mismo artista (`artistDiversityService.ts`). (✅ COMPLETADO)
 - Compilación de producción Vite 8 exitosa (código 0). (✅ COMPLETADO)
 - Script de prueba end-to-end contra Supabase pasando al 100% (`server/testTvFlow.js`). (✅ COMPLETADO)
 

@@ -1,4 +1,8 @@
-﻿export const GENRE_SEEDS = [
+export const GENRE_SEEDS = [
+  {
+    matcher: /grunge|stone temple|pearl jam|soundgarden|alice in chains|foo fighters|smashing pumpkins|audioslave|bush/i,
+    defaultArtists: ['Stone Temple Pilots', 'Pearl Jam', 'Nirvana', 'Soundgarden', 'Alice in Chains', 'Foo Fighters', 'Red Hot Chili Peppers', 'The Smashing Pumpkins', 'Audioslave']
+  },
   {
     matcher: /80|ochenta/i,
     subMatchers: [
@@ -11,16 +15,16 @@
   {
     matcher: /90|noventa/i,
     subMatchers: [
-      { matcher: /rock/i, artists: ['Nirvana', 'Oasis', 'Red Hot Chili Peppers', 'Aerosmith', 'Los Piojos', 'La Renga'] },
+      { matcher: /rock|grunge/i, artists: ['Stone Temple Pilots', 'Pearl Jam', 'Nirvana', 'Red Hot Chili Peppers', 'Soundgarden', 'Alice in Chains', 'Oasis'] },
       { matcher: /pop/i, artists: ['Britney Spears', 'Backstreet Boys', 'Spice Girls', 'Shakira'] },
     ],
-    defaultArtists: ['Nirvana', 'Backstreet Boys', 'Oasis', 'Britney Spears', 'Los Redondos']
+    defaultArtists: ['Stone Temple Pilots', 'Nirvana', 'Pearl Jam', 'Backstreet Boys', 'Oasis', 'Britney Spears']
   },
   {
     matcher: /rock(\s+and\s+roll|\s+roll)?/i,
     subMatchers: [
-      { matcher: /nacional|argentino/i, artists: ['Soda Stereo', 'Charly Garcia', 'Fito Paez', 'Los Redondos', 'Andres Calamaro'] },
-      { matcher: /clasico|classic/i, artists: ['Queen', 'AC/DC', 'Led Zeppelin', 'The Rolling Stones', 'Guns N Roses'] },
+      { matcher: /nacional|argentino/i, artists: ['Soda Stereo', 'Charly Garcia', 'Fito Paez', 'Los Redondos', 'Andres Calamaro', 'Spinetta'] },
+      { matcher: /clasico|classic/i, artists: ['Queen', 'AC/DC', 'Led Zeppelin', 'The Rolling Stones', 'Guns N Roses', 'Aerosmith'] },
       { matcher: /roll/i, artists: ['Elvis Presley', 'Chuck Berry', 'Little Richard', 'The Beatles', 'Jerry Lee Lewis'] },
     ],
     defaultArtists: ['Queen', 'Soda Stereo', 'Bon Jovi', 'Guns N Roses', 'AC/DC', 'Charly Garcia']
@@ -65,4 +69,41 @@ export function getGenreArtists(query) {
     }
   }
   return null;
+}
+
+export function findRelatedArtists(query) {
+  if (!query || typeof query !== 'string') return null;
+  const direct = getGenreArtists(query);
+  if (direct) return direct;
+
+  const q = query.trim().toLowerCase();
+  for (const g of GENRE_SEEDS) {
+    if (g.subMatchers) {
+      for (const sub of g.subMatchers) {
+        if (sub.artists.some((a) => q.includes(a.toLowerCase()) || a.toLowerCase().includes(q))) {
+          return sub.artists;
+        }
+      }
+    }
+    if (g.defaultArtists && g.defaultArtists.some((a) => q.includes(a.toLowerCase()) || a.toLowerCase().includes(q))) {
+      return g.defaultArtists;
+    }
+  }
+  return null;
+}
+
+export function interleaveArtistResults(groups) {
+  const result = [];
+  const seenIds = new Set();
+  const maxLen = Math.max(...groups.map((g) => g.length), 0);
+  for (let i = 0; i < maxLen; i++) {
+    for (const group of groups) {
+      const item = group[i];
+      if (item && !seenIds.has(item.videoId)) {
+        seenIds.add(item.videoId);
+        result.push(item);
+      }
+    }
+  }
+  return result;
 }

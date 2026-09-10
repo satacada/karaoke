@@ -1,5 +1,5 @@
-﻿import yts from 'yt-search';
-import { getGenreArtists } from './genreDefinitions.js';
+import yts from 'yt-search';
+import { findRelatedArtists, interleaveArtistResults } from './genreDefinitions.js';
 
 // Memoria caché para búsquedas recientes (30 minutos de TTL)
 const searchCache = new Map();
@@ -52,11 +52,11 @@ export async function searchYouTubeVideos(query, filterOrKaraokeOnly = 'karaoke'
     return cached.results;
   }
 
-  const genreArtists = getGenreArtists(cleanQuery);
+  const genreArtists = findRelatedArtists(cleanQuery);
   let rawVideos = [];
 
   if (genreArtists && genreArtists.length > 0) {
-    const searchPromises = genreArtists.slice(0, 5).map(async (artist) => {
+    const searchPromises = genreArtists.slice(0, 6).map(async (artist) => {
       let term = `${artist} exitos`;
       if (filter === 'karaoke') term = `${artist} karaoke letra`;
       else if (filter === 'official') term = `${artist} video oficial`;
@@ -71,15 +71,7 @@ export async function searchYouTubeVideos(query, filterOrKaraokeOnly = 'karaoke'
     });
 
     const artistResults = await Promise.all(searchPromises);
-    const seenIds = new Set();
-    for (const group of artistResults) {
-      for (const v of group) {
-        if (!seenIds.has(v.videoId)) {
-          seenIds.add(v.videoId);
-          rawVideos.push(v);
-        }
-      }
-    }
+    rawVideos = interleaveArtistResults(artistResults);
   }
 
   if (rawVideos.length === 0) {

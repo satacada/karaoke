@@ -4,6 +4,36 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.25.0] - 2026-09-10
+
+### 🚀 [ESPECIFICACIÓN / FEATURE]
+- **Diversidad Obligatoria y Rotación de Múltiples Artistas en Música Inteligente (Anti-Clustering):**
+  - **Detección de Clusters de Género y Familias Musicales (`server/genreDefinitions.js`):**
+    - Agregado soporte exhaustivo para Grunge y Rock Alternativo de los 90 (`Stone Temple Pilots`, `Pearl Jam`, `Nirvana`, `Soundgarden`, `Alice in Chains`, `Foo Fighters`, `Red Hot Chili Peppers`, `The Smashing Pumpkins`, `Audioslave`, `Bush`).
+    - Función de búsqueda inversa `findRelatedArtists(query)`: si el usuario o la sala escucha un artista (ej. Stone Temple Pilots), detecta su movimiento musical y devuelve a sus artistas afines para rotar de manera natural y variada.
+  - **Intercalado Round-Robin de Resultados (`server/searchService.js`):**
+    - `interleaveArtistResults`: las canciones de diferentes artistas se mezclan intercaladas (Artista A Tema 1, Artista B Tema 1, Artista C Tema 1, Artista A Tema 2...), impidiendo que YouTube devuelva bloques concentrados del mismo cantante.
+  - **Servicio de Diversidad y Extracción de Artistas (`client/src/services/artistDiversityService.ts`):**
+    - `extractArtistName`: extrae y normaliza el nombre del artista tanto del título (`Artista - Tema`) como del canal de YouTube, removiendo sufijos técnicos (`VEVO`, `Official`, `Letra`, `Karaoke`).
+    - `isArtistRecent` & `recordRecentArtist`: historial de los últimos 5 artistas reproducidos; filtra y descarta cualquier tema del mismo artista si ya sonó recientemente.
+    - `getNextDiverseSeed`: selecciona automáticamente el siguiente artista afín del cluster que no haya sonado, evitando la monotonía auditiva.
+  - **Refactorización Limpia de Auto-DJ (`client/src/services/autoDjService.ts` & `autoDjStations.ts`):**
+    - Subdivisión modular para mantener todos los archivos estrictamente bajo la regla Clean-by-Design ($\le 120$ líneas).
+    - `fetchNextAutoDjTrack` descarta temas de artistas repetidos en caliente.
+
+### 🔧 [AFINAMIENTO / REFINAMIENTO]
+- **Clean-by-Design Compliance:**
+  - `client/src/services/artistDiversityService.ts`: 66 líneas ($\le 120$).
+  - `client/src/services/autoDjService.ts`: 101 líneas ($\le 120$).
+  - `client/src/services/autoDjStations.ts`: 27 líneas ($\le 120$).
+  - `server/genreDefinitions.js`: 85 líneas.
+  - `server/searchService.js`: 115 líneas.
+- **Validación Automatizada:**
+  - Creada suite de pruebas unitarias `server/autoDjDiversity.test.js` con Vitest: 14/14 tests pasando (100%).
+  - Compilación de producción Vite 8 exitosa (código 0).
+
+---
+
 ## [1.24.0] - 2026-09-10
 
 ### 🚀 [ESPECIFICACIÓN / FEATURE]
