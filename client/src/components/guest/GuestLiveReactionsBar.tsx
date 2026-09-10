@@ -1,5 +1,6 @@
-﻿import { useState, useRef, type FC } from 'react';
+import { useState, useRef, type FC } from 'react';
 import { supabase } from '../../lib/supabaseClient';
+import { getDeviceId } from '../../utils/deviceId';
 
 interface GuestLiveReactionsBarProps {
   roomCode: string;
@@ -33,6 +34,7 @@ export const GuestLiveReactionsBar: FC<GuestLiveReactionsBarProps> = ({ roomCode
         id: crypto.randomUUID(),
         emoji,
         guestName: guestName.slice(0, 15),
+        userId: getDeviceId() || guestName,
       },
     });
   };

@@ -36,6 +36,14 @@ export const HostCreateRoomModal: FC<HostCreateRoomModalProps> = ({
     else { setErrorMsg('El código de sala ya existe o hubo un error al crearla.'); }
   };
 
+  const handleZoneChange = (val: string) => {
+    setZoneName(val);
+    const suggested = val.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8);
+    if (!roomCode || roomCode === zoneName.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8)) {
+      setRoomCode(suggested);
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-150">
       <div className="w-full max-w-sm bg-zinc-900 border border-zinc-800 rounded-3xl p-5 shadow-2xl">
@@ -47,27 +55,31 @@ export const HostCreateRoomModal: FC<HostCreateRoomModalProps> = ({
           <button type="button" onClick={onClose} className="p-1.5 rounded-lg text-zinc-400 hover:text-white"><X className="w-4 h-4" /></button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-3">
+        <form onSubmit={handleSubmit} className="space-y-2.5">
           {errorMsg && <div className="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs">{errorMsg}</div>}
           <div>
-            <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-wider mb-1">Nombre del Sector</label>
-            <input type="text" value={zoneName} onChange={(e) => setZoneName(e.target.value)} placeholder="Ej: Terraza, Patio Cervecero, VIP..." className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-purple-500" required />
+            <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-wider mb-0.5">Nombre del Sector</label>
+            <input type="text" value={zoneName} onChange={(e) => handleZoneChange(e.target.value)} placeholder="Ej: Patio, Terraza, Sector VIP..." className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-purple-500" required />
+            <span className="text-[10px] text-zinc-500 block mt-0.5">Nombre del salón o área física en tu local</span>
           </div>
 
           <div className="grid grid-cols-2 gap-2">
             <div>
-              <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-wider mb-1">Código de Sala</label>
-              <input type="text" value={roomCode} onChange={(e) => setRoomCode(e.target.value.toUpperCase().replace(/[^A-Z0-9_-]/g, ''))} placeholder="Ej: TERRAZA" minLength={3} maxLength={8} className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2 text-xs font-mono font-bold text-white uppercase focus:outline-none focus:border-purple-500" required />
+              <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-wider mb-0.5">Código de Sala</label>
+              <input type="text" value={roomCode} onChange={(e) => setRoomCode(e.target.value.toUpperCase().replace(/[^A-Z0-9_-]/g, ''))} placeholder="Ej: PATIO" minLength={3} maxLength={8} className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2 text-xs font-mono font-bold text-white uppercase focus:outline-none focus:border-purple-500" required />
+              <span className="text-[9px] text-zinc-500 block mt-0.5">Para la TV y QR de este sector</span>
             </div>
             <div>
-              <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-wider mb-1 flex items-center gap-1"><KeyRound className="w-3 h-3 text-pink-400" /> PIN Staff</label>
+              <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-wider mb-0.5 flex items-center gap-1"><KeyRound className="w-3 h-3 text-pink-400" /> PIN Staff</label>
               <input type="password" maxLength={4} value={hostPin} onChange={(e) => setHostPin(e.target.value.replace(/\D/g, ''))} className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2 text-xs font-mono text-center text-white focus:outline-none focus:border-pink-500" required />
+              <span className="text-[9px] text-zinc-500 block mt-0.5">Clave mozos de esta sala</span>
             </div>
           </div>
 
           <div>
-            <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-wider mb-1 flex items-center gap-1"><DollarSign className="w-3 h-3 text-emerald-400" /> Precio Pase VIP ($ ARS)</label>
+            <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-wider mb-0.5 flex items-center gap-1"><DollarSign className="w-3 h-3 text-emerald-400" /> Precio Pase VIP ($ ARS)</label>
             <input type="number" step="100" min="0" value={vipPrice} onChange={(e) => setVipPrice(e.target.value)} className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-emerald-500" required />
+            <span className="text-[10px] text-zinc-500 block mt-0.5">Tarifa Mercado Pago para sonar de inmediato</span>
           </div>
 
           <div className="pt-2 flex gap-2">

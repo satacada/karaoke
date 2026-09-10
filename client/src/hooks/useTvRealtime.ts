@@ -78,7 +78,11 @@ export function useTvRealtime(
         async (payload) => {
           const command = payload.new as RemoteCommand;
           if (!command.is_executed && onCommandRef.current) {
-            onCommandRef.current(command);
+            if (command.command === 'volume' && command.payload?.action === 'set_promo_banners') {
+              onCommandRef.current({ ...command, command: 'set_promo_banners' });
+            } else {
+              onCommandRef.current(command);
+            }
             await markCommandExecuted(command.id);
           }
         }

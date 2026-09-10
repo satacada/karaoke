@@ -445,7 +445,11 @@ export async function updateRoomBanners(
   } catch {
     // Fallback broadcast
   }
-  await sendRemoteCommand(roomId, 'set_promo_banners', { banners });
+  // Enviar comando compatible con constraint de BD
+  await sendRemoteCommand(roomId, 'volume', { action: 'set_promo_banners', banners, volume: 100 });
+  try {
+    await sendRemoteCommand(roomId, 'set_promo_banners', { banners });
+  } catch {}
   try {
     await supabase.from('karaoke_rooms').update({ promo_banners: banners }).eq('id', roomId);
   } catch {

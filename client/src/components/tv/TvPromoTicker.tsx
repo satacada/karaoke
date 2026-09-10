@@ -37,23 +37,29 @@ export const TvPromoTicker: FC<TvPromoTickerProps> = ({ banners = [] }) => {
       return;
     }
 
-    // Mostrar durante 12 segundos, pausar 35 segundos
+    setIsVisible(true);
+    let hideTimer: ReturnType<typeof setTimeout>;
+
     const cycle = () => {
       setIsVisible(true);
-      setTimeout(() => {
+      hideTimer = setTimeout(() => {
         setIsVisible(false);
         setCurrentIdx((prev) => (prev + 1) % activeBanners.length);
-      }, 12000);
+      }, 15000);
     };
 
-    const interval = setInterval(cycle, 45000);
-    const initialTimer = setTimeout(cycle, 1500);
+    hideTimer = setTimeout(() => {
+      setIsVisible(false);
+      setCurrentIdx((prev) => (prev + 1) % activeBanners.length);
+    }, 15000);
+
+    const interval = setInterval(cycle, 35000);
 
     return () => {
       clearInterval(interval);
-      clearTimeout(initialTimer);
+      clearTimeout(hideTimer);
     };
-  }, [activeBanners.length]);
+  }, [JSON.stringify(activeBanners)]);
 
   if (!isVisible || activeBanners.length === 0) return null;
 

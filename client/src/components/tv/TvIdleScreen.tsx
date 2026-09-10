@@ -16,8 +16,21 @@ interface TvIdleScreenProps {
 export const TvIdleScreen: FC<TvIdleScreenProps> = ({
   roomCode, joinUrl, roomName = 'Rockola Digital Live', zoneName, status = 'active', banners = [], autoDjActive = false,
 }) => {
-  const activeBanners = banners.filter((b) => b.is_active);
+  const [localBanners, setLocalBanners] = useState<PromoBanner[]>(banners);
   const [promoIdx, setPromoIdx] = useState(0);
+
+  useEffect(() => {
+    if (banners && banners.length > 0) {
+      setLocalBanners(banners);
+    } else {
+      const saved = localStorage.getItem(`tv_banners_${roomCode}`);
+      if (saved) {
+        try { setLocalBanners(JSON.parse(saved)); } catch {}
+      }
+    }
+  }, [banners, roomCode]);
+
+  const activeBanners = localBanners.filter((b) => b.is_active);
   const cleanRoomName = (!roomName || roomName.toLowerCase().includes('karaoke')) ? 'Rockola Digital Live' : roomName;
 
   useEffect(() => {
