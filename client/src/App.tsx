@@ -1,12 +1,14 @@
-import { useState, useEffect, type FC } from 'react';
+import { useState, useEffect, useMemo, type FC } from 'react';
 import { TvView } from './components/tv/TvView';
 import { TvActivationScreen } from './components/tv/TvActivationScreen';
 import { HostView } from './components/host/HostView';
 import { GuestView } from './components/guest/GuestView';
+import { isTvDevice } from './utils/deviceDetector';
 import { Tv, Sliders } from 'lucide-react';
 
 export const App: FC = () => {
-  const [currentMode, setCurrentMode] = useState<'tv' | 'host' | 'guest'>('tv');
+  const isTv = useMemo(() => isTvDevice(), []);
+  const [currentMode, setCurrentMode] = useState<'tv' | 'host' | 'guest'>(() => (isTv ? 'tv' : 'tv'));
   const [roomCode, setRoomCode] = useState<string | null>(() => {
     try {
       const p = new URLSearchParams(window.location.search);
@@ -15,6 +17,10 @@ export const App: FC = () => {
   });
 
   useEffect(() => {
+    if (isTv) {
+      setCurrentMode('tv');
+      return;
+    }
     const params = new URLSearchParams(window.location.search);
     const path = window.location.pathname;
     const queryRoom = params.get('room');
@@ -30,7 +36,7 @@ export const App: FC = () => {
       if (saved === 'host') setCurrentMode('host');
       else setCurrentMode('tv');
     }
-  }, []);
+  }, [isTv]);
 
   const handleSelectMode = (mode: 'tv' | 'host') => {
     setCurrentMode(mode);
@@ -49,7 +55,7 @@ export const App: FC = () => {
 
   return (
     <div className="relative min-h-screen bg-zinc-950 text-zinc-100 flex flex-col w-full overflow-x-hidden">
-      {currentMode !== 'guest' && (
+      {currentMode !== 'guest' && !isTv && (
         <nav aria-label="Selector de modo" className="fixed top-2 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1 bg-zinc-900/90 backdrop-blur-md border border-zinc-800/80 rounded-full p-1 shadow-2xl">
           <button
             type="button"

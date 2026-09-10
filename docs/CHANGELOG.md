@@ -4,6 +4,28 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.28.0] - 2026-09-10
+
+### 🚀 [ESPECIFICACIÓN / FEATURE]
+- **Detección Automática de Dispositivo TV vs Celular Móvil (`deviceDetector.ts` & `App.tsx`):**
+  - **Ocultamiento en Android TV:** Al instalarse o ejecutarse en un Smart TV / Android TV / TV Box, la barra de navegación superior flotante (`Modo Android (QR)` y `Host DJ`) se oculta automáticamente. La pantalla permanece 100% limpia y dedicada exclusivamente a la proyección del karaoke y el código QR para los invitados.
+  - **Visualización en Celulares Móviles:** Cuando la aplicación se ejecuta en un smartphone con pantalla táctil, la barra superior permanece activa, permitiendo alternar con un toque entre el reproductor puente Bluetooth (`Modo Android (QR)`) y la consola DJ del anfitrión (`Host DJ`).
+  - **Detección Multi-Parámetro Robusta:** Evalúa patrones de Smart TV (GoogleTV, AndroidTV, Tizen, WebOS, Leanback, Large Screen), la convención oficial de Google (`Android` sin `Mobile` = TV), y ausencia de pantalla táctil en monitores panorámicos, con soporte para anulaciones explícitas (`?device=tv` o `?device=mobile`).
+- **Web App Manifest PWA (`manifest.json` y recursos SVG):**
+  - Configurado `client/public/manifest.json` con iconos vectoriales dinámicos `icon-192.svg` y `icon-512.svg`, habilitando instalación nativa PWA en Smart TVs y celulares Android.
+- **Compilación Automatizada de APK en la Nube (`.github/workflows/build-apk.yml`):**
+  - Flujo de GitHub Actions con Android SDK, Java 17 y Gradle que compila en la nube el archivo binario `Karaoke-Party-Android-APK` y lo deja disponible para descarga directa en GitHub sin requerir instalaciones locales en la computadora.
+
+### 🔧 [AFINAMIENTO / REFINAMIENTO]
+- **Clean-by-Design Compliance:**
+  - `client/src/utils/deviceDetector.ts`: 76 líneas ($\le 120$).
+  - `client/src/App.tsx`: 96 líneas ($\le 120$).
+- **Validación Automatizada:**
+  - Suite de pruebas de detección de dispositivos (`scratch/test_device_detector.js`): 10/10 casos superados.
+  - Compilación Vite 8 exitosa sin advertencias de tipos (código 0).
+
+---
+
 ## [1.27.0] - 2026-09-10
 
 ### 🚀 [ESPECIFICACIÓN / FEATURE]

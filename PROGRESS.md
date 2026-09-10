@@ -1,8 +1,8 @@
 # 📊 PLAN MAESTRO DEL PROYECTO: ROCKOLA DIGITAL LIVE (SISTEMA MULTI-TENANT EN TIEMPO REAL)
 
-**Versión del Plan:** 2.24.0 (Botón en Pantalla para Puntero/Táctil y Sincronización Total Multi-Dispositivo)  
+**Versión del Plan:** 2.25.0 (Detección Automática TV vs Celular Móvil y Automatización APK en la Nube con GitHub Actions)  
 **Fecha de Emisión:** Septiembre 2026  
-**Estado:** 🟢 Fase 2 y Fase 3 (Control de Puntero en Pantalla y Multi-Dispositivo Sincronizado - Completo y Verificado)  
+**Estado:** 🟢 Fase 2, Fase 3 y Fase 5 (Detección TV/Móvil, PWA Manifest y Flujo Automatizado de APK en la Nube)  
 **Metodología:** Agile / BDD / Clean Architecture con Compuertas de Control Formales  
 **Alineación:** Estructura inspirada en `boot-ventas-saas` y `aplicacion para ofertas`  
 
@@ -197,15 +197,16 @@ La **Rockola Digital Live** es una plataforma SaaS multi-tenant distribuida para
 **Objetivo:** Empaquetar la aplicación en formato APK para Android TV y validar la estabilidad bajo condiciones de fiesta real.
 
 **Actividades Detalladas:**
-1. [ ] Configurar el proyecto Android con Capacitor / WebView nativo para Android TV (soporte Leanback UI y control remoto D-pad).
-2. [ ] Configurar la variante APK para celular Android anfitrión con salida de audio Bluetooth al equipo de música.
-3. [ ] Ejecutar pruebas de estrés concurrentes simulando 15 invitados en redes móviles 4G solicitando temas en simultáneo.
-4. [ ] Validar la tolerancia a micro-cortes de red 4G con reconexión automática en background.
-5. [ ] Compilación final de producción verificada (`npm run build` código 0).
-6. [ ] Redacción del manual de operaciones para el anfitrión.
+1. [x] **Compilación en la Nube con GitHub Actions (`.github/workflows/build-apk.yml`):** Pipeline automatizado en servidores virtuales de GitHub con Android SDK, Java 17 y Gradle para empaquetar y generar el binario APK de forma 100% remota sin compilar en el entorno local del desarrollador.
+2. [x] **Detección Inteligente de Dispositivo (`deviceDetector.ts`):** Ocultamiento automático de la barra superior `[ Modo Android (QR) ]` y `[ Host DJ ]` cuando la aplicación se ejecuta en Smart TV / Android TV para mantener la pantalla 100% limpia de proyección, preservando el selector únicamente en celulares táctiles.
+3. [x] **Web App Manifest PWA (`manifest.json` y recursos SVG):** Soporte PWA nativo y compatibilidad para generadores de APK (PWABuilder / TWA) e instalación directa en navegadores de Android TV.
+4. [ ] Ejecutar pruebas de estrés concurrentes simulando 15 invitados en redes móviles 4G solicitando temas en simultáneo.
+5. [ ] Validar la tolerancia a micro-cortes de red 4G con reconexión automática en background.
+6. [x] Compilación final de producción verificada (`npm run build` código 0).
+7. [ ] Redacción del manual de operaciones para el anfitrión.
 
 **Entregables:**
-- Archivo `.apk` instalable para Android TV / TV Box.
+- Archivo `.apk` instalable para Android TV / TV Box generado en la nube de GitHub Actions.
 - Reporte final de pruebas de estrés y latencia.
 
 ---
