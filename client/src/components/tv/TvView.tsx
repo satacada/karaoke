@@ -1,6 +1,6 @@
 import { useRef, useState, useCallback, useEffect, type FC } from 'react';
 import { AlertCircle } from 'lucide-react';
-import { useTvRealtime } from '../../hooks/useTvRealtime';
+import { useTvRealtime } from '../../hooks/useTvRealtime'; import { useTvAutoDj } from '../../hooks/useTvAutoDj';
 import { TvPlayer, type TvPlayerRef } from './TvPlayer';
 import { TvIdleScreen } from './TvIdleScreen'; import { TvNowPlayingHUD } from './TvNowPlayingHUD';
 import { TvNextQueueTicker } from './TvNextQueueTicker'; import { TvFloatingQr } from './TvFloatingQr';
@@ -42,8 +42,9 @@ export const TvView: FC<{ roomCode?: string }> = ({ roomCode = 'FIESTA' }) => {
     }
   }, [roomCode]);
 
-  const { room, currentSong, nextSongs, isLoading, handleNextSong } = useTvRealtime(roomCode, handleRemoteCommand);
+  const { room, currentSong, nextSongs, isLoading, handleNextSong, refreshState } = useTvRealtime(roomCode, handleRemoteCommand);
   handleNextSongRef.current = handleNextSong;
+  useTvAutoDj(room, currentSong, nextSongs, refreshState);
 
   useEffect(() => {
     if (room?.promo_banners && room.promo_banners.length > 0) {
@@ -116,4 +117,3 @@ export const TvView: FC<{ roomCode?: string }> = ({ roomCode = 'FIESTA' }) => {
     </div>
   );
 };
-

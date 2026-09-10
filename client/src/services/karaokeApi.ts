@@ -183,6 +183,16 @@ export async function addSongToQueue(params: {
   dedication?: string | null;
   isVip?: boolean;
 }): Promise<QueueItem | null> {
+  // Si es un pedido real de un invitado o host, remover canciones encoladas de Auto-DJ para dar prioridad inmediata
+  if (!params.requestedBy.includes('Auto-DJ')) {
+    await supabase
+      .from('karaoke_queue')
+      .delete()
+      .eq('room_id', params.roomId)
+      .eq('status', 'queued')
+      .ilike('requested_by', '%Auto-DJ%');
+  }
+
   let targetPriority = 1;
 
   if (params.isVip) {

@@ -81,6 +81,9 @@ export function useTvRealtime(roomCode: string, onRemoteCommand?: (command: Remo
           onCommandRef.current({ id: 'b_theme', room_id: roomId, command: 'volume', payload: { action: 'set_tv_theme', theme: payload.theme }, is_executed: true, created_at: new Date().toISOString() });
         }
       })
+      .on('broadcast', { event: 'set_auto_dj' }, ({ payload }) => {
+        if (payload) setRoom((p) => p ? { ...p, auto_dj_enabled: payload.enabled, auto_dj_genre: payload.genre } : p);
+      })
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'karaoke_rooms', filter: `id=eq.${roomId}` }, (payload) => {
         const updated = payload.new as KaraokeRoom;
         setRoom((prev) => {
@@ -90,6 +93,8 @@ export function useTvRealtime(roomCode: string, onRemoteCommand?: (command: Remo
             prev.status !== updated.status ||
             prev.is_queue_locked !== updated.is_queue_locked ||
             prev.is_playing !== updated.is_playing ||
+            prev.auto_dj_enabled !== updated.auto_dj_enabled ||
+            prev.auto_dj_genre !== updated.auto_dj_genre ||
             JSON.stringify(prev.promo_banners) !== JSON.stringify(updated.promo_banners)
           ) {
             return updated;

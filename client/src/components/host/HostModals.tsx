@@ -8,6 +8,7 @@ import { HostBannersModal } from './HostBannersModal';
 import { HostMasterHubModal } from './multiroom/HostMasterHubModal';
 import { HostCreateRoomModal } from './multiroom/HostCreateRoomModal';
 import { HostTransferQueueModal } from './multiroom/HostTransferQueueModal';
+import { HostAutoDjModal } from './HostAutoDjModal';
 import type { KaraokeRoom, QueueItem, PromoBanner } from '../../types';
 
 interface HostModalsProps {
@@ -21,6 +22,7 @@ interface HostModalsProps {
   onOpenTransfer: (room: KaraokeRoom) => void; onOpenCreateRoom: () => void;
   showCreateRoomModal: boolean; onCloseCreateRoom: () => void; onCreatedRoom: (newRoom: KaraokeRoom) => void;
   roomToTransfer: KaraokeRoom | null; onCloseTransfer: () => void; onTransferred: () => void;
+  showAutoDjModal?: boolean; onCloseAutoDj?: () => void; onUpdatedAutoDj?: () => void;
 }
 
 export const HostModals: FC<HostModalsProps> = ({
@@ -33,6 +35,7 @@ export const HostModals: FC<HostModalsProps> = ({
   showMasterHubModal, ownerRooms, onCloseMasterHub, onRefreshMasterHub,
   onOpenTransfer, onOpenCreateRoom, showCreateRoomModal, onCloseCreateRoom, onCreatedRoom,
   roomToTransfer, onCloseTransfer, onTransferred,
+  showAutoDjModal = false, onCloseAutoDj = () => {}, onUpdatedAutoDj = () => {},
 }) => {
   return (
     <>
@@ -47,6 +50,7 @@ export const HostModals: FC<HostModalsProps> = ({
       {roomToTransfer && (
         <HostTransferQueueModal isOpen={Boolean(roomToTransfer)} sourceRoom={roomToTransfer} allRooms={ownerRooms} pendingQueueCount={nextSongs.length} onClose={onCloseTransfer} onTransferred={onTransferred} />
       )}
+      <HostAutoDjModal isOpen={showAutoDjModal} room={room} onClose={onCloseAutoDj} onUpdated={onUpdatedAutoDj} />
     </>
   );
 };

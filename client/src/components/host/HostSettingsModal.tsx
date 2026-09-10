@@ -32,6 +32,7 @@ export const HostSettingsModal: FC<HostSettingsModalProps> = ({
     setSaving(true);
     sendRemoteCommand(room.id, 'volume', { action: 'set_tv_theme', theme: tvTheme });
     supabase.channel(`tv-room-${room.id}`).send({ type: 'broadcast', event: 'set_tv_theme', payload: { theme: tvTheme } }).catch(() => {});
+    supabase.channel(`tv-room-${room.id}`).send({ type: 'broadcast', event: 'set_auto_dj', payload: { enabled: autoDj, genre: room.auto_dj_genre } }).catch(() => {});
     try { localStorage.setItem(`tv_theme_${room.room_code}`, tvTheme); } catch {}
     const ok = await updateRoomSettings(room.id, {
       name: businessName.trim(),

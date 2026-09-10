@@ -4,6 +4,26 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.9.0] - 2026-09-10
+
+### 🚀 [ESPECIFICACIÓN / FEATURE]
+- **Motor Auto-DJ Inteligente por Canción Semilla y Estaciones de Bar (Música Infinita de Fondo):**
+  - **Estaciones Predefinidas de Bar (`client/src/services/autoDjService.ts`):** 6 estaciones curadas para ambientación comercial y nocturna (🎸 Rock Nacional, 🌴 Cumbia & Fiesta, ⚡ Hits 80s/90s, 🍹 Chill & Lounge, 🎺 Cuarteto & Fiesta, 🎤 Karaoke Éxitos).
+  - **Modo Canción / Artista Semilla (`seed:...`):** Permite al administrador definir un tema o artista de partida (ej: *"Soda Stereo"*, *"Queen"*, *"Calamaro"*) delegando a YouTube la selección de canciones oficiales del mismo género o relacionadas.
+  - **Filtro Estricto de Duración:** Descarte automático de videos fuera del rango de 2.5 min (140s) a 6.5 min (390s) para filtrar podcasts de 2 horas o clips cortos.
+  - **Memoria Anti-Repetición:** Buffer en memoria de sesión que evita repetir temas durante la jornada.
+  - **Prioridad Inmediata a Invitados:** En `addSongToQueue`, si un invitado pide un tema real, se purgan los temas de fondo encolados de Auto-DJ y la canción del invitado pasa a la posición #1 inmediatamente.
+  - **Modal de Configuración Host (`client/src/components/host/HostAutoDjModal.tsx`):** Selector táctil con interruptor On/Off, parrilla de estaciones, campo de texto para canción semilla y sincronización por broadcast en tiempo real.
+  - **Acceso Rápido en Consola DJ (`HostHeader.tsx` y `HostEmptyQueueCard.tsx`):** Botón con disco giratorio en cabecera e indicador en la tarjeta de cola vacía con acceso directo para cambiar de estación.
+  - **HUD y Ticker en Pantalla TV (`TvNowPlayingHUD.tsx` y `TvNextQueueTicker.tsx`):** Identificación visual de temas de ambientación automática (`Ambiente: Auto-DJ`) y badge sutil en el cintillo de próximos temas.
+
+### 🔧 [AFINAMIENTO / REFINAMIENTO]
+- **Clean-by-Design Estricto ($\le 120$ líneas):** Todos los 12 archivos nuevos y modificados (`autoDjService.ts`, `useTvAutoDj.ts`, `useTvRealtime.ts`, `TvView.tsx`, `HostAutoDjModal.tsx`, `HostHeader.tsx`, `HostView.tsx`, etc.) cumplen rigurosamente la regla de 120 líneas.
+- **Sincronización Realtime Instantánea:** Sincronización en vivo mediante canales de broadcast `set_auto_dj` y captura de eventos PostgreSQL en `karaoke_rooms`.
+- **Compilación Limpia:** 0 errores TypeScript (`tsc -b`) y build exitoso con Vite 8.
+
+---
+
 ## [1.8.0] - 2026-09-09
 
 ### 🚀 [ESPECIFICACIÓN / FEATURE]

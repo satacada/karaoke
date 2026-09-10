@@ -28,9 +28,9 @@ export const TvNowPlayingHUD: FC<TvNowPlayingHUDProps> = ({
         {/* Singer Chip & Track Info */}
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2.5 px-4 py-2 rounded-2xl bg-gradient-to-r from-purple-600 via-pink-600 to-rose-600 text-white font-bold text-lg md:text-xl shadow-lg shadow-pink-500/30 animate-pulse-glow">
+            <div className={`flex items-center gap-2.5 px-4 py-2 rounded-2xl text-white font-bold text-lg md:text-xl shadow-lg ${song.requested_by.includes('Auto-DJ') ? 'bg-gradient-to-r from-pink-600 via-purple-600 to-indigo-600 shadow-purple-500/30' : 'bg-gradient-to-r from-purple-600 via-pink-600 to-rose-600 shadow-pink-500/30 animate-pulse-glow'}`}>
               <Disc3 className="w-6 h-6 animate-spin" style={{ animationDuration: '4s' }} />
-              <span>Pidió: {song.requested_by}</span>
+              <span>{song.requested_by.includes('Auto-DJ') ? 'Ambiente: Auto-DJ' : `Pidió: ${song.requested_by}`}</span>
             </div>
 
             <div className="min-w-0">

@@ -48,7 +48,7 @@ export const TvNextQueueTicker: FC<TvNextQueueTickerProps> = ({ queue }) => {
                 <div className="flex items-center gap-1.5 text-xs text-zinc-400">
                   <User className="w-3 h-3 text-pink-400" />
                   <span className="truncate font-medium text-pink-300">
-                    {item.requested_by}
+                    {item.requested_by.includes('Auto-DJ') ? 'Auto-DJ (Ambiente)' : item.requested_by}
                   </span>
                 </div>
               </div>

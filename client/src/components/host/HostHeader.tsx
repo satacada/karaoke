@@ -1,5 +1,4 @@
-import type { FC } from 'react';
-import { RotateCcw, Users, Settings, Crown, ShieldCheck, Megaphone, Lock, LockOpen, SlidersHorizontal } from 'lucide-react';
+import type { FC } from 'react'; import { RotateCcw, Users, Settings, Crown, ShieldCheck, Megaphone, Lock, LockOpen, SlidersHorizontal, Disc3 } from 'lucide-react';
 
 interface HostHeaderProps {
   roomCode: string;
@@ -7,6 +6,7 @@ interface HostHeaderProps {
   isOwner?: boolean;
   isSuperAdmin?: boolean;
   isQueueLocked?: boolean;
+  isAutoDjActive?: boolean;
   userName?: string | null;
   ownerEmail?: string | null;
   onLogout?: () => void;
@@ -15,6 +15,7 @@ interface HostHeaderProps {
   onOpenSettings: () => void;
   onOpenSuperAdmin?: () => void;
   onOpenBanners?: () => void;
+  onOpenAutoDj?: () => void;
   onToggleQueueLock?: () => void;
   onOpenMasterHub?: () => void;
 }
@@ -25,6 +26,7 @@ export const HostHeader: FC<HostHeaderProps> = ({
   isOwner,
   isSuperAdmin,
   isQueueLocked,
+  isAutoDjActive = false,
   userName,
   ownerEmail,
   onLogout,
@@ -33,6 +35,7 @@ export const HostHeader: FC<HostHeaderProps> = ({
   onOpenSettings,
   onOpenSuperAdmin,
   onOpenBanners,
+  onOpenAutoDj,
   onToggleQueueLock,
   onOpenMasterHub,
 }) => {
@@ -91,6 +94,11 @@ export const HostHeader: FC<HostHeaderProps> = ({
           {onOpenBanners && (
             <button onClick={onOpenBanners} className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 active:scale-95 transition-transform hover:text-white" title="Banners y Promos TV" aria-label="Promociones TV">
               <Megaphone className="w-4 h-4 text-amber-400" />
+            </button>
+          )}
+          {onOpenAutoDj && (
+            <button onClick={onOpenAutoDj} className={`p-2 rounded-xl border transition-all active:scale-95 ${isAutoDjActive ? 'bg-pink-600/20 border-pink-500/50 text-pink-300 shadow-lg shadow-pink-950/40' : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-zinc-200'}`} title={isAutoDjActive ? 'Auto-DJ Ambiente Activo' : 'Configurar Auto-DJ'} aria-label="Auto-DJ Ambiente">
+              <Disc3 className={`w-4 h-4 ${isAutoDjActive ? 'animate-spin text-pink-400' : ''}`} />
             </button>
           )}
           <button onClick={onOpenSettings} className="p-2 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-300 active:scale-95 transition-transform hover:text-white" aria-label="Configuración">
