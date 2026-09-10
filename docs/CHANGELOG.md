@@ -4,6 +4,25 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.12.0] - 2026-09-10
+
+### 🚀 [ESPECIFICACIÓN / FEATURE]
+- **Escalamiento Accesible de Tamaño de Letra para Cliente y Administrador (A / A+ / A++):**
+  - **Selector Rápido en Cabecera (`GuestHeader.tsx` y `HostHeader.tsx`):** Nuevo botón con ícono tipográfico `Type` y badges visuales (`A`, `A+`, `A++`) que permite al usuario ciclar entre tres niveles de tamaño de letra:
+    1. **Normal (A):** Tamaño estándar de la interfaz (100%).
+    2. **Grande (A+):** Aumento del 15% al 20% en textos, botones, títulos, badges y cajón de búsqueda (`.font-scale-large`).
+    3. **Extra Grande (A++):** Aumento del 30% al 40% en textos, botones, etiquetas e inputs para máxima legibilidad de personas mayores o con visión reducida (`.font-scale-xl`).
+  - **Sobrescritura de Variables CSS en Tiempo Real (`client/src/index.css`):**
+    - Escalamiento dinámico de variables `--text-xs`, `--text-sm`, `--text-base`, `--text-lg`, `--text-xl` en contenedores de aplicación.
+    - Adaptación proporcional para cajón de búsqueda `input` y `placeholder`, chips de filtros, botones de pedido y etiquetas de estado.
+  - **Persistencia en LocalStorage:** Las preferencias se guardan de forma independiente para el cliente (`guest_font_size`) y para el administrador (`host_font_size`).
+
+### 🔧 [AFINAMIENTO / REFINAMIENTO]
+- **Clean-by-Design Estricto ($\le 120$ líneas):** Todos los componentes (`HostHeader.tsx`: 91 líneas, `HostView.tsx`: 115 líneas, `GuestHeader.tsx`: 112 líneas, `GuestView.tsx`: 120 líneas) cumplen rigurosamente el estándar.
+- **Compilación de Producción:** 0 errores TypeScript (`tsc -b`) y build exitoso con Vite.
+
+---
+
 ## [1.11.0] - 2026-09-10
 
 ### 🚀 [ESPECIFICACIÓN / FEATURE]

@@ -1,10 +1,11 @@
 import type { FC } from 'react';
-import { RotateCcw, Users, Settings, Crown, ShieldCheck, Megaphone, Lock, LockOpen, SlidersHorizontal, Disc3, Sun, Moon, Sparkles, Droplets } from 'lucide-react';
+import { RotateCcw, Users, Settings, Crown, ShieldCheck, Megaphone, Lock, LockOpen, SlidersHorizontal, Disc3, Sun, Moon, Sparkles, Droplets, Type } from 'lucide-react';
 
 interface HostHeaderProps {
   roomCode: string; zoneName?: string; isOwner?: boolean; isSuperAdmin?: boolean;
   isQueueLocked?: boolean; isAutoDjActive?: boolean; userName?: string | null; ownerEmail?: string | null;
-  currentTheme?: 'dark' | 'blue' | 'neon' | 'light'; onToggleTheme?: () => void; onLogout?: () => void;
+  currentTheme?: 'dark' | 'blue' | 'neon' | 'light'; onToggleTheme?: () => void;
+  currentFontSize?: 'normal' | 'large' | 'xl'; onToggleFontSize?: () => void; onLogout?: () => void;
   onOpenGuests: () => void; onOpenReset: () => void; onOpenSettings: () => void;
   onOpenSuperAdmin?: () => void; onOpenBanners?: () => void; onOpenAutoDj?: () => void;
   onToggleQueueLock?: () => void; onOpenMasterHub?: () => void;
@@ -12,7 +13,7 @@ interface HostHeaderProps {
 
 export const HostHeader: FC<HostHeaderProps> = ({
   roomCode, zoneName, isOwner, isSuperAdmin, isQueueLocked, isAutoDjActive = false,
-  userName, ownerEmail, currentTheme = 'dark', onToggleTheme, onLogout,
+  userName, ownerEmail, currentTheme = 'dark', onToggleTheme, currentFontSize = 'normal', onToggleFontSize, onLogout,
   onOpenGuests, onOpenReset, onOpenSettings, onOpenSuperAdmin, onOpenBanners,
   onOpenAutoDj, onToggleQueueLock, onOpenMasterHub,
 }) => {
@@ -50,14 +51,13 @@ export const HostHeader: FC<HostHeaderProps> = ({
         </div>
 
         <div className="flex items-center gap-1.5 shrink-0">
+          {onToggleFontSize && (
+            <button type="button" onClick={onToggleFontSize} className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-zinc-800 bg-zinc-900 text-xs font-bold hover:border-zinc-700 active:scale-95 transition-all text-zinc-300" title="Aumentar tamaño de letra" aria-label="Tamaño de letra">
+              <Type className="w-3.5 h-3.5 text-pink-400" /><span className="text-[10px] font-bold">{currentFontSize === 'xl' ? 'A++' : currentFontSize === 'large' ? 'A+' : 'A'}</span>
+            </button>
+          )}
           {onToggleTheme && (
-            <button
-              type="button"
-              onClick={onToggleTheme}
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-zinc-800 bg-zinc-900 text-xs font-bold hover:border-zinc-700 active:scale-95 transition-all text-zinc-300"
-              title="Cambiar color de interfaz"
-              aria-label="Cambiar tema"
-            >
+            <button type="button" onClick={onToggleTheme} className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-zinc-800 bg-zinc-900 text-xs font-bold hover:border-zinc-700 active:scale-95 transition-all text-zinc-300" title="Cambiar color de interfaz" aria-label="Cambiar tema">
               {currentTheme === 'blue' ? <Droplets className="w-3.5 h-3.5 text-sky-400" /> : currentTheme === 'light' ? <Sun className="w-3.5 h-3.5 text-amber-400" /> : currentTheme === 'neon' ? <Sparkles className="w-3.5 h-3.5 text-pink-400" /> : <Moon className="w-3.5 h-3.5 text-indigo-400" />}
               <span className="text-[10px] capitalize">{currentTheme === 'blue' ? 'Azul' : currentTheme}</span>
             </button>
@@ -71,37 +71,19 @@ export const HostHeader: FC<HostHeaderProps> = ({
       <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1 w-full">
         {onOpenAutoDj && (
           <button onClick={onOpenAutoDj} className={`p-2 rounded-xl border flex items-center gap-1.5 text-xs font-medium transition-all active:scale-95 shrink-0 ${isAutoDjActive ? 'bg-pink-600/20 border-pink-500/50 text-pink-300 shadow-md shadow-pink-950/40' : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-zinc-200'}`} title="Auto-DJ Música de fondo">
-            <Disc3 className={`w-4 h-4 ${isAutoDjActive ? 'animate-spin text-pink-400' : ''}`} />
-            <span className="text-[11px] font-semibold">Auto-DJ</span>
+            <Disc3 className={`w-4 h-4 ${isAutoDjActive ? 'animate-spin text-pink-400' : ''}`} /><span className="text-[11px] font-semibold">Auto-DJ</span>
           </button>
         )}
         {onToggleQueueLock && (
           <button onClick={onToggleQueueLock} className={`p-2 rounded-xl border flex items-center gap-1.5 text-xs font-medium transition-transform active:scale-95 shrink-0 ${isQueueLocked ? 'bg-amber-500/20 border-amber-500/50 text-amber-400' : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-zinc-200'}`} title={isQueueLocked ? 'Fila bloqueada' : 'Bloquear pedidos'}>
-            {isQueueLocked ? <Lock className="w-4 h-4" /> : <LockOpen className="w-4 h-4" />}
-            <span className="text-[11px] font-semibold">{isQueueLocked ? 'Cerrado' : 'Abierto'}</span>
+            {isQueueLocked ? <Lock className="w-4 h-4" /> : <LockOpen className="w-4 h-4" />}<span className="text-[11px] font-semibold">{isQueueLocked ? 'Cerrado' : 'Abierto'}</span>
           </button>
         )}
-        <button onClick={onOpenGuests} className="p-2 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-300 active:scale-95 transition-transform hover:text-white flex items-center gap-1 shrink-0" title="Ver invitados">
-          <Users className="w-4 h-4" /><span className="text-[11px] font-semibold">Invitados</span>
-        </button>
-        {onOpenBanners && (
-          <button onClick={onOpenBanners} className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 active:scale-95 transition-transform hover:text-white shrink-0" title="Banners y Promos TV">
-            <Megaphone className="w-4 h-4 text-amber-400" />
-          </button>
-        )}
-        <button onClick={onOpenSettings} className="p-2 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-300 active:scale-95 transition-transform hover:text-white shrink-0" title="Configuración">
-          <Settings className="w-4 h-4" />
-        </button>
-        {onOpenMasterHub && (
-          <button onClick={onOpenMasterHub} className="p-2 rounded-xl bg-purple-950/80 border border-purple-600/50 text-purple-300 active:scale-95 transition-transform hover:text-white shrink-0" title="Master Hub (Ambientes)">
-            <SlidersHorizontal className="w-4 h-4 text-purple-300" />
-          </button>
-        )}
-        {isSuperAdmin && onOpenSuperAdmin && (
-          <button onClick={onOpenSuperAdmin} className="p-2 rounded-xl bg-purple-950/80 border border-purple-600/50 text-purple-300 active:scale-95 transition-transform hover:text-white shrink-0" title="SuperAdmin">
-            <ShieldCheck className="w-4 h-4 text-purple-300" />
-          </button>
-        )}
+        <button onClick={onOpenGuests} className="p-2 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-300 active:scale-95 transition-transform hover:text-white flex items-center gap-1 shrink-0" title="Ver invitados"><Users className="w-4 h-4" /><span className="text-[11px] font-semibold">Invitados</span></button>
+        {onOpenBanners && (<button onClick={onOpenBanners} className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 active:scale-95 transition-transform hover:text-white shrink-0" title="Banners y Promos TV"><Megaphone className="w-4 h-4 text-amber-400" /></button>)}
+        <button onClick={onOpenSettings} className="p-2 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-300 active:scale-95 transition-transform hover:text-white shrink-0" title="Configuración"><Settings className="w-4 h-4" /></button>
+        {onOpenMasterHub && (<button onClick={onOpenMasterHub} className="p-2 rounded-xl bg-purple-950/80 border border-purple-600/50 text-purple-300 active:scale-95 transition-transform hover:text-white shrink-0" title="Master Hub (Ambientes)"><SlidersHorizontal className="w-4 h-4 text-purple-300" /></button>)}
+        {isSuperAdmin && onOpenSuperAdmin && (<button onClick={onOpenSuperAdmin} className="p-2 rounded-xl bg-purple-950/80 border border-purple-600/50 text-purple-300 active:scale-95 transition-transform hover:text-white shrink-0" title="SuperAdmin"><ShieldCheck className="w-4 h-4 text-purple-300" /></button>)}
       </div>
     </header>
   );

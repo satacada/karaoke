@@ -22,7 +22,7 @@ export const HostView: FC<{ roomCode?: string }> = ({ roomCode = 'FIESTA' }) => 
   const [isOwner, setIsOwner] = useState(false); const [ownerEmail, setOwnerEmail] = useState<string | null>(null);
   const [userName, setUserName] = useState<string | null>(null); const [ownerRooms, setOwnerRooms] = useState<KaraokeRoom[]>([]);
   const [volume, setVolume] = useState(100); const [isPlaying, setIsPlaying] = useState(true);
-  const [theme, setTheme] = useState<'dark' | 'blue' | 'neon' | 'light'>(() => (localStorage.getItem('host_theme') as 'dark' | 'blue' | 'neon' | 'light') || 'dark');
+  const [theme, setTheme] = useState<'dark' | 'blue' | 'neon' | 'light'>(() => (localStorage.getItem('host_theme') as 'dark' | 'blue' | 'neon' | 'light') || 'dark'); const [fontSize, setFontSize] = useState<'normal' | 'large' | 'xl'>(() => (localStorage.getItem('host_font_size') as 'normal' | 'large' | 'xl') || 'normal');
   const [showResetModal, setShowResetModal] = useState(false); const [showGuestModal, setShowGuestModal] = useState(false); const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showSuperAdminModal, setShowSuperAdminModal] = useState(false); const [showBannersModal, setShowBannersModal] = useState(false); const [showMasterHubModal, setShowMasterHubModal] = useState(false);
   const [showCreateRoomModal, setShowCreateRoomModal] = useState(false); const [roomToTransfer, setRoomToTransfer] = useState<KaraokeRoom | null>(null); const [songToDelete, setSongToDelete] = useState<QueueItem | null>(null);
@@ -91,15 +91,13 @@ export const HostView: FC<{ roomCode?: string }> = ({ roomCode = 'FIESTA' }) => 
     return <HostPendingApprovalView roomCode={activeCode} businessName={room.business_name || room.name} ownerEmail={ownerEmail || 'No asignado'} onLoggedOut={handleLogout} />;
   }
 
-  const handleToggleTheme = () => {
-    const next = theme === 'dark' ? 'blue' : theme === 'blue' ? 'neon' : theme === 'neon' ? 'light' : 'dark';
-    setTheme(next); try { localStorage.setItem('host_theme', next); } catch {}
-  };
+  const handleToggleTheme = () => { const next = theme === 'dark' ? 'blue' : theme === 'blue' ? 'neon' : theme === 'neon' ? 'light' : 'dark'; setTheme(next); try { localStorage.setItem('host_theme', next); } catch {} };
+  const handleToggleFontSize = () => { const next = fontSize === 'normal' ? 'large' : fontSize === 'large' ? 'xl' : 'normal'; setFontSize(next); try { localStorage.setItem('host_font_size', next); } catch {} };
 
   return (
-    <div className={`theme-${theme} min-h-screen bg-zinc-950 text-zinc-100 flex flex-col max-w-lg mx-auto pb-32 pt-2 px-3 sm:px-4 select-none transition-colors duration-200`}>
+    <div className={`theme-${theme} font-scale-${fontSize} min-h-screen bg-zinc-950 text-zinc-100 flex flex-col max-w-lg mx-auto pb-32 pt-2 px-3 sm:px-4 select-none transition-colors duration-200`}>
       {ownerRooms.length > 1 && <HostMultiRoomBar rooms={ownerRooms} currentRoomId={room?.id || ''} onSelectRoom={(r) => setActiveCode(r.room_code)} onOpenMasterHub={() => setShowMasterHubModal(true)} onOpenCreateRoom={() => setShowCreateRoomModal(true)} />}
-      <HostHeader roomCode={activeCode} zoneName={room?.zone_name} isOwner={isOwner} isSuperAdmin={isSuperAdmin} isQueueLocked={Boolean(room?.is_queue_locked)} isAutoDjActive={Boolean(room?.auto_dj_enabled)} userName={userName} ownerEmail={ownerEmail} currentTheme={theme} onToggleTheme={handleToggleTheme} onLogout={handleLogout} onToggleQueueLock={async () => { if (room) { await toggleQueueLock(room.id, !room.is_queue_locked); refreshState(); } }} onOpenGuests={() => setShowGuestModal(true)} onOpenReset={() => setShowResetModal(true)} onOpenSettings={() => setShowSettingsModal(true)} onOpenSuperAdmin={() => setShowSuperAdminModal(true)} onOpenBanners={() => setShowBannersModal(true)} onOpenAutoDj={() => setShowAutoDjModal(true)} onOpenMasterHub={() => setShowMasterHubModal(true)} />
+      <HostHeader roomCode={activeCode} zoneName={room?.zone_name} isOwner={isOwner} isSuperAdmin={isSuperAdmin} isQueueLocked={Boolean(room?.is_queue_locked)} isAutoDjActive={Boolean(room?.auto_dj_enabled)} userName={userName} ownerEmail={ownerEmail} currentTheme={theme} onToggleTheme={handleToggleTheme} currentFontSize={fontSize} onToggleFontSize={handleToggleFontSize} onLogout={handleLogout} onToggleQueueLock={async () => { if (room) { await toggleQueueLock(room.id, !room.is_queue_locked); refreshState(); } }} onOpenGuests={() => setShowGuestModal(true)} onOpenReset={() => setShowResetModal(true)} onOpenSettings={() => setShowSettingsModal(true)} onOpenSuperAdmin={() => setShowSuperAdminModal(true)} onOpenBanners={() => setShowBannersModal(true)} onOpenAutoDj={() => setShowAutoDjModal(true)} onOpenMasterHub={() => setShowMasterHubModal(true)} />
       <section className="mb-4"><HostNowPlayingCard currentSong={currentSong} currentTime={room?.current_time_seconds || 0} onSkip={handleNextSong} /></section>
       <section className="flex-1 flex flex-col gap-2">
         <div className="flex items-center gap-1.5 text-xs text-zinc-400 font-bold uppercase tracking-wider mb-1"><ListMusic className="w-4 h-4 text-purple-400" /><span>Cola ({nextSongs.length})</span></div>

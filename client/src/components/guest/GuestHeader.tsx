@@ -1,21 +1,18 @@
-import type { FC } from 'react'; import { Search, Clock, ListMusic, UserCheck, Sun, Moon, Sparkles, Droplets } from 'lucide-react';
+import type { FC } from 'react';
+import { Search, Clock, ListMusic, UserCheck, Sun, Moon, Sparkles, Droplets, Type } from 'lucide-react';
 
 interface GuestHeaderProps {
-  roomCode: string;
-  guestName: string;
-  activeTab: 'search' | 'my-turn' | 'party-queue';
+  roomCode: string; guestName: string; activeTab: 'search' | 'my-turn' | 'party-queue';
   onSelectTab: (tab: 'search' | 'my-turn' | 'party-queue') => void;
-  mySongsCount: number;
-  isSingingNow: boolean;
-  isWithinGracePeriod: boolean;
-  remainingGraceMinutes: number;
-  currentTheme?: 'dark' | 'blue' | 'light' | 'neon';
-  onToggleTheme?: () => void;
+  mySongsCount: number; isSingingNow: boolean; isWithinGracePeriod: boolean; remainingGraceMinutes: number;
+  currentTheme?: 'dark' | 'blue' | 'light' | 'neon'; onToggleTheme?: () => void;
+  currentFontSize?: 'normal' | 'large' | 'xl'; onToggleFontSize?: () => void;
 }
 
 export const GuestHeader: FC<GuestHeaderProps> = ({
   roomCode, guestName, activeTab, onSelectTab, mySongsCount, isSingingNow,
   isWithinGracePeriod, remainingGraceMinutes, currentTheme = 'dark', onToggleTheme,
+  currentFontSize = 'normal', onToggleFontSize,
 }) => {
   return (
     <header className="sticky top-0 z-40 bg-zinc-950/90 backdrop-blur-md border-b border-zinc-800/80 px-4 pt-3 pb-2 space-y-2.5">
@@ -43,14 +40,13 @@ export const GuestHeader: FC<GuestHeaderProps> = ({
         </div>
 
         <div className="flex items-center gap-1.5">
+          {onToggleFontSize && (
+            <button type="button" onClick={onToggleFontSize} className="flex items-center gap-1 px-2 py-1 rounded-xl border border-zinc-800 bg-zinc-900/90 text-xs hover:border-zinc-700 transition-all active:scale-95 text-zinc-300" title="Aumentar tamaño de letra" aria-label="Tamaño de letra">
+              <Type className="w-3.5 h-3.5 text-emerald-400" /><span className="text-[10px] font-bold">{currentFontSize === 'xl' ? 'A++' : currentFontSize === 'large' ? 'A+' : 'A'}</span>
+            </button>
+          )}
           {onToggleTheme && (
-            <button
-              type="button"
-              onClick={onToggleTheme}
-              className="flex items-center gap-1 px-2 py-1 rounded-xl border border-zinc-800 bg-zinc-900/90 text-xs hover:border-zinc-700 transition-all active:scale-95"
-              title="Cambiar tema de color"
-              aria-label="Cambiar tema visual"
-            >
+            <button type="button" onClick={onToggleTheme} className="flex items-center gap-1 px-2 py-1 rounded-xl border border-zinc-800 bg-zinc-900/90 text-xs hover:border-zinc-700 transition-all active:scale-95" title="Cambiar tema de color" aria-label="Cambiar tema visual">
               {currentTheme === 'blue' ? <Droplets className="w-3.5 h-3.5 text-sky-400" /> : currentTheme === 'light' ? <Sun className="w-3.5 h-3.5 text-amber-500" /> : currentTheme === 'neon' ? <Sparkles className="w-3.5 h-3.5 text-pink-400 animate-spin" style={{ animationDuration: '6s' }} /> : <Moon className="w-3.5 h-3.5 text-indigo-400" />}
               <span className="text-[10px] font-bold capitalize">{currentTheme === 'blue' ? 'Azul' : currentTheme}</span>
             </button>
