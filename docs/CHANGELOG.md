@@ -4,6 +4,30 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.27.0] - 2026-09-10
+
+### 🚀 [ESPECIFICACIÓN / FEATURE]
+- **Botón en Pantalla para Control de Puntero y Pantalla Táctil (TV & Celular Móvil):**
+  - **Botón Interactivo en HUD (`TvNowPlayingHUD.tsx`):** Implementado botón táctil y de puntero de alta visibilidad `[ ⏸ Pausar Música ]` / `[ ▶ Continuar Música ]` en la barra inferior de reproducción. Permite pausar o continuar con un solo click usando el puntero del control remoto de TV (air-mouse), ratón convencional o mediante pulsación táctil con el dedo en la pantalla cuando la aplicación se ejecuta en un celular móvil conectado por Bluetooth.
+  - **Botón de Reanudación en Overlay de Pausa (`TvPauseOverlay.tsx`):** Añadido botón interactivo `[ ▶ Continuar Música ]` en el modal de pausa que responde de inmediato al puntero o toque en pantalla.
+  - **Sincronización Multidispositivo Total:**
+    - Consola móvil del anfitrión (`/host`): Play / Pausa reflejados al instante en la TV.
+    - Encargado de sala con control remoto físico: botones de Pausa, Play, Enter y OK sincronizados.
+    - Control por voz: comandos *"Pausa"* y *"Continuar"* actualizan el estado del botón en pantalla.
+    - Control de puntero / táctil: click en pantalla emite el tick de estado y sincroniza a todos los dispositivos.
+
+### 🔧 [AFINAMIENTO / REFINAMIENTO]
+- **Clean-by-Design Compliance:**
+  - `client/src/components/tv/TvNowPlayingHUD.tsx`: 94 líneas ($\le 120$).
+  - `client/src/components/tv/TvPauseOverlay.tsx`: 92 líneas ($\le 120$).
+  - `client/src/components/tv/TvPlayer.tsx`: 116 líneas ($\le 120$).
+  - `client/src/components/tv/TvView.tsx`: 119 líneas ($\le 120$).
+- **Validación Automatizada:**
+  - Compilación Vite 8 exitosa (código 0).
+  - 14/14 tests unitarios de Vitest pasando al 100%.
+
+---
+
 ## [1.26.0] - 2026-09-10
 
 ### 🚀 [ESPECIFICACIÓN / FEATURE]

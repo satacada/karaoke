@@ -18,14 +18,14 @@ export const TvView: FC<{ roomCode?: string; onUnlink?: () => void }> = ({ roomC
   const [currentTime, setCurrentTime] = useState(0); const [duration, setDuration] = useState(0);
   const [errorNotice, setErrorNotice] = useState<string | null>(null); const [banners, setBanners] = useState<PromoBanner[]>([]);
   const [showUnlinkModal, setShowUnlinkModal] = useState(false); const [isFlashing, setIsFlashing] = useState(false);
-  const [isStartingAutoDj, setIsStartingAutoDj] = useState(false);
+  const [isStartingAutoDj, setIsStartingAutoDj] = useState(false); const [isPaused, setIsPaused] = useState(false);
   const [rentalSession, setRentalSession] = useState<RoomRentalSession | null>(() => getLocalRentalSession(roomCode));
   const [tvTheme, setTvTheme] = useState<'vintage' | 'modern'>(() => (localStorage.getItem(`tv_theme_${roomCode}`) as 'vintage' | 'modern') || 'modern');
 
   const handleRemoteCommand = useCallback((cmd: RemoteCommand) => {
     switch (cmd.command) {
-      case 'play': playerRef.current?.play(); handleStartAutoDjRef.current(); break;
-      case 'pause': playerRef.current?.pause(); break;
+      case 'play': playerRef.current?.play(); setIsPaused(false); handleStartAutoDjRef.current(); break;
+      case 'pause': playerRef.current?.pause(); setIsPaused(true); break;
       case 'skip': handleNextSongRef.current(); break;
       case 'seek': if (cmd.payload?.seconds !== undefined) playerRef.current?.seekTo(cmd.payload.seconds); break;
       case 'unlink_tv': try { localStorage.removeItem('tv_paired_room'); } catch {} onUnlink?.(); break;
@@ -48,7 +48,7 @@ export const TvView: FC<{ roomCode?: string; onUnlink?: () => void }> = ({ roomC
   useTvAutoDj(room, currentSong, nextSongs, refreshState, handleNextSong);
   useWakeLock(Boolean(currentSong));
   useMediaSession(currentSong, room?.name || 'Rockola', room?.is_playing !== false, {
-    onPlay: () => playerRef.current?.play(), onPause: () => playerRef.current?.pause(), onNext: () => handleNextSongRef.current(),
+    onPlay: () => { playerRef.current?.play(); setIsPaused(false); }, onPause: () => { playerRef.current?.pause(); setIsPaused(true); }, onNext: () => handleNextSongRef.current(),
   });
 
   const handleStartAutoDj = useCallback(async () => {
@@ -74,7 +74,7 @@ export const TvView: FC<{ roomCode?: string; onUnlink?: () => void }> = ({ roomC
   }, [room, roomCode, refreshState]);
 
   const { isListening, lastCommand, isSupported, startVoice } = useTvVoiceControl({
-    onPause: () => playerRef.current?.pause(), onPlay: () => { playerRef.current?.play(); handleStartAutoDj(); },
+    onPause: () => { playerRef.current?.pause(); setIsPaused(true); }, onPlay: () => { playerRef.current?.play(); setIsPaused(false); handleStartAutoDj(); },
     onNext: () => handleNextSong(), onStartAutoDj: handleStartAutoDj, onStopAutoDj: handleStopAutoDj,
   });
 
@@ -108,9 +108,9 @@ export const TvView: FC<{ roomCode?: string; onUnlink?: () => void }> = ({ roomC
         <TvIdleScreen roomCode={roomCode} joinUrl={joinUrl} roomName={room?.name || 'Rockola Digital Live'} zoneName={room?.zone_name} status={room?.status} banners={banners} autoDjActive={Boolean(room?.auto_dj_enabled)} onStartAutoDj={handleStartAutoDj} isStartingAutoDj={isStartingAutoDj} />
       ) : (
         <>
-          <TvVintageFrame active={tvTheme === 'vintage'}><TvPlayer ref={playerRef} videoId={currentSong.video_id} onEnded={handleNextSong} onError={handlePlayerError} onTimeUpdate={handleTimeUpdate} rentalSession={rentalSession} onPlayingStateChange={(pl) => { if (room) updatePlaybackTick(room.id, pl, currentTime).catch(() => {}); }} /></TvVintageFrame>
+          <TvVintageFrame active={tvTheme === 'vintage'}><TvPlayer ref={playerRef} videoId={currentSong.video_id} onEnded={handleNextSong} onError={handlePlayerError} onTimeUpdate={handleTimeUpdate} rentalSession={rentalSession} onPlayingStateChange={(pl) => { setIsPaused(!pl); if (room) updatePlaybackTick(room.id, pl, currentTime).catch(() => {}); }} /></TvVintageFrame>
           <TvNextQueueTicker queue={nextSongs} />
-          <TvNowPlayingHUD song={currentSong} currentTime={currentTime} duration={duration} />
+          <TvNowPlayingHUD song={currentSong} currentTime={currentTime} duration={duration} isPaused={isPaused} onTogglePlayPause={() => playerRef.current?.togglePlayPause()} />
         </>
       )}
       <TvViewOverlays roomCode={roomCode} roomName={room?.zone_name || room?.name} joinUrl={joinUrl} currentSong={currentSong} banners={banners} showUnlinkModal={showUnlinkModal} setShowUnlinkModal={setShowUnlinkModal} onUnlink={onUnlink} />

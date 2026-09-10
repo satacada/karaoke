@@ -110,7 +110,7 @@ export const TvPlayer = forwardRef<TvPlayerRef, TvPlayerProps>(function TvPlayer
   return (
     <div onClick={togglePlayPause} className="relative w-full h-full bg-black flex items-center justify-center overflow-hidden cursor-pointer tv-player-container">
       <div ref={containerRef} className="w-full h-full" />
-      <TvPauseOverlay isPaused={isPaused} rentalSession={rentalSession} />
+      <TvPauseOverlay isPaused={isPaused} rentalSession={rentalSession} onPlay={togglePlayPause} />
     </div>
   );
 });
