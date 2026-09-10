@@ -94,17 +94,9 @@ export const SuperAdminApprovalModal: FC<SuperAdminApprovalModalProps> = ({
                   type="button"
                   disabled={actingId === room.id}
                   onClick={() => handleToggle(room)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-black shrink-0 flex items-center gap-1 transition-all active:scale-95 ${
-                    room.is_approved
-                      ? 'bg-rose-950/60 border border-rose-800/40 text-rose-300 hover:bg-rose-900/60'
-                      : 'bg-emerald-500 text-zinc-950 hover:bg-emerald-400 shadow-md shadow-emerald-500/20'
-                  }`}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-black shrink-0 flex items-center gap-1 transition-all active:scale-95 ${room.is_approved ? 'bg-rose-950/60 border border-rose-800/40 text-rose-300 hover:bg-rose-900/60' : 'bg-emerald-500 text-zinc-950 hover:bg-emerald-400 shadow-md shadow-emerald-500/20'}`}
                 >
-                  {room.is_approved ? (
-                    <><Ban className="w-3.5 h-3.5" /> Suspender</>
-                  ) : (
-                    <><CheckCircle className="w-3.5 h-3.5" /> Aprobar</>
-                  )}
+                  {room.is_approved ? <><Ban className="w-3.5 h-3.5" /> Suspender</> : <><CheckCircle className="w-3.5 h-3.5" /> Aprobar</>}
                 </button>
               </div>
             ))

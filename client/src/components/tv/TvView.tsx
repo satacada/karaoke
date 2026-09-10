@@ -93,6 +93,10 @@ export const TvView: FC<{ roomCode?: string }> = ({ roomCode = 'FIESTA' }) => {
     );
   }
 
+  const handlePlayingStateChange = useCallback((playing: boolean) => {
+    if (room) updatePlaybackTick(room.id, playing, currentTime).catch(() => {});
+  }, [room, currentTime]);
+
   return (
     <div className="relative w-full h-screen bg-black overflow-hidden select-none">
       {errorNotice && (
@@ -100,7 +104,7 @@ export const TvView: FC<{ roomCode?: string }> = ({ roomCode = 'FIESTA' }) => {
           <AlertCircle className="w-4 h-4 text-amber-300 animate-pulse" /><span>{errorNotice}</span>
         </div>
       )}
-      <TvPlayer ref={playerRef} videoId={currentSong.video_id} onEnded={handleNextSong} onError={handlePlayerError} onTimeUpdate={handleTimeUpdate} />
+      <TvPlayer ref={playerRef} videoId={currentSong.video_id} onEnded={handleNextSong} onError={handlePlayerError} onTimeUpdate={handleTimeUpdate} onPlayingStateChange={handlePlayingStateChange} />
       <TvNextQueueTicker queue={nextSongs} />
       <TvFloatingQr roomCode={roomCode} joinUrl={joinUrl} currentSongId={currentSong.id} />
       <TvNowPlayingHUD song={currentSong} currentTime={currentTime} duration={duration} />
@@ -110,3 +114,4 @@ export const TvView: FC<{ roomCode?: string }> = ({ roomCode = 'FIESTA' }) => {
     </div>
   );
 };
+

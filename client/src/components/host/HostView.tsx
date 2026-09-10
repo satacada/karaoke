@@ -10,7 +10,7 @@ import { HostTransportBar } from './HostTransportBar';
 import { HostMultiRoomBar } from './multiroom/HostMultiRoomBar';
 import { HostModals } from './HostModals';
 import { HostPendingApprovalView } from './HostPendingApprovalView';
-import { sendRemoteCommand, reorderQueueItem, purgeGuestSongs, deleteQueueItem, resetRoomQueue, updateRoomBanners, toggleQueueLock, getRoomsForOwner } from '../../services/karaokeApi';
+import { sendRemoteCommand, reorderQueueItem, purgeGuestSongs, deleteQueueItem, resetRoomQueue, updateRoomBanners, toggleQueueLock, getRoomsForOwner, updatePlaybackTick } from '../../services/karaokeApi';
 import type { QueueItem, KaraokeRoom } from '../../types';
 
 const SUPER_ADMINS = (import.meta.env.VITE_SUPER_ADMIN_EMAILS || 'satacada@gmail.com,david@gmail.com,admin@karaoke.com').toLowerCase().split(',').map((s: string) => s.trim());
@@ -20,8 +20,10 @@ export const HostView: FC<{ roomCode?: string }> = ({ roomCode = 'FIESTA' }) => 
   const [isAuthenticated, setIsAuthenticated] = useState(() => sessionStorage.getItem(`host_auth_${roomCode}`) === 'true');
   const [isOwner, setIsOwner] = useState(false);
   const [ownerEmail, setOwnerEmail] = useState<string | null>(null);
+  const [userName, setUserName] = useState<string | null>(null);
   const [ownerRooms, setOwnerRooms] = useState<KaraokeRoom[]>([]);
   const [volume, setVolume] = useState(100);
+  const [isPlaying, setIsPlaying] = useState(true);
   const [showResetModal, setShowResetModal] = useState(false); const [showGuestModal, setShowGuestModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false); const [showSuperAdminModal, setShowSuperAdminModal] = useState(false);
   const [showBannersModal, setShowBannersModal] = useState(false); const [showMasterHubModal, setShowMasterHubModal] = useState(false);
@@ -32,6 +34,10 @@ export const HostView: FC<{ roomCode?: string }> = ({ roomCode = 'FIESTA' }) => 
   const { room, currentSong, nextSongs, handleNextSong, refreshState } = useTvRealtime(activeCode);
   const isSuperAdmin = Boolean(ownerEmail && SUPER_ADMINS.includes(ownerEmail.toLowerCase()));
 
+  useEffect(() => {
+    if (room?.is_playing !== undefined) setIsPlaying(room.is_playing);
+  }, [room?.is_playing]);
+
   const loadOwnerRooms = async (email: string) => {
     const r = await getRoomsForOwner(email); setOwnerRooms(r);
   };
@@ -39,24 +45,39 @@ export const HostView: FC<{ roomCode?: string }> = ({ roomCode = 'FIESTA' }) => 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       if (data?.user?.email) {
-        setIsOwner(true); setOwnerEmail(data.user.email); setIsAuthenticated(true);
+        setIsOwner(true); setOwnerEmail(data.user.email);
+        const name = data.user.user_metadata?.full_name || data.user.user_metadata?.name || data.user.email.split('@')[0];
+        setUserName(name); setIsAuthenticated(true);
         sessionStorage.setItem(`host_auth_${activeCode}`, 'true');
         loadOwnerRooms(data.user.email);
-      } else {
-        loadOwnerRooms('all');
-      }
+      } else { loadOwnerRooms('all'); }
     });
   }, [activeCode]);
 
   const handleAuth = (asOwner = false, email?: string) => {
     sessionStorage.setItem(`host_auth_${activeCode}`, 'true');
-    if (asOwner) { setIsOwner(true); if (email) { setOwnerEmail(email); loadOwnerRooms(email); } }
-    else { loadOwnerRooms('all'); }
+    if (asOwner) {
+      setIsOwner(true);
+      if (email) { setOwnerEmail(email); setUserName(email.split('@')[0]); loadOwnerRooms(email); }
+    } else { loadOwnerRooms('all'); }
     setIsAuthenticated(true);
+  };
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    sessionStorage.removeItem(`host_auth_${activeCode}`);
+    setIsAuthenticated(false); setIsOwner(false); setOwnerEmail(null); setUserName(null);
   };
 
   const handleCommand = (cmd: 'play' | 'pause' | 'skip' | 'volume' | 'seek', payload: Record<string, unknown> = {}) => {
     if (room) sendRemoteCommand(room.id, cmd, payload);
+  };
+
+  const handleTogglePlayPause = () => {
+    const nextPlaying = !isPlaying;
+    setIsPlaying(nextPlaying);
+    handleCommand(nextPlaying ? 'play' : 'pause');
+    if (room) updatePlaybackTick(room.id, nextPlaying, room.current_time_seconds || 0).catch(() => {});
   };
 
   const handleDrop = async (targetIndex: number) => {
@@ -69,7 +90,7 @@ export const HostView: FC<{ roomCode?: string }> = ({ roomCode = 'FIESTA' }) => 
 
   if (!isAuthenticated) return <HostAuth expectedPin={room?.host_pin || '1234'} roomCode={activeCode} onAuthenticated={handleAuth} />;
   if (room && room.is_approved === false && !isSuperAdmin) {
-    return <HostPendingApprovalView roomCode={activeCode} businessName={room.business_name || room.name} ownerEmail={ownerEmail || 'No asignado'} onLoggedOut={() => setIsAuthenticated(false)} />;
+    return <HostPendingApprovalView roomCode={activeCode} businessName={room.business_name || room.name} ownerEmail={ownerEmail || 'No asignado'} onLoggedOut={handleLogout} />;
   }
 
   return (
@@ -77,7 +98,7 @@ export const HostView: FC<{ roomCode?: string }> = ({ roomCode = 'FIESTA' }) => 
       {ownerRooms.length > 1 && (
         <HostMultiRoomBar rooms={ownerRooms} currentRoomId={room?.id || ''} onSelectRoom={(r) => setActiveCode(r.room_code)} onOpenMasterHub={() => setShowMasterHubModal(true)} onOpenCreateRoom={() => setShowCreateRoomModal(true)} />
       )}
-      <HostHeader roomCode={activeCode} zoneName={room?.zone_name} isOwner={isOwner} isSuperAdmin={isSuperAdmin} isQueueLocked={Boolean(room?.is_queue_locked)} onToggleQueueLock={async () => { if (room) { await toggleQueueLock(room.id, !room.is_queue_locked); refreshState(); } }} onOpenGuests={() => setShowGuestModal(true)} onOpenReset={() => setShowResetModal(true)} onOpenSettings={() => setShowSettingsModal(true)} onOpenSuperAdmin={() => setShowSuperAdminModal(true)} onOpenBanners={() => setShowBannersModal(true)} onOpenMasterHub={() => setShowMasterHubModal(true)} />
+      <HostHeader roomCode={activeCode} zoneName={room?.zone_name} isOwner={isOwner} isSuperAdmin={isSuperAdmin} isQueueLocked={Boolean(room?.is_queue_locked)} userName={userName} ownerEmail={ownerEmail} onLogout={handleLogout} onToggleQueueLock={async () => { if (room) { await toggleQueueLock(room.id, !room.is_queue_locked); refreshState(); } }} onOpenGuests={() => setShowGuestModal(true)} onOpenReset={() => setShowResetModal(true)} onOpenSettings={() => setShowSettingsModal(true)} onOpenSuperAdmin={() => setShowSuperAdminModal(true)} onOpenBanners={() => setShowBannersModal(true)} onOpenMasterHub={() => setShowMasterHubModal(true)} />
       <section className="mb-4"><HostNowPlayingCard currentSong={currentSong} currentTime={room?.current_time_seconds || 0} onSkip={handleNextSong} /></section>
       <section className="flex-1 flex flex-col gap-2">
         <div className="flex items-center gap-1.5 text-xs text-zinc-400 font-bold uppercase tracking-wider mb-1">
@@ -88,7 +109,7 @@ export const HostView: FC<{ roomCode?: string }> = ({ roomCode = 'FIESTA' }) => 
         ))}
       </section>
       <HostModals showResetModal={showResetModal} isResetting={isResetting} onConfirmReset={async () => { if (room) { setIsResetting(true); await resetRoomQueue(room.id); setIsResetting(false); setShowResetModal(false); refreshState(); } }} onCloseReset={() => setShowResetModal(false)} showGuestModal={showGuestModal} nextSongs={nextSongs} onPurgeGuest={async (gid) => { if (room) await purgeGuestSongs(room.id, gid); refreshState(); setShowGuestModal(false); }} onCloseGuest={() => setShowGuestModal(false)} songToDelete={songToDelete} onConfirmDeleteSong={async () => { if (songToDelete) await deleteQueueItem(songToDelete.id); setSongToDelete(null); refreshState(); }} onCloseDeleteSong={() => setSongToDelete(null)} showSettingsModal={showSettingsModal} room={room} ownerEmail={ownerEmail} onCloseSettings={() => setShowSettingsModal(false)} onSavedSettings={refreshState} showSuperAdminModal={showSuperAdminModal} onCloseSuperAdmin={() => setShowSuperAdminModal(false)} onUpdatedSuperAdmin={refreshState} showBannersModal={showBannersModal} onCloseBanners={() => setShowBannersModal(false)} onSaveBanners={async (b) => { if (room) await updateRoomBanners(room.id, b); refreshState(); setShowBannersModal(false); }} showMasterHubModal={showMasterHubModal} ownerRooms={ownerRooms} onCloseMasterHub={() => setShowMasterHubModal(false)} onRefreshMasterHub={() => { refreshState(); if (ownerEmail) loadOwnerRooms(ownerEmail); }} onOpenTransfer={(r) => setRoomToTransfer(r)} onOpenCreateRoom={() => setShowCreateRoomModal(true)} showCreateRoomModal={showCreateRoomModal} onCloseCreateRoom={() => setShowCreateRoomModal(false)} onCreatedRoom={(newR) => { if (ownerEmail) loadOwnerRooms(ownerEmail); setActiveCode(newR.room_code); }} roomToTransfer={roomToTransfer} onCloseTransfer={() => setRoomToTransfer(null)} onTransferred={() => { refreshState(); if (ownerEmail) loadOwnerRooms(ownerEmail); }} />
-      <HostTransportBar isPlaying={room?.is_playing || false} volume={volume} onPlayPause={() => handleCommand(room?.is_playing ? 'pause' : 'play')} onSkip={handleNextSong} onSeek={(sec) => handleCommand('seek', { seconds: (room?.current_time_seconds || 0) + sec })} onVolumeChange={(v) => { setVolume(v); handleCommand('volume', { volume: v }); }} />
+      <HostTransportBar isPlaying={isPlaying} volume={volume} onPlayPause={handleTogglePlayPause} onSkip={handleNextSong} onSeek={(sec) => handleCommand('seek', { seconds: (room?.current_time_seconds || 0) + sec })} onVolumeChange={(v) => { setVolume(v); handleCommand('volume', { volume: v }); }} />
     </div>
   );
 };

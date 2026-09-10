@@ -1,17 +1,9 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import type { KaraokeRoom, QueueItem, RemoteCommand } from '../types';
-import {
-  getRoomByCode,
-  getQueueForRoom,
-  advanceNextSong,
-  markCommandExecuted,
-} from '../services/karaokeApi';
+import { getRoomByCode, getQueueForRoom, advanceNextSong, markCommandExecuted } from '../services/karaokeApi';
 
-export function useTvRealtime(
-  roomCode: string,
-  onRemoteCommand?: (command: RemoteCommand) => void
-) {
+export function useTvRealtime(roomCode: string, onRemoteCommand?: (command: RemoteCommand) => void) {
   const [room, setRoom] = useState<KaraokeRoom | null>(null);
   const [currentSong, setCurrentSong] = useState<QueueItem | null>(null);
   const [nextSongs, setNextSongs] = useState<QueueItem[]>([]);
@@ -92,30 +84,25 @@ export function useTvRealtime(
           onCommandRef.current({ id: 'b_local', room_id: roomId, command: 'set_promo_banners', payload: { banners: payload.banners }, is_executed: true, created_at: new Date().toISOString() });
         }
       })
-      .on(
-        'postgres_changes',
-        { event: 'UPDATE', schema: 'public', table: 'karaoke_rooms', filter: `id=eq.${roomId}` },
-        (payload) => {
-          const updated = payload.new as KaraokeRoom;
-          setRoom((prev) => {
-            if (!prev) return updated;
-            if (
-              prev.current_song_id !== updated.current_song_id ||
-              prev.status !== updated.status ||
-              prev.is_queue_locked !== updated.is_queue_locked ||
-              JSON.stringify(prev.promo_banners) !== JSON.stringify(updated.promo_banners)
-            ) {
-              return updated;
-            }
-            return prev;
-          });
-        }
-      )
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'karaoke_rooms', filter: `id=eq.${roomId}` }, (payload) => {
+        const updated = payload.new as KaraokeRoom;
+        setRoom((prev) => {
+          if (!prev) return updated;
+          if (
+            prev.current_song_id !== updated.current_song_id ||
+            prev.status !== updated.status ||
+            prev.is_queue_locked !== updated.is_queue_locked ||
+            prev.is_playing !== updated.is_playing ||
+            JSON.stringify(prev.promo_banners) !== JSON.stringify(updated.promo_banners)
+          ) {
+            return updated;
+          }
+          return prev;
+        });
+      })
       .subscribe();
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    return () => { supabase.removeChannel(channel); };
   }, [roomId, refreshState]);
 
   return {
@@ -127,3 +114,4 @@ export function useTvRealtime(
     refreshState: () => (roomRef.current ? refreshState(roomRef.current.id) : Promise.resolve()),
   };
 }
+
