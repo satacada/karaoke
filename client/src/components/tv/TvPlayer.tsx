@@ -11,10 +11,11 @@ interface TvPlayerProps {
   videoId: string; onEnded: () => void; onError?: (errorCode: number) => void;
   onTimeUpdate?: (currentTime: number, duration: number) => void;
   onPlayingStateChange?: (isPlaying: boolean) => void;
+  rentalSession?: import('../../types').RoomRentalSession | null;
 }
 
 export const TvPlayer = forwardRef<TvPlayerRef, TvPlayerProps>(function TvPlayer(
-  { videoId, onEnded, onError, onTimeUpdate, onPlayingStateChange }, ref
+  { videoId, onEnded, onError, onTimeUpdate, onPlayingStateChange, rentalSession }, ref
 ) {
   const containerRef = useRef<HTMLDivElement>(null);
   const playerRef = useRef<YTPlayerInstance | null>(null);
@@ -109,7 +110,7 @@ export const TvPlayer = forwardRef<TvPlayerRef, TvPlayerProps>(function TvPlayer
   return (
     <div onClick={togglePlayPause} className="relative w-full h-full bg-black flex items-center justify-center overflow-hidden cursor-pointer tv-player-container">
       <div ref={containerRef} className="w-full h-full" />
-      <TvPauseOverlay isPaused={isPaused} />
+      <TvPauseOverlay isPaused={isPaused} rentalSession={rentalSession} />
     </div>
   );
 });

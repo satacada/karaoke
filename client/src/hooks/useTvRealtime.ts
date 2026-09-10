@@ -68,6 +68,9 @@ export function useTvRealtime(roomCode: string, onRemoteCommand?: (command: Remo
       .on('broadcast', { event: 'set_auto_dj' }, ({ payload }) => {
         if (payload) setRoom((p) => p ? { ...p, auto_dj_enabled: payload.enabled, auto_dj_genre: payload.genre } : p);
       })
+      .on('broadcast', { event: 'set_rental_time' }, ({ payload }) => {
+        if (onCommandRef.current && payload) onCommandRef.current({ id: 'b_rent', room_id: roomId, command: 'set_rental_time', payload: { rental_session: payload }, is_executed: true, created_at: new Date().toISOString() });
+      })
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'karaoke_rooms', filter: `id=eq.${roomId}` }, (payload) => {
         const updated = payload.new as KaraokeRoom;
         setRoom((prev) => {

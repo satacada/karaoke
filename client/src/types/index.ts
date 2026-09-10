@@ -12,6 +12,13 @@ export interface PromoBanner {
   expires_at?: number | null;
 }
 
+export interface RoomRentalSession {
+  enabled: boolean;
+  totalMinutes: number;
+  startedAt: number;
+  expiresAt: number;
+}
+
 export interface KaraokeRoom {
   id: string; room_code: string; host_pin: string; name: string; status: RoomStatus;
   current_song_id: string | null; is_playing: boolean; current_time_seconds: number; volume_percent: number;
@@ -21,6 +28,7 @@ export interface KaraokeRoom {
   promo_banners?: PromoBanner[]; allow_vip_boost?: boolean;
   is_queue_locked?: boolean; auto_dj_enabled?: boolean; auto_dj_genre?: string;
   zone_name?: string; allowed_genres?: string[]; vip_price_ars?: number; is_synced_master?: boolean; master_room_id?: string | null;
+  rental_session?: RoomRentalSession | null;
 }
 
 export type QueueStatus =
@@ -38,7 +46,7 @@ export interface KaraokeGuest {
   is_active: boolean; joined_at: string; last_seen_at: string;
 }
 
-export type CommandType = 'play' | 'pause' | 'skip' | 'previous' | 'seek' | 'volume' | 'set_promo_banners' | 'toggle_queue_lock' | 'sync_master_track' | 'flash_identify' | 'unlink_tv';
+export type CommandType = 'play' | 'pause' | 'skip' | 'previous' | 'seek' | 'volume' | 'set_promo_banners' | 'toggle_queue_lock' | 'sync_master_track' | 'flash_identify' | 'unlink_tv' | 'set_rental_time';
 
 export interface LiveReaction {
   id: string;

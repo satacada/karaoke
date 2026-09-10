@@ -10,7 +10,8 @@ import { HostCreateRoomModal } from './multiroom/HostCreateRoomModal';
 import { HostTransferQueueModal } from './multiroom/HostTransferQueueModal';
 import { HostAutoDjModal } from './HostAutoDjModal';
 import { HostPairTvModal } from './HostPairTvModal';
-import type { KaraokeRoom, QueueItem, PromoBanner } from '../../types';
+import { HostRentalModal } from './HostRentalModal';
+import type { KaraokeRoom, QueueItem, PromoBanner, RoomRentalSession } from '../../types';
 
 interface HostModalsProps {
   showResetModal: boolean; isResetting: boolean; onConfirmReset: () => void; onCloseReset: () => void;
@@ -25,6 +26,7 @@ interface HostModalsProps {
   roomToTransfer: KaraokeRoom | null; onCloseTransfer: () => void; onTransferred: () => void;
   showAutoDjModal?: boolean; onCloseAutoDj?: () => void; onUpdatedAutoDj?: () => void;
   showPairTvModal?: boolean; initialTvCode?: string; onOpenPairTv?: () => void; onClosePairTv?: () => void; onPairedTv?: (roomCode: string) => void;
+  showRentalModal?: boolean; onCloseRental?: () => void; onRentalUpdated?: (session: RoomRentalSession | null) => void;
 }
 
 export const HostModals: FC<HostModalsProps> = ({
@@ -39,6 +41,7 @@ export const HostModals: FC<HostModalsProps> = ({
   roomToTransfer, onCloseTransfer, onTransferred,
   showAutoDjModal = false, onCloseAutoDj = () => {}, onUpdatedAutoDj = () => {},
   showPairTvModal = false, initialTvCode = '', onOpenPairTv = () => {}, onClosePairTv = () => {}, onPairedTv = () => {},
+  showRentalModal = false, onCloseRental = () => {}, onRentalUpdated = () => {},
 }) => {
   return (
     <>
@@ -55,6 +58,7 @@ export const HostModals: FC<HostModalsProps> = ({
       )}
       <HostAutoDjModal isOpen={showAutoDjModal} room={room} onClose={onCloseAutoDj} onUpdated={onUpdatedAutoDj} />
       <HostPairTvModal isOpen={showPairTvModal} initialCode={initialTvCode} rooms={ownerRooms} onClose={onClosePairTv} onSuccess={onPairedTv} />
+      <HostRentalModal isOpen={showRentalModal} roomId={room?.id || ''} roomCode={room?.room_code || ''} roomName={room?.zone_name || room?.name || 'Sala'} onClose={onCloseRental} onSessionUpdated={onRentalUpdated} />
     </>
   );
 };

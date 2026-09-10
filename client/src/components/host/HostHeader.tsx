@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import { RotateCcw, Users, Settings, Crown, ShieldCheck, Megaphone, Lock, LockOpen, SlidersHorizontal, Disc3, Sun, Moon, Sparkles, Droplets, Type, Tv } from 'lucide-react';
+import { RotateCcw, Users, Settings, Crown, ShieldCheck, Megaphone, Lock, LockOpen, SlidersHorizontal, Disc3, Sun, Moon, Sparkles, Droplets, Type, Tv, Clock } from 'lucide-react';
 
 interface HostHeaderProps {
   roomCode: string; zoneName?: string; isOwner?: boolean; isSuperAdmin?: boolean;
@@ -9,13 +9,14 @@ interface HostHeaderProps {
   onOpenGuests: () => void; onOpenReset: () => void; onOpenSettings: () => void;
   onOpenSuperAdmin?: () => void; onOpenBanners?: () => void; onOpenAutoDj?: () => void;
   onToggleQueueLock?: () => void; onOpenMasterHub?: () => void; onSwitchToTv?: () => void;
+  onOpenRental?: () => void; isRentalActive?: boolean;
 }
 
 export const HostHeader: FC<HostHeaderProps> = ({
   roomCode, zoneName, isOwner, isSuperAdmin, isQueueLocked, isAutoDjActive = false,
   userName, ownerEmail, currentTheme = 'dark', onToggleTheme, currentFontSize = 'normal', onToggleFontSize, onLogout,
   onOpenGuests, onOpenReset, onOpenSettings, onOpenSuperAdmin, onOpenBanners,
-  onOpenAutoDj, onToggleQueueLock, onOpenMasterHub, onSwitchToTv,
+  onOpenAutoDj, onToggleQueueLock, onOpenMasterHub, onSwitchToTv, onOpenRental, isRentalActive = false,
 }) => {
   return (
     <header className="py-2 border-b border-zinc-800/80 mb-3 space-y-2">
@@ -72,6 +73,11 @@ export const HostHeader: FC<HostHeaderProps> = ({
         {onSwitchToTv && (
           <button type="button" onClick={onSwitchToTv} className="p-2 rounded-xl bg-purple-600/20 border border-purple-500/50 text-purple-300 active:scale-95 transition-all flex items-center gap-1.5 shrink-0" title="Ver pantalla y código QR para invitados">
             <Tv className="w-4 h-4 text-pink-400" /><span className="text-[11px] font-bold">Modo Android (QR)</span>
+          </button>
+        )}
+        {onOpenRental && (
+          <button type="button" onClick={onOpenRental} className={`p-2 rounded-xl border flex items-center gap-1.5 text-xs font-medium transition-all active:scale-95 shrink-0 ${isRentalActive ? 'bg-purple-600/30 border-purple-500 text-purple-200 shadow-md shadow-purple-950/40' : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-zinc-200'}`} title="Control de tiempo alquilado de sala">
+            <Clock className={`w-4 h-4 ${isRentalActive ? 'text-purple-400 animate-pulse' : ''}`} /><span className="text-[11px] font-semibold">{isRentalActive ? 'Tiempo Sala' : 'Alquiler'}</span>
           </button>
         )}
         {onOpenAutoDj && (

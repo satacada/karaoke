@@ -4,6 +4,48 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.23.0] - 2026-09-10
+
+### 🚀 [ESPECIFICACIÓN / FEATURE]
+- **Reproducción Continua de Música Inteligente (Auto-DJ Ininterrumpido):**
+  - **Encadenamiento Proactivo Sin Silencios (`useTvAutoDj.ts`):** Al dar click en *"▶ Iniciar Música Inteligente"* (en la TV o desde el celular del mozo/anfitrión), se activa de forma persistente `auto_dj_enabled = true`. El sistema encola preventivamente la siguiente canción mientras la actual está sonando, garantizando una cadena infinita sin regresar a pantalla de reposo.
+  - **Condiciones Estrictas de Parada:** La música inteligente NO se detiene jamás por sí sola; únicamente se detiene si:
+    1. El administrador o mozo pausa la sala remotamente (`room.status === 'paused'` o comando `pause`).
+    2. El administrador o mozo corta / apaga la música inteligente (`auto_dj_enabled = false`).
+    3. El mozo o usuario en la sala pausa la música usando el control remoto físico de la TV o tocando la pantalla.
+  - **Prioridad de Invitados:** Si los invitados piden canciones con sus celulares, el Auto-DJ cede el paso de inmediato; al terminar los pedidos de la gente, la música inteligente retoma sin baches.
+- **Cronómetro de Tiempo Transcurrido en Pausa ("Tiempo de corrida de pausa"):**
+  - **Contador Ascendente en Vivo (`TvPauseOverlay.tsx`):** Al pausar la música, se activa un cronómetro en tiempo real que contabiliza exactamente cuánto tiempo lleva en pausa la sala (formato `mm:ss` o `hh:mm:ss`, ej. `⏱️ Tiempo en Pausa: 02:45 min`).
+  - Se resetea automáticamente al presionar Play o reanudar desde el control remoto.
+- **Contador de Tiempo de Sala Alquilada por Horas (Locales Multi-Sala y KTVs):**
+  - **Gestión desde el Celular del Mozo / Anfitrión (`HostRentalModal.tsx`):** Modal optimizado para celulares con presets rápidos para asignar tiempo de sala (`30 min`, `1 hora`, `2 horas (KTV)`, `3 horas`) y botones de extensión rápida (`+15 min`, `+30 min`, `+1 hora`) o liberación de la sala.
+  - **Visualización Condicional en TV (`TvPauseOverlay.tsx` & `TvRentalBadge.tsx`):**
+    - En la pantalla de pausa: Muestra el tiempo restante con barra de progreso y el total contratado (ej. `⏳ Tiempo de Sala Restante: 01:45:20 de 2h contratadas`).
+    - Durante la reproducción: Distintivo flotante y discreto en la TV (`TvRentalBadge.tsx`).
+    - **Regla Estricta:** Si la sala no opera bajo la modalidad de alquiler por horas (modo libre), el contador de sala permanece completamente oculto.
+  - **Sincronización Híbrida Realtime y Offline-Ready (`rentalService.ts`):** Canal de broadcast Supabase Realtime, comandos remotos bidireccionales y persistencia local sin requerir DDL destructivo.
+  - **Migración DDL Documentada (`supabase/migrations/08_room_rental_sessions.sql`):** Columnas opcionales `rental_duration_minutes`, `rental_started_at` y `rental_expires_at` para la base de datos.
+
+### 🔧 [AFINAMIENTO / REFINAMIENTO]
+- **Estricto Cumplimiento Clean-by-Design ($\le 120$ líneas por archivo):**
+  - `client/src/types/index.ts`: 91 líneas.
+  - `client/src/services/rentalService.ts`: 72 líneas.
+  - `client/src/hooks/useTvAutoDj.ts`: 73 líneas.
+  - `client/src/hooks/useTvRealtime.ts`: 107 líneas.
+  - `client/src/components/tv/TvPauseOverlay.tsx`: 107 líneas.
+  - `client/src/components/tv/TvRentalBadge.tsx`: 60 líneas.
+  - `client/src/components/tv/TvPlayer.tsx`: 117 líneas.
+  - `client/src/components/tv/TvView.tsx`: 119 líneas.
+  - `client/src/components/host/HostHeader.tsx`: 102 líneas.
+  - `client/src/components/host/HostRentalModal.tsx`: 116 líneas.
+  - `client/src/components/host/HostModals.tsx`: 65 líneas.
+  - `client/src/components/host/HostView.tsx`: 116 líneas.
+- **Validación Automatizada:**
+  - Compilación de producción con TypeScript y Vite 8 exitosa (código 0).
+  - 10/10 pruebas unitarias con Vitest pasando.
+
+---
+
 ## [1.22.0] - 2026-09-10
 
 ### 🚀 [ESPECIFICACIÓN / FEATURE]

@@ -6,9 +6,10 @@ import { TvPlayer, type TvPlayerRef } from './TvPlayer'; import { TvIdleScreen }
 import { TvNowPlayingHUD } from './TvNowPlayingHUD'; import { TvNextQueueTicker } from './TvNextQueueTicker';
 import { TvSidebarOverlay } from './TvSidebarOverlay'; import { TvFloatingReactions } from './TvFloatingReactions';
 import { TvVintageFrame } from './TvVintageFrame'; import { TvUnlinkModal } from './TvUnlinkModal';
-import { updatePlaybackTick } from '../../services/karaokeApi';
-import { enqueueAutoDjSong } from '../../services/autoDjService';
-import type { RemoteCommand, PromoBanner } from '../../types';
+import { TvRentalBadge } from './TvRentalBadge';
+import { updatePlaybackTick, updateRoomSettings } from '../../services/karaokeApi';
+import { enqueueAutoDjSong } from '../../services/autoDjService'; import { getLocalRentalSession } from '../../services/rentalService';
+import type { RemoteCommand, PromoBanner, RoomRentalSession } from '../../types';
 
 export const TvView: FC<{ roomCode?: string; onUnlink?: () => void }> = ({ roomCode = 'FIESTA', onUnlink }) => {
   const playerRef = useRef<TvPlayerRef>(null); const lastSyncRef = useRef<number>(0);
@@ -17,6 +18,7 @@ export const TvView: FC<{ roomCode?: string; onUnlink?: () => void }> = ({ roomC
   const [errorNotice, setErrorNotice] = useState<string | null>(null); const [banners, setBanners] = useState<PromoBanner[]>([]);
   const [showUnlinkModal, setShowUnlinkModal] = useState(false); const [isFlashing, setIsFlashing] = useState(false);
   const [isStartingAutoDj, setIsStartingAutoDj] = useState(false);
+  const [rentalSession, setRentalSession] = useState<RoomRentalSession | null>(() => getLocalRentalSession(roomCode));
   const [tvTheme, setTvTheme] = useState<'vintage' | 'modern'>(() => (localStorage.getItem(`tv_theme_${roomCode}`) as 'vintage' | 'modern') || 'modern');
 
   const handleRemoteCommand = useCallback((cmd: RemoteCommand) => {
@@ -27,9 +29,11 @@ export const TvView: FC<{ roomCode?: string; onUnlink?: () => void }> = ({ roomC
       case 'seek': if (cmd.payload?.seconds !== undefined) playerRef.current?.seekTo(cmd.payload.seconds); break;
       case 'unlink_tv': try { localStorage.removeItem('tv_paired_room'); } catch {} onUnlink?.(); break;
       case 'flash_identify': setIsFlashing(true); setTimeout(() => setIsFlashing(false), 4500); break;
+      case 'set_rental_time': if (cmd.payload?.rental_session) setRentalSession((cmd.payload.rental_session as RoomRentalSession).enabled ? (cmd.payload.rental_session as RoomRentalSession) : null); break;
       case 'volume':
         if (cmd.payload?.action === 'unlink_tv') { try { localStorage.removeItem('tv_paired_room'); } catch {} onUnlink?.(); }
         else if (cmd.payload?.action === 'set_tv_theme' && cmd.payload.theme) { const t = cmd.payload.theme as 'vintage' | 'modern'; setTvTheme(t); try { localStorage.setItem(`tv_theme_${roomCode}`, t); } catch {} }
+        else if (cmd.payload?.action === 'set_rental_time' && cmd.payload.rental_session) { setRentalSession((cmd.payload.rental_session as RoomRentalSession).enabled ? (cmd.payload.rental_session as RoomRentalSession) : null); }
         else if (cmd.payload?.volume !== undefined) playerRef.current?.setVolume(cmd.payload.volume);
         break;
       case 'set_promo_banners':
@@ -40,7 +44,7 @@ export const TvView: FC<{ roomCode?: string; onUnlink?: () => void }> = ({ roomC
 
   const { room, currentSong, nextSongs, isLoading, handleNextSong, refreshState } = useTvRealtime(roomCode, handleRemoteCommand);
   handleNextSongRef.current = handleNextSong;
-  useTvAutoDj(room, currentSong, nextSongs, refreshState);
+  useTvAutoDj(room, currentSong, nextSongs, refreshState, handleNextSong);
   useWakeLock(Boolean(currentSong));
   useMediaSession(currentSong, room?.name || 'Rockola', room?.is_playing !== false, {
     onPlay: () => playerRef.current?.play(), onPause: () => playerRef.current?.pause(), onNext: () => handleNextSongRef.current(),
@@ -49,7 +53,11 @@ export const TvView: FC<{ roomCode?: string; onUnlink?: () => void }> = ({ roomC
   const handleStartAutoDj = useCallback(async () => {
     if (!room || isStartingAutoDj) return;
     setIsStartingAutoDj(true);
-    try { await enqueueAutoDjSong(room.id, room.auto_dj_genre); await refreshState(); } catch (err) { console.error('Auto-DJ start error:', err); }
+    try {
+      await updateRoomSettings(room.id, { auto_dj_enabled: true, is_playing: true });
+      await enqueueAutoDjSong(room.id, room.auto_dj_genre);
+      await refreshState();
+    } catch (err) { console.error('Auto-DJ start error:', err); }
     finally { setIsStartingAutoDj(false); }
   }, [room, isStartingAutoDj, refreshState]);
   handleStartAutoDjRef.current = handleStartAutoDj;
@@ -92,11 +100,12 @@ export const TvView: FC<{ roomCode?: string; onUnlink?: () => void }> = ({ roomC
         </div>
       )}
       {errorNotice && <div className="absolute top-20 left-1/2 -translate-x-1/2 z-50 bg-rose-600/90 backdrop-blur-md text-white px-5 py-2 rounded-2xl shadow-2xl border border-rose-400/40 text-sm font-semibold flex items-center gap-2"><AlertCircle className="w-4 h-4 text-amber-300 animate-pulse" /><span>{errorNotice}</span></div>}
+      <TvRentalBadge rentalSession={rentalSession} className="absolute top-4 left-4 z-40" />
       {!currentSong ? (
         <TvIdleScreen roomCode={roomCode} joinUrl={joinUrl} roomName={room?.name || 'Rockola Digital Live'} zoneName={room?.zone_name} status={room?.status} banners={banners} autoDjActive={Boolean(room?.auto_dj_enabled)} onStartAutoDj={handleStartAutoDj} isStartingAutoDj={isStartingAutoDj} />
       ) : (
         <>
-          <TvVintageFrame active={tvTheme === 'vintage'}><TvPlayer ref={playerRef} videoId={currentSong.video_id} onEnded={handleNextSong} onError={handlePlayerError} onTimeUpdate={handleTimeUpdate} onPlayingStateChange={(pl) => { if (room) updatePlaybackTick(room.id, pl, currentTime).catch(() => {}); }} /></TvVintageFrame>
+          <TvVintageFrame active={tvTheme === 'vintage'}><TvPlayer ref={playerRef} videoId={currentSong.video_id} onEnded={handleNextSong} onError={handlePlayerError} onTimeUpdate={handleTimeUpdate} rentalSession={rentalSession} onPlayingStateChange={(pl) => { if (room) updatePlaybackTick(room.id, pl, currentTime).catch(() => {}); }} /></TvVintageFrame>
           <TvNextQueueTicker queue={nextSongs} />
           <TvNowPlayingHUD song={currentSong} currentTime={currentTime} duration={duration} />
         </>

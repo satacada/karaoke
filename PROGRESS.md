@@ -1,8 +1,8 @@
 # 📊 PLAN MAESTRO DEL PROYECTO: ROCKOLA DIGITAL LIVE (SISTEMA MULTI-TENANT EN TIEMPO REAL)
 
-**Versión del Plan:** 2.19.0 (Modo Android Móvil: Celular Reproductor Bluetooth + Consola DJ + Audio en Segundo Plano)  
+**Versión del Plan:** 2.20.0 (Auto-DJ Ininterrumpido + Cronómetro de Pausa + Contador de Alquiler de Sala por Horas)  
 **Fecha de Emisión:** Septiembre 2026  
-**Estado:** 🟢 Fase 2 y Fase 3 (Modo Android Celular con Salida Bluetooth y Persistencia - Completo y Verificado)  
+**Estado:** 🟢 Fase 2 y Fase 3 (Música Inteligente Continua, Pausa Cronometrada y Multi-Sala por Horas - Completo y Verificado)  
 **Metodología:** Agile / BDD / Clean Architecture con Compuertas de Control Formales  
 **Alineación:** Estructura inspirada en `boot-ventas-saas` y `aplicacion para ofertas`  
 
@@ -114,7 +114,10 @@ La **Rockola Digital Live** es una plataforma SaaS multi-tenant distribuida para
 **Entregables:**
 - Módulo TV (`/tv`) completamente funcional con reproducción continua sin anuncios. (✅ COMPLETADO)
 - QR dinámico y recepción instantánea de órdenes del anfitrión. (✅ COMPLETADO)
-- Compilación de producción Vite 8 exitosa (1.03s, 0 errores). (✅ COMPLETADO)
+- Modo Auto-DJ Ininterrumpido: Encadenamiento preventivo continuo tema tras tema sin silencios ni paradas involuntarias. (✅ COMPLETADO)
+- Cronómetro de tiempo en pausa en tiempo real (`mm:ss`) al pausar la pantalla. (✅ COMPLETADO)
+- Contador de tiempo de sala alquilada condicional (`TvPauseOverlay` y `TvRentalBadge`) visible únicamente cuando la sala opera bajo tiempo contratado por horas. (✅ COMPLETADO)
+- Compilación de producción Vite 8 exitosa (código 0). (✅ COMPLETADO)
 - Script de prueba end-to-end contra Supabase pasando al 100% (`server/testTvFlow.js`). (✅ COMPLETADO)
 
 ---
@@ -130,12 +133,14 @@ La **Rockola Digital Live** es una plataforma SaaS multi-tenant distribuida para
    - Botón *"🚪 Quitar canciones de [Nombre]"* con modal accesible Tailwind CSS (cero `window.confirm`) ejecutando `fn_purge_guest_songs` (`HostGuestManagerModal.tsx`).
 4. [x] Desarrollar la barra de transporte multimedia flotante fija: Play/Pausa, Saltar canción (`skip`), Seek +/-10s, y control deslizante de volumen de la TV (`HostTransportBar.tsx`).
 5. [x] Implementar la función **"Reiniciar Fiesta a Cero" (Nueva Jornada)**: modal accesible de confirmación para vaciar la cola de ayer y regresar la TV a pantalla de espera (`HostResetQueueModal.tsx` y `resetRoomQueue`).
-6. [x] Pruebas de integración: validado ciclo completo de PIN, reordenamiento, purga de ausente y vaciado de sala al 100% (`server/testHostFlow.js`).
+6. [x] Implementar el gestor de **Tiempo de Sala Alquilada** para mozos y dueños (`HostRentalModal.tsx`): presets de 30m, 1h, 2h, 3h, extensiones rápidas (+15m, +30m) y liberación de sala.
+7. [x] Pruebas de integración: validado ciclo completo de PIN, reordenamiento, purga de ausente y vaciado de sala al 100% (`server/testHostFlow.js`).
 
 **Entregables:**
 - Consola DJ (`/host`) operativa con gestión de cola táctil, control remoto y purga de invitados. (✅ COMPLETADO)
-- Compilación de producción Vite 8 exitosa (751ms, 0 errores). (✅ COMPLETADO)
-- Script de prueba end-to-end contra Supabase pasando al 100% (`server/testHostFlow.js`). (✅ COMPLETADO)
+- Control de Alquiler de Sala por horas para locales multi-ambiente. (✅ COMPLETADO)
+- Compilación de producción Vite 8 exitosa (código 0). (✅ COMPLETADO)
+- Suite de 10 pruebas unitarias con Vitest pasando al 100%. (✅ COMPLETADO)
 
 ---
 
