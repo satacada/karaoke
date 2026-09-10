@@ -53,10 +53,10 @@ export const GuestReplaceSongModal: FC<GuestReplaceSongModalProps> = ({
         <button type="button" onClick={onClose} className="p-2 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white"><X className="w-4 h-4" /></button>
       </div>
 
-      <div className="mt-3 flex items-center gap-2 bg-zinc-900 border border-zinc-800 rounded-2xl px-3 py-2">
-        <Search className="w-4 h-4 text-zinc-500 shrink-0" />
-        <input type="text" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Buscar nuevo tema o karaoke..." className="bg-transparent text-xs text-white placeholder-zinc-500 focus:outline-none w-full" autoFocus />
-      </div>
+      <form onSubmit={(e) => { e.preventDefault(); if (query.trim()) { setLoading(true); searchVideos(query, filter).then((res) => { setResults(res); setLoading(false); }); } (document.activeElement as HTMLElement)?.blur(); }} className="mt-3 flex items-center gap-2 bg-zinc-900 border border-zinc-800 rounded-2xl px-3 py-2">
+        <button type="submit" className="text-zinc-500 hover:text-emerald-400 shrink-0"><Search className="w-4 h-4" /></button>
+        <input type="search" enterKeyHint="search" value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Buscar nuevo tema o karaoke..." className="bg-transparent text-xs text-white placeholder-zinc-500 focus:outline-none w-full" autoFocus />
+      </form>
 
       <div className="flex gap-1.5 mt-2 overflow-x-auto pb-1 scrollbar-none">
         {(['all', 'karaoke', 'official', 'live'] as SearchFilterType[]).map((f) => (

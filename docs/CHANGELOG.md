@@ -4,6 +4,30 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.14.0] - 2026-09-10
+
+### 🚀 [ESPECIFICACIÓN / FEATURE]
+- **Soporte de Búsqueda con Teclado Móvil (Enter / Flecha ➔) & Lupa Clickeable:**
+  - **Envoltorio de Formulario Semántico (`<form onSubmit>`):** Tanto en `GuestSearchBar.tsx` como en `GuestReplaceSongModal.tsx`, el cajón de búsqueda ahora está contenido en un formulario nativo con captura de `onSubmit`.
+  - **Atributos Nativos Móviles (`type="search"` y `enterKeyHint="search"`):** En teléfonos Android (Gboard, Samsung Keyboard) y iOS (Safari/Chrome), la tecla inferior derecha del teclado virtual se transforma automáticamente en acción de búsqueda explícita (ícono de lupa o flecha de acción ➔) que ejecuta la búsqueda al ser pulsada.
+  - **Lupa Clickeable con Feedback:** El ícono de lupa del extremo izquierdo ahora es un botón interactivo clickeable (`<button type="submit">`) con hover esmeralda, permitiendo tocar la lupa directamente para buscar.
+  - **Auto-Ocultamiento del Teclado Móvil (`blur()`):** Al enviar la búsqueda (vía Enter, flecha ➔ o botón lupa), el teclado virtual se oculta de inmediato para que el usuario pueda visualizar la lista completa de canciones sin obstrucción visual.
+
+### 🐛 [CORRECCIÓN / FIX]
+- **Auto-Restauración y Persistencia de Búsquedas Previas:**
+  - **Solución al bug de resultados vacíos con artista ya tipeado:** Se resolvió la falla donde al regresar a la pestaña de búsqueda teniendo el nombre de un artista ya escrito, la lista inferior quedaba vacía y requería borrar y volver a escribir letras para disparar el evento `onChange`.
+  - **Persistencia en `sessionStorage` (`guest_last_query`):** El término buscado se preserva en la sesión del navegador móvil del cliente.
+  - **Restauración Reactiva Automática:** Si el usuario vuelve a la pestaña de búsqueda y el input contiene texto pero los resultados estaban vacíos, el sistema ejecuta la búsqueda de manera automática en segundo plano sin que el usuario tenga que tipear nada.
+
+### 🔧 [AFINAMIENTO / REFINAMIENTO]
+- **Estricto Cumplimiento Clean-by-Design ($\le 120$ líneas):**
+  - `client/src/components/guest/GuestSearchBar.tsx`: 89 líneas.
+  - `client/src/components/guest/GuestView.tsx`: 118 líneas.
+  - `client/src/components/guest/GuestReplaceSongModal.tsx`: 89 líneas.
+- **Compilación Limpia:** 0 errores TypeScript (`tsc -b`) y empaquetado de producción Vite exitoso.
+
+---
+
 ## [1.13.0] - 2026-09-10
 
 ### 🚀 [ESPECIFICACIÓN / FEATURE]

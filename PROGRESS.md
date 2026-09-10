@@ -1,8 +1,8 @@
 # 📊 PLAN MAESTRO DEL PROYECTO: ROCKOLA DIGITAL LIVE (SISTEMA MULTI-TENANT EN TIEMPO REAL)
 
-**Versión del Plan:** 2.10.0 (Promociones en TV con Duración Programada, Expiración Automática y Letrero Neón Fosforescente)  
+**Versión del Plan:** 2.11.0 (Búsqueda Táctil Móvil, Disparador Teclado Enter / Flecha ➔ y Auto-Restauración de Resultados)  
 **Fecha de Emisión:** Septiembre 2026  
-**Estado:** 🟢 Fase 4 (Promociones en TV con Auto-Expiración y Neón Titilante - Completa y Verificada)  
+**Estado:** 🟢 Fase 4 (Búsqueda Móvil Optimizada y Auto-Restauración - Completa y Verificada)  
 **Metodología:** Agile / BDD / Clean Architecture con Compuertas de Control Formales  
 **Alineación:** Estructura inspirada en `boot-ventas-saas` y `aplicacion para ofertas`  
 
@@ -155,26 +155,25 @@ La **Rockola Digital Live** es una plataforma SaaS multi-tenant distribuida para
 6. [x] Implementar la vista de cola compartida de la sala para saber qué canciones vienen a continuación (`GuestPartyQueue.tsx`).
 7. [x] Validar las reglas anti-spam (Fair Play): límite de 3 canciones activas en cola por invitado y cooldown de 15 segundos entre pedidos (`GuestView.tsx`).
 8. [x] Conectar auto-arranque en la TV: reproducción instantánea cuando la TV está en espera y llega el primer pedido (`TvView.tsx`).
+**Entregables:**
+- PWA de invitados (`/join` o `?mode=guest`) operativa, ultra-ligera (139 KB JS gzip + 8.9 KB CSS gzip < 150 KB). (✅ COMPLETADO)
+- Compilación de producción Vite 8 exitosa (764ms, 0 errores). (✅ COMPLETADO)
+- Suite de pruebas E2E contra Supabase pasando al 100% (`server/testGuestFlow.js`). (✅ COMPLETADO)
+- Todos los 10 componentes atómicos cumplen Clean-by-Design (< 120 líneas cada uno). (✅ COMPLETADO)
 
-158: 
-159: **Entregables:**
-160: - PWA de invitados (`/join` o `?mode=guest`) operativa, ultra-ligera (139 KB JS gzip + 8.9 KB CSS gzip < 150 KB). (✅ COMPLETADO)
-161: - Compilación de producción Vite 8 exitosa (764ms, 0 errores). (✅ COMPLETADO)
-162: - Suite de pruebas E2E contra Supabase pasando al 100% (`server/testGuestFlow.js`). (✅ COMPLETADO)
-163: - Todos los 10 componentes atómicos cumplen Clean-by-Design (< 120 líneas cada uno). (✅ COMPLETADO)
-164: 
-165: ### 🟢 FASE 4.5: MÓDULO AVANZADO DE EXPERIENCIA ROCKOLA (COMPLETADA)
-166: **Objetivo:** Potenciar la interacción social y monetización del local mediante Pases VIP con Mercado Pago, Reacciones en Vivo, Control de Horario, Auto-DJ y Votación Comunitaria.
-167: 
-168: **Actividades Ejecutadas:**
-169: 1. [x] **Pase VIP con Mercado Pago:** tarifa de $500 ARS por tema prioritario, alias de cobro `david.taboa` con copia en 1 toque y enlace directo `mercadopago://` (`GuestMercadoPagoModal.tsx`).
-170: 2. [x] **Identificación de Dispositivo Antifraude:** persistencia de `deviceId` (UUID) en `localStorage` para garantizar un tope máximo de 3 temas VIP consecutivos por celular ($1.500 ARS) protegiendo el Fair Play (`client/src/utils/deviceId.ts`).
-171: 3. [x] **Dedicatorias de 40 Segundos en TV:** banner extendido de 12s a 40 segundos con tipografía visible de 10 pies para festejos y dedicatorias de amor/amistad (`TvDedicationBanner.tsx`).
-172: 4. [x] **Reacciones y Emojis en Vivo (👏, 🔥, ❤️, 🍻):** barra inferior de reacciones rápidas en la PWA de invitados que dispara partículas animadas ascendentes por la pantalla de la TV estilo TikTok/Twitch Live vía Supabase Broadcast (`GuestLiveReactionsBar.tsx`, `TvFloatingReactions.tsx`, `index.css`).
-173: 5. [x] **Control de Horario / "Última Ronda":** botón de bloqueo instantáneo en la cabecera de la Consola DJ (`HostHeader.tsx`, `HostView.tsx`) para congelar la cola 30 minutos antes del cierre impidiendo nuevos pedidos de los invitados con aviso visual.
-174: 6. [x] **Modo Auto-DJ Ambiente:** interruptor en la configuración del anfitrión (`HostSettingsModal.tsx`) e indicador animado en la TV (`TvIdleScreen.tsx`, `TvView.tsx`) para mantener música de fondo que se silencia inmediatamente cuando un invitado pide un tema.
-175: 7. [x] **Votación y Likes en Cola:** botón de corazón interactivo en la fila comunitaria (`GuestPartyQueue.tsx`) con contador optimista y condecoración automática **"🔥 Más Esperado"** para el tema más votado de la noche.
-176: 8. [x] **Cumplimiento Clean-by-Design:** todos los nuevos componentes y utilidades (`GuestModals.tsx`, `GuestMercadoPagoModal.tsx`, `GuestLiveReactionsBar.tsx`, `TvFloatingReactions.tsx`, `deviceId.ts`, etc.) cumplen estrictamente con el tope de $\le 120$ líneas.
+### 🟢 FASE 4.5: MÓDULO AVANZADO DE EXPERIENCIA ROCKOLA (COMPLETADA)
+**Objetivo:** Potenciar la interacción social y monetización del local mediante Pases VIP con Mercado Pago, Reacciones en Vivo, Control de Horario, Auto-DJ y Votación Comunitaria.
+
+**Actividades Ejecutadas:**
+1. [x] **Pase VIP con Mercado Pago:** tarifa de $500 ARS por tema prioritario, alias de cobro `david.taboa` con copia en 1 toque y enlace directo `mercadopago://` (`GuestMercadoPagoModal.tsx`).
+2. [x] **Identificación de Dispositivo Antifraude:** persistencia de `deviceId` (UUID) en `localStorage` para garantizar un tope máximo de 3 temas VIP consecutivos por celular ($1.500 ARS) protegiendo el Fair Play (`client/src/utils/deviceId.ts`).
+3. [x] **Dedicatorias de 40 Segundos en TV:** banner extendido de 12s a 40 segundos con tipografía visible de 10 pies para festejos y dedicatorias de amor/amistad (`TvDedicationBanner.tsx`).
+4. [x] **Reacciones y Emojis en Vivo (👏, 🔥, ❤️, 🍻):** barra inferior de reacciones rápidas en la PWA de invitados que dispara partículas animadas ascendentes por la pantalla de la TV estilo TikTok/Twitch Live vía Supabase Broadcast (`GuestLiveReactionsBar.tsx`, `TvFloatingReactions.tsx`, `index.css`).
+5. [x] **Control de Horario / "Última Ronda":** botón de bloqueo instantáneo en la cabecera de la Consola DJ (`HostHeader.tsx`, `HostView.tsx`) para congelar la cola 30 minutos antes del cierre impidiendo nuevos pedidos de los invitados con aviso visual.
+6. [x] **Modo Auto-DJ Ambiente:** interruptor en la configuración del anfitrión (`HostSettingsModal.tsx`) e indicador animado en la TV (`TvIdleScreen.tsx`, `TvView.tsx`) para mantener música de fondo que se silencia inmediatamente cuando un invitado pide un tema.
+7. [x] **Votación y Likes en Cola:** botón de corazón interactivo en la fila comunitaria (`GuestPartyQueue.tsx`) con contador optimista y condecoración automática **"🔥 Más Esperado"** para el tema más votado de la noche.
+8. [x] **Búsqueda Móvil Táctil (Enter / Flecha ➔) y Auto-Restauración:** soporte nativo de `<form onSubmit>` con `enterKeyHint="search"`, botón lupa interactivo, cierre automático de teclado (`blur()`) y auto-restauración de resultados en segundo plano con persistencia en `sessionStorage` (`GuestSearchBar.tsx`, `GuestView.tsx`, `GuestReplaceSongModal.tsx`).
+9. [x] **Cumplimiento Clean-by-Design:** todos los nuevos componentes y utilidades (`GuestModals.tsx`, `GuestMercadoPagoModal.tsx`, `GuestLiveReactionsBar.tsx`, `TvFloatingReactions.tsx`, `deviceId.ts`, etc.) cumplen estrictamente con el tope de $\le 120$ líneas.
 
 ---
 
