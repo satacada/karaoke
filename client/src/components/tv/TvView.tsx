@@ -10,7 +10,7 @@ import { TvVoiceHUD } from './TvVoiceHUD'; import { TvViewOverlays } from './TvV
 import { updatePlaybackTick, updateRoomSettings } from '../../services/karaokeApi';
 import { enqueueAutoDjSong, purgeAutoDjSongs } from '../../services/autoDjService';
 import { setLocalAutoDjActive } from '../../services/autoDjStateService'; import { getLocalRentalSession } from '../../services/rentalService';
-import { supabase } from '../../lib/supabaseClient'; import type { RemoteCommand, PromoBanner, RoomRentalSession } from '../../types';
+import { getJoinUrl } from '../../utils/appUrl'; import { supabase } from '../../lib/supabaseClient'; import type { RemoteCommand, PromoBanner, RoomRentalSession } from '../../types';
 
 export const TvView: FC<{ roomCode?: string; onUnlink?: () => void }> = ({ roomCode = 'FIESTA', onUnlink }) => {
   const playerRef = useRef<TvPlayerRef>(null); const lastSyncRef = useRef<number>(0);
@@ -97,7 +97,7 @@ export const TvView: FC<{ roomCode?: string; onUnlink?: () => void }> = ({ roomC
 
   if (isLoading) return (<div className="w-full h-screen bg-zinc-950 flex flex-col items-center justify-center gap-3"><div className="w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full animate-spin" /><p className="text-zinc-400 font-mono text-sm tracking-widest uppercase">Conectando a Sala {roomCode}...</p></div>);
 
-  const joinUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/join?room=${roomCode}`;
+  const joinUrl = getJoinUrl(roomCode);
   return (
     <div className="relative w-full h-screen bg-black overflow-hidden select-none">
       {isFlashing && (<div className="absolute inset-0 border-8 border-emerald-400 pointer-events-none z-50 flex items-center justify-center bg-emerald-950/20 animate-pulse"><span className="px-6 py-3 rounded-2xl bg-emerald-500 text-zinc-950 font-black text-xl shadow-2xl flex items-center gap-2"><Sparkles className="w-6 h-6" />⚡ PANTALLA IDENTIFICADA: {room?.zone_name || room?.name}</span></div>)}

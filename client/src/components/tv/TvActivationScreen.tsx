@@ -2,6 +2,7 @@ import { useState, useEffect, type FC, type FormEvent } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import { Tv, Radio, ArrowRight, CheckCircle2, Sparkles } from 'lucide-react';
 import { supabase } from '../../lib/supabaseClient';
+import { getPairUrl } from '../../utils/appUrl';
 
 interface TvActivationScreenProps {
   onPaired: (roomCode: string) => void;
@@ -13,7 +14,7 @@ export const TvActivationScreen: FC<TvActivationScreenProps> = ({ onPaired }) =>
   const [isFlashing, setIsFlashing] = useState(false);
   const [pairedInfo, setPairedInfo] = useState<{ roomCode: string; roomName: string } | null>(null);
 
-  const pairUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/host?pair=${code}`;
+  const pairUrl = getPairUrl(code);
 
   useEffect(() => {
     const channel = supabase

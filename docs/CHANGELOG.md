@@ -4,6 +4,30 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.29.0] - 2026-09-10
+
+### 🐛 [CORRECCIÓN / FIX]
+- **Resolución de Código QR en APK (`appUrl.ts`):**
+  - **Problema:** Dentro del empaquetado APK de Android (Capacitor), `window.location.origin` resolvía a `http://localhost`, haciendo que el código QR generado para los invitados apuntara a `http://localhost/join?room=...` en lugar de la nube pública.
+  - **Solución:** Implementada la utilidad `getPublicBaseUrl()`, `getJoinUrl()` y `getPairUrl()` en `client/src/utils/appUrl.ts`. Detecta si el origen es local, Capacitor o archivo y garantiza que el código QR proyectado en la TV apunte siempre al dominio oficial en producción: `https://karaoke-tc-c9fb.vercel.app/join?room=${roomCode}`.
+- **Ocultamiento Confiable de Barra Superior en Android TV:**
+  - **Detección Nativa en `MainActivity.java`:** `configure-tv-manifest.js` inyecta en el código Java nativo de Android la consulta a `UiModeManager.getCurrentModeType() == Configuration.UI_MODE_TYPE_TELEVISION` y `PackageManager.FEATURE_LEANBACK`, anexando `AndroidTV SmartTV Leanback` al User-Agent del WebView.
+  - **Detección Web Heurística Mejorada (`deviceDetector.ts`):** Se amplió la detección de televisores mediante relación de aspecto panorámica 16:9 ($\ge 850$px de ancho) sin multitáctil, permitiendo identificar TVs aunque el WebView reporte `Mobile Safari`.
+  - **Botón de Cierre Manual `✕` en `App.tsx`:** Permite ocultar la barra superior en 1 clic y guarda la preferencia en `localStorage.setItem('rockola_hide_mode_nav', 'true')` de forma persistente.
+  - **Launcher de Android TV (`LEANBACK_LAUNCHER`):** Incorporada la categoría de intent `LEANBACK_LAUNCHER` en `AndroidManifest.xml` para que el APK figure directamente en la cuadrícula de apps de Android TV.
+- **Limpieza de Advertencias en CI/CD:**
+  - Actualizado `actions/setup-java` a `@v5` en `.github/workflows/build-apk.yml`.
+
+### 🔧 [AFINAMIENTO / REFINAMIENTO]
+- **Clean-by-Design Compliance:**
+  - `client/src/utils/appUrl.ts`: 46 líneas ($\le 120$).
+  - `client/src/utils/deviceDetector.ts`: 54 líneas ($\le 120$).
+  - `client/src/App.tsx`: 105 líneas ($\le 120$).
+  - `client/src/components/tv/TvView.tsx`: 119 líneas ($\le 120$).
+  - `client/src/components/tv/TvActivationScreen.tsx`: 97 líneas ($\le 120$).
+
+---
+
 ## [1.28.0] - 2026-09-10
 
 ### 🚀 [ESPECIFICACIÓN / FEATURE]
