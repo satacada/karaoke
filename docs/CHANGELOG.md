@@ -4,6 +4,31 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.15.0] - 2026-09-10
+
+### 🚀 [ESPECIFICACIÓN / FEATURE]
+- **Sincronización Automática de Cola en Tiempo Real (Cliente y Administrador):**
+  - **Nuevo Hook Modular `useGuestRealtime.ts`:** Encapsula el ciclo de vida de la sala, la cola y la suscripción en tiempo real de invitados de forma reactiva y aislada.
+  - **Identificadores de Canal Únicos por Instancia:** Asignación de nombres únicos (`tv-rt-${roomId}-${uid}` y `guest-rt-${roomId}-${uid}`) que evitan el conflicto interno de Supabase (`cannot add postgres_changes callbacks after subscribe()`) cuando TV y Administrador conviven en el mismo navegador o sesión.
+  - **Heartbeat de Respaldo y Red de Seguridad (3.5s):** Sondeo periódico ligero que consulta la base de datos únicamente si la pantalla está visible (`!document.hidden`), garantizando que si el WebSocket experimenta caídas o congelamiento en redes móviles 4G/5G, la lista se actualice en máximo 3.5 segundos.
+  - **Sincronización Instantánea por Foco y Visibilidad:** Re-sincronización reactiva inmediata al desbloquear el teléfono o regresar a la pestaña del navegador (`visibilitychange` y `window.onfocus`).
+  - **Refresco Inmediato a 0ms en Acciones Locales:** Invocación directa de `refreshQueue()` tras añadir una canción (`executeAddSong`), cancelarla, reemplazarla, reordenarla o cambiar entre pestañas de navegación.
+
+### 🐛 [CORRECCIÓN / FIX]
+- **Subsanación de Fuga de Suscripción en Invitados:** Corregido el defecto donde la función de desuscripción de `GuestView` estaba atrapada dentro de una promesa `.then()`, permitiendo a React limpiar y renovar correctamente los canales en cada ciclo de vida.
+- **Eliminación de Canales Zombis y Desconexiones Cruzadas:** Al separar los identificadores de canal entre el modo TV y el Administrador DJ, desmontar un rol ya no anula ni interrumpe la recepción de eventos del otro.
+
+### 🔧 [AFINAMIENTO / REFINAMIENTO]
+- **Estricto Cumplimiento Clean-by-Design ($\le 120$ líneas):**
+  - `client/src/hooks/useGuestRealtime.ts`: 63 líneas.
+  - `client/src/hooks/useTvRealtime.ts`: 103 líneas.
+  - `client/src/components/guest/GuestView.tsx`: 115 líneas.
+  - `client/src/components/host/HostView.tsx`: 114 líneas.
+- **Compilación Limpia:** 0 errores TypeScript (`tsc -b`) y empaquetado Vite exitoso.
+- **Prueba Automatizada E2E Exitosa:** Verificada la entrega y refresco bidireccional concurrente entre Host y Guest en Node.js.
+
+---
+
 ## [1.14.0] - 2026-09-10
 
 ### 🚀 [ESPECIFICACIÓN / FEATURE]

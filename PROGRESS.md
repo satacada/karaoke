@@ -1,8 +1,8 @@
 # 📊 PLAN MAESTRO DEL PROYECTO: ROCKOLA DIGITAL LIVE (SISTEMA MULTI-TENANT EN TIEMPO REAL)
 
-**Versión del Plan:** 2.11.0 (Búsqueda Táctil Móvil, Disparador Teclado Enter / Flecha ➔ y Auto-Restauración de Resultados)  
+**Versión del Plan:** 2.12.0 (Sincronización Automática en Tiempo Real de Cola para Cliente y Administrador)  
 **Fecha de Emisión:** Septiembre 2026  
-**Estado:** 🟢 Fase 4 (Búsqueda Móvil Optimizada y Auto-Restauración - Completa y Verificada)  
+**Estado:** 🟢 Fase 4 (Sincronización Automática Cliente/Host - Completa y Verificada)  
 **Metodología:** Agile / BDD / Clean Architecture con Compuertas de Control Formales  
 **Alineación:** Estructura inspirada en `boot-ventas-saas` y `aplicacion para ofertas`  
 
@@ -173,7 +173,8 @@ La **Rockola Digital Live** es una plataforma SaaS multi-tenant distribuida para
 6. [x] **Modo Auto-DJ Ambiente:** interruptor en la configuración del anfitrión (`HostSettingsModal.tsx`) e indicador animado en la TV (`TvIdleScreen.tsx`, `TvView.tsx`) para mantener música de fondo que se silencia inmediatamente cuando un invitado pide un tema.
 7. [x] **Votación y Likes en Cola:** botón de corazón interactivo en la fila comunitaria (`GuestPartyQueue.tsx`) con contador optimista y condecoración automática **"🔥 Más Esperado"** para el tema más votado de la noche.
 8. [x] **Búsqueda Móvil Táctil (Enter / Flecha ➔) y Auto-Restauración:** soporte nativo de `<form onSubmit>` con `enterKeyHint="search"`, botón lupa interactivo, cierre automático de teclado (`blur()`) y auto-restauración de resultados en segundo plano con persistencia en `sessionStorage` (`GuestSearchBar.tsx`, `GuestView.tsx`, `GuestReplaceSongModal.tsx`).
-9. [x] **Cumplimiento Clean-by-Design:** todos los nuevos componentes y utilidades (`GuestModals.tsx`, `GuestMercadoPagoModal.tsx`, `GuestLiveReactionsBar.tsx`, `TvFloatingReactions.tsx`, `deviceId.ts`, etc.) cumplen estrictamente con el tope de $\le 120$ líneas.
+9. [x] **Sincronización Automática en Tiempo Real (Cliente y Administrador):** aislamiento de canales con UIDs únicos (`useGuestRealtime.ts` y `useTvRealtime.ts`), heartbeat polling de respaldo cada 3.5s (`!document.hidden`), re-sincronización instantánea por visibilidad/foco y refresco a 0ms en operaciones locales.
+10. [x] **Cumplimiento Clean-by-Design:** todos los nuevos componentes y utilidades (`useGuestRealtime.ts`, `GuestModals.tsx`, `GuestMercadoPagoModal.tsx`, `GuestLiveReactionsBar.tsx`, `TvFloatingReactions.tsx`, `deviceId.ts`, etc.) cumplen estrictamente con el tope de $\le 120$ líneas.
 
 ---
 
