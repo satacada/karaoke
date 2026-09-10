@@ -2,10 +2,7 @@ import { useEffect, useRef, useImperativeHandle, forwardRef } from 'react';
 import type { YTPlayerInstance } from '../../types/youtube';
 
 export interface TvPlayerRef {
-  play: () => void;
-  pause: () => void;
-  seekTo: (seconds: number) => void;
-  setVolume: (volume: number) => void;
+  play: () => void; pause: () => void; seekTo: (seconds: number) => void; setVolume: (volume: number) => void;
 }
 
 interface TvPlayerProps {
@@ -28,6 +25,7 @@ export const TvPlayer = forwardRef<TvPlayerRef, TvPlayerProps>(function TvPlayer
   const onErrorRef = useRef(onError); onErrorRef.current = onError;
   const onPlayingRef = useRef(onPlayingStateChange); onPlayingRef.current = onPlayingStateChange;
   const onTimeUpdateRef = useRef(onTimeUpdate); onTimeUpdateRef.current = onTimeUpdate;
+  const hasEndedRef = useRef<boolean>(false);
 
   useImperativeHandle(ref, () => ({
     play: () => playerRef.current?.playVideo(),
@@ -36,13 +34,17 @@ export const TvPlayer = forwardRef<TvPlayerRef, TvPlayerProps>(function TvPlayer
     setVolume: (vol: number) => playerRef.current?.setVolume(vol),
   }));
 
-  // Poll current time while playing without re-renders
+  // Poll current time while playing and perform smart outro cutoff before YouTube suggestions
   useEffect(() => {
     const timer = window.setInterval(() => {
       if (playerRef.current && typeof playerRef.current.getCurrentTime === 'function') {
         const current = playerRef.current.getCurrentTime() || 0;
         const duration = playerRef.current.getDuration() || 0;
         onTimeUpdateRef.current?.(current, duration);
+        if (duration > 8 && current >= duration - 1.8 && !hasEndedRef.current) {
+          hasEndedRef.current = true;
+          onEndedRef.current();
+        }
       }
     }, 500);
 
@@ -51,6 +53,7 @@ export const TvPlayer = forwardRef<TvPlayerRef, TvPlayerProps>(function TvPlayer
 
   // Handle videoId switch cleanly via loadVideoById without destroying the player
   useEffect(() => {
+    hasEndedRef.current = false;
     if (isReadyRef.current && playerRef.current && currentVideoRef.current !== videoId) {
       currentVideoRef.current = videoId;
       playerRef.current.loadVideoById(videoId);
@@ -79,7 +82,7 @@ export const TvPlayer = forwardRef<TvPlayerRef, TvPlayerProps>(function TvPlayer
         events: {
           onReady: (evt) => { if (isMounted) { isReadyRef.current = true; evt.target.playVideo(); } },
           onStateChange: (evt) => {
-            if (evt.data === 0) onEndedRef.current();
+            if (evt.data === 0 && !hasEndedRef.current) { hasEndedRef.current = true; onEndedRef.current(); }
             else if (evt.data === 1) onPlayingRef.current?.(true);
             else if (evt.data === 2) onPlayingRef.current?.(false);
           },

@@ -59,29 +59,26 @@ export function useTvRealtime(roomCode: string, onRemoteCommand?: (command: Remo
 
     const channel = supabase
       .channel(`tv-room-${roomId}`)
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'karaoke_queue', filter: `room_id=eq.${roomId}` },
-        () => refreshState(roomId)
-      )
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'karaoke_commands', filter: `room_id=eq.${roomId}` },
-        async (payload) => {
-          const command = payload.new as RemoteCommand;
-          if (!command.is_executed && onCommandRef.current) {
-            if (command.command === 'volume' && command.payload?.action === 'set_promo_banners') {
-              onCommandRef.current({ ...command, command: 'set_promo_banners' });
-            } else {
-              onCommandRef.current(command);
-            }
-            await markCommandExecuted(command.id);
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'karaoke_queue', filter: `room_id=eq.${roomId}` }, () => refreshState(roomId))
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'karaoke_commands', filter: `room_id=eq.${roomId}` }, async (payload) => {
+        const command = payload.new as RemoteCommand;
+        if (!command.is_executed && onCommandRef.current) {
+          if (command.command === 'volume' && command.payload?.action === 'set_promo_banners') {
+            onCommandRef.current({ ...command, command: 'set_promo_banners' });
+          } else {
+            onCommandRef.current(command);
           }
+          await markCommandExecuted(command.id);
         }
-      )
+      })
       .on('broadcast', { event: 'set_promo_banners' }, ({ payload }) => {
         if (onCommandRef.current && payload?.banners) {
           onCommandRef.current({ id: 'b_local', room_id: roomId, command: 'set_promo_banners', payload: { banners: payload.banners }, is_executed: true, created_at: new Date().toISOString() });
+        }
+      })
+      .on('broadcast', { event: 'set_tv_theme' }, ({ payload }) => {
+        if (onCommandRef.current && payload?.theme) {
+          onCommandRef.current({ id: 'b_theme', room_id: roomId, command: 'volume', payload: { action: 'set_tv_theme', theme: payload.theme }, is_executed: true, created_at: new Date().toISOString() });
         }
       })
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'karaoke_rooms', filter: `id=eq.${roomId}` }, (payload) => {
