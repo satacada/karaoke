@@ -318,4 +318,36 @@
   text-shadow: 0 0 4px #fecdd3, 0 0 10px #f43f5e, 0 0 20px #e11d48, 0 0 35px #be123c;
 }
 
+/* Translucent Video HUD Cards & Black Outline for Lyrics/Queue */
+.tv-translucent-card {
+  background: rgba(0, 0, 0, 0.20) !important;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, 0.15) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+}
+
+.tv-translucent-card:hover {
+  background: rgba(0, 0, 0, 0.35) !important;
+}
+
+.tv-text-outline {
+  text-shadow:
+    -1px -1px 0 #000,
+     1px -1px 0 #000,
+    -1px  1px 0 #000,
+     1px  1px 0 #000,
+     0 2px 4px rgba(0, 0, 0, 0.95);
+}
+
+.tv-text-outline-sm {
+  text-shadow:
+    -1px -1px 0 #000,
+     1px -1px 0 #000,
+    -1px  1px 0 #000,
+     1px  1px 0 #000,
+     0 1px 3px rgba(0, 0, 0, 0.9);
+}
+
+
 

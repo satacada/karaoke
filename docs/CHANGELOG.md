@@ -4,6 +4,22 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.16.0] - 2026-09-10
+
+### 🚀 [ESPECIFICACIÓN / FEATURE]
+- **Visualización Translúcida de Pedidos en TV con Borde Negro en Letras:**
+  - **Fondo Translúcido de Alta Visibilidad de Video (`.tv-translucent-card`):** Se reemplazó el fondo negro opaco de la esquina superior izquierda (`TvNextQueueTicker.tsx`) por un panel translúcido de cristal sutil (`rgba(0, 0, 0, 0.20)` con `backdrop-blur`), permitiendo ver el videoclip de fondo casi por completo.
+  - **Borde y Contorno Negro en Tipografía (`.tv-text-outline` y `.tv-text-outline-sm`):** Las letras mantienen sus colores originales (blanco en el título de la canción, rosa en el nombre del solicitante, púrpura en el badge del turno, etc.), pero ahora cuentan con un contorno negro nítido de 1px y sombra de contraste, garantizando perfecta legibilidad incluso cuando el video de YouTube tiene escenas brillantes, cielo o fondo blanco.
+  - **Efecto de Sombra Negra en Íconos:** Se agregaron filtros `drop-shadow` negros a los íconos de música, usuario y flecha para que resalten sobre cualquier toma del video.
+
+### 🔧 [AFINAMIENTO / REFINAMIENTO]
+- **Estricto Cumplimiento Clean-by-Design ($\le 120$ líneas):**
+  - `client/src/components/tv/TvNextQueueTicker.tsx`: 66 líneas.
+  - `client/src/index.css`: Clases `.tv-translucent-card`, `.tv-text-outline`, `.tv-text-outline-sm`.
+- **Compilación Limpia:** 0 errores TypeScript (`tsc -b`) y empaquetado de producción Vite exitoso.
+
+---
+
 ## [1.15.0] - 2026-09-10
 
 ### 🚀 [ESPECIFICACIÓN / FEATURE]

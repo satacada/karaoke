@@ -1,8 +1,8 @@
 # 📊 PLAN MAESTRO DEL PROYECTO: ROCKOLA DIGITAL LIVE (SISTEMA MULTI-TENANT EN TIEMPO REAL)
 
-**Versión del Plan:** 2.12.0 (Sincronización Automática en Tiempo Real de Cola para Cliente y Administrador)  
+**Versión del Plan:** 2.13.0 (Pedidos en TV Translúcidos con Contorno Negro en Letras para Visibilidad de Video)  
 **Fecha de Emisión:** Septiembre 2026  
-**Estado:** 🟢 Fase 4 (Sincronización Automática Cliente/Host - Completa y Verificada)  
+**Estado:** 🟢 Fase 2 (HUD TV Translúcido con Borde Negro - Completo y Verificado)  
 **Metodología:** Agile / BDD / Clean Architecture con Compuertas de Control Formales  
 **Alineación:** Estructura inspirada en `boot-ventas-saas` y `aplicacion para ofertas`  
 
@@ -174,7 +174,8 @@ La **Rockola Digital Live** es una plataforma SaaS multi-tenant distribuida para
 7. [x] **Votación y Likes en Cola:** botón de corazón interactivo en la fila comunitaria (`GuestPartyQueue.tsx`) con contador optimista y condecoración automática **"🔥 Más Esperado"** para el tema más votado de la noche.
 8. [x] **Búsqueda Móvil Táctil (Enter / Flecha ➔) y Auto-Restauración:** soporte nativo de `<form onSubmit>` con `enterKeyHint="search"`, botón lupa interactivo, cierre automático de teclado (`blur()`) y auto-restauración de resultados en segundo plano con persistencia en `sessionStorage` (`GuestSearchBar.tsx`, `GuestView.tsx`, `GuestReplaceSongModal.tsx`).
 9. [x] **Sincronización Automática en Tiempo Real (Cliente y Administrador):** aislamiento de canales con UIDs únicos (`useGuestRealtime.ts` y `useTvRealtime.ts`), heartbeat polling de respaldo cada 3.5s (`!document.hidden`), re-sincronización instantánea por visibilidad/foco y refresco a 0ms en operaciones locales.
-10. [x] **Cumplimiento Clean-by-Design:** todos los nuevos componentes y utilidades (`useGuestRealtime.ts`, `GuestModals.tsx`, `GuestMercadoPagoModal.tsx`, `GuestLiveReactionsBar.tsx`, `TvFloatingReactions.tsx`, `deviceId.ts`, etc.) cumplen estrictamente con el tope de $\le 120$ líneas.
+10. [x] **Pedidos en TV Translúcidos con Borde Negro:** sustitución del bloque negro opaco en `TvNextQueueTicker.tsx` por tarjetas translúcidas de cristal (`.tv-translucent-card`, 20% opacidad), contornos negros en las letras (`.tv-text-outline`) y filtros drop-shadow en íconos para visualización completa del video de YouTube sin pérdida de contraste.
+11. [x] **Cumplimiento Clean-by-Design:** todos los nuevos componentes y utilidades (`TvNextQueueTicker.tsx`, `useGuestRealtime.ts`, `GuestModals.tsx`, `GuestMercadoPagoModal.tsx`, etc.) cumplen estrictamente con el tope de $\le 120$ líneas.
 
 ---
 
