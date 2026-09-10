@@ -4,6 +4,33 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.19.0] - 2026-09-10
+
+### 🚀 [ESPECIFICACIÓN / FEATURE]
+- **Auto-DJ Autónomo / Playlist Inteligente de Respaldo (`autoDjService.ts` & `useTvAutoDj.ts`):**
+  - **Eliminación de Silencios y Pantallas Congeladas:** Cuando la cola de canciones de la sala queda vacía (`!currentSong && nextSongs.length === 0`), el sistema activa un temporizador de 800ms que inyecta automáticamente una canción seleccionada por el motor inteligente.
+  - **Activación por Defecto:** Si el anfitrión no ha configurado explícitamente el Auto-DJ o no lo ha apagado de forma deliberada (`room.auto_dj_enabled !== false`), la lista inteligente se activa de oficio, garantizando que el local o salón siempre tenga música y video.
+  - **Algoritmo de Selección Contextual por Sala (`getSmartGenreForRoom`):**
+    - Consulta los últimos temas reproducidos con éxito en la sala (`status = 'finished'`) para extraer el artista más recurrente como semilla de recomendación (`seed:${top.author}`).
+    - Si no existe historial previo (sala recién abierta o primer inicio), rota automáticamente entre estaciones festivas de alta rotación (`hits_80_90`, `rock_nacional`, `cumbia_fiesta`).
+  - **Etiquetado e Integración Transparente:** Los temas inyectados se rotulan como solicitados por `🤖 Auto-DJ`. Cualquier solicitud posterior realizada por un invitado o el anfitrión toma prioridad natural en la cola.
+- **Búsqueda Avanzada por Géneros, Décadas y Ritmos Musicales (`server/genreDefinitions.js`, `server/searchService.js`, `client/api/genreDefinitions.js`, `client/api/search.js`):**
+  - **Detección Semántica de Géneros y Décadas:** Reconocimiento instantáneo mediante expresiones regulares de consultas amplias como *"música de los 80"*, *"rock de los 80"*, *"salsa"*, *"blues / bluet"*, *"rock roll / rock and roll"*, *"reggaeton / perreo"*, *"cumbia / cuarteto"*, *"baladas / boleros"*, *"disco"*.
+  - **Expansión Paralela por Artistas Representativos:** Resuelve el problema donde YouTube devolvía mezclas y enganchados de 2 a 3 horas (los cuales eran descartados por los filtros de duración de temas individuales). El motor despacha consultas en paralelo para artistas legendarios de cada género (ej. 80s: Queen, Michael Jackson, Soda Stereo, Bon Jovi; salsa: Marc Anthony, Héctor Lavoe, Frankie Ruiz; blues: Eric Clapton, B.B. King, Muddy Waters; reggaeton: Daddy Yankee, Don Omar, Wisin & Yandel, Bad Bunny; rock roll: Elvis Presley, Chuck Berry, Little Richard) ensamblando un catálogo diverso de temas de 2 a 6 minutos.
+  - **Carrusel de Chips de Género para Invitados (`GuestGenreChips.tsx` & `GuestSearchBar.tsx`):**
+    - Deslizador táctil horizontal en la PWA móvil de invitados con botones de un toque: ⚡ Música 80s, 🎸 Rock 80s, 💃 Salsa, 🌴 Cumbia, 🔥 Reggaetón, 🎷 Blues, 📻 Hits 90s, 🎙️ Rock & Roll, ❤️ Baladas.
+    - Al presionar un chip se ejecuta la búsqueda multi-artista de forma instantánea.
+
+### 🔧 [AFINAMIENTO / REFINAMIENTO]
+- **Estricto Cumplimiento Clean-by-Design ($\le 120$ líneas por archivo):**
+  - `client/src/services/autoDjService.ts`: 117 líneas.
+  - `client/src/hooks/useTvAutoDj.ts`: 48 líneas.
+  - `client/src/components/guest/GuestGenreChips.tsx`: 44 líneas.
+  - `client/src/components/guest/GuestSearchBar.tsx`: 97 líneas.
+- **Compilación Limpia:** 0 errores TypeScript (`tsc -b`) y build de producción Vite exitoso.
+
+---
+
 ## [1.18.0] - 2026-09-10
 
 ### 🚀 [ESPECIFICACIÓN / FEATURE]

@@ -68,7 +68,28 @@ export async function fetchNextAutoDjTrack(genre?: string): Promise<SearchResult
   }
 }
 
-export async function enqueueAutoDjSong(roomId: string, genre?: string): Promise<boolean> {
+export async function getSmartGenreForRoom(roomId: string, explicitGenre?: string): Promise<string> {
+  if (explicitGenre) return explicitGenre;
+  try {
+    const { data: past } = await supabase
+      .from('karaoke_queue')
+      .select('title, author')
+      .eq('room_id', roomId)
+      .in('status', ['finished', 'playing'])
+      .order('requested_at', { ascending: false })
+      .limit(3);
+    if (past && past.length > 0) {
+      const top = past[0];
+      const author = top.author && top.author !== 'Desconocido' ? top.author : '';
+      if (author) return `seed:${author}`;
+    }
+  } catch {}
+  const stations = ['hits_80_90', 'rock_nacional', 'cumbia_fiesta'];
+  return stations[Math.floor(Math.random() * stations.length)];
+}
+
+export async function enqueueAutoDjSong(roomId: string, explicitGenre?: string): Promise<boolean> {
+  const genre = await getSmartGenreForRoom(roomId, explicitGenre);
   const track = await fetchNextAutoDjTrack(genre);
   if (!track) return false;
   const { isSeed, displayName } = parseAutoDjGenre(genre);
@@ -81,7 +102,7 @@ export async function enqueueAutoDjSong(roomId: string, genre?: string): Promise
     durationSeconds: track.durationSeconds,
     durationText: track.durationText,
     requestedBy: 'Auto-DJ (Rockola)',
-    dedication: isSeed ? `Semilla: ${displayName}` : `Estación: ${displayName}`,
+    dedication: isSeed ? `Estilo de: ${displayName}` : `Playlist: ${displayName}`,
   });
   return Boolean(queued);
 }

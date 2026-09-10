@@ -1,14 +1,36 @@
-import yts from 'yt-search';
+﻿import yts from 'yt-search';
+import { getGenreArtists } from './genreDefinitions.js';
 
 // Memoria caché para búsquedas recientes (30 minutos de TTL)
 const searchCache = new Map();
 const CACHE_TTL_MS = 30 * 60 * 1000;
 
+function normalizeVideo(v) {
+  const titleLower = v.title.toLowerCase();
+  let versionType = 'general';
+  if (titleLower.includes('karaoke') || titleLower.includes('letra') || titleLower.includes('lyrics') || titleLower.includes('instrumental')) {
+    versionType = 'karaoke';
+  } else if (titleLower.includes('official') || titleLower.includes('oficial')) {
+    versionType = 'official';
+  } else if (titleLower.includes('live') || titleLower.includes('en vivo') || titleLower.includes('acústico') || titleLower.includes('acoustic')) {
+    versionType = 'live';
+  }
+
+  return {
+    videoId: v.videoId,
+    title: v.title,
+    author: v.author ? v.author.name : 'Desconocido',
+    thumbnail: v.thumbnail,
+    thumbnailUrl: v.thumbnail,
+    durationSeconds: v.seconds,
+    durationText: v.timestamp,
+    views: v.views,
+    versionType
+  };
+}
+
 /**
- * Busca videos en YouTube optimizados para Karaoke o Rockola con caché en memoria
- * @param {string} query Término de búsqueda
- * @param {boolean|string} filterOrKaraokeOnly Modo de filtro ('all', 'karaoke', 'official', 'live') o booleano
- * @returns {Promise<Array>} Lista de resultados normalizados
+ * Busca videos en YouTube optimizados para Karaoke o Rockola con soporte inteligente de géneros
  */
 export async function searchYouTubeVideos(query, filterOrKaraokeOnly = 'karaoke') {
   if (!query || typeof query !== 'string' || query.trim() === '') {
@@ -30,72 +52,69 @@ export async function searchYouTubeVideos(query, filterOrKaraokeOnly = 'karaoke'
     return cached.results;
   }
 
-  let finalSearchTerm = cleanQuery;
-  const lower = cleanQuery.toLowerCase();
+  const genreArtists = getGenreArtists(cleanQuery);
+  let rawVideos = [];
 
-  if (filter === 'karaoke') {
-    const hasKaraokeKeywords = lower.includes('karaoke') || 
-                               lower.includes('letra') || 
-                               lower.includes('instrumental') || 
-                               lower.includes('lyrics') || 
-                               lower.includes('pista');
-    if (!hasKaraokeKeywords) {
-      finalSearchTerm = `${cleanQuery} karaoke`;
-    }
-  } else if (filter === 'official') {
-    if (!lower.includes('oficial') && !lower.includes('official') && !lower.includes('video')) {
-      finalSearchTerm = `${cleanQuery} official video`;
-    }
-  } else if (filter === 'live') {
-    if (!lower.includes('vivo') && !lower.includes('live') && !lower.includes('acustico') && !lower.includes('acoustic')) {
-      finalSearchTerm = `${cleanQuery} en vivo live`;
+  if (genreArtists && genreArtists.length > 0) {
+    const searchPromises = genreArtists.slice(0, 5).map(async (artist) => {
+      let term = `${artist} exitos`;
+      if (filter === 'karaoke') term = `${artist} karaoke letra`;
+      else if (filter === 'official') term = `${artist} video oficial`;
+      else if (filter === 'live') term = `${artist} en vivo live`;
+
+      try {
+        const r = await yts(term);
+        return (r.videos || []).filter(v => v.seconds >= 90 && v.seconds <= 480).slice(0, 3);
+      } catch {
+        return [];
+      }
+    });
+
+    const artistResults = await Promise.all(searchPromises);
+    const seenIds = new Set();
+    for (const group of artistResults) {
+      for (const v of group) {
+        if (!seenIds.has(v.videoId)) {
+          seenIds.add(v.videoId);
+          rawVideos.push(v);
+        }
+      }
     }
   }
 
-  const searchResults = await yts(finalSearchTerm);
-  const rawVideos = searchResults.videos || [];
+  if (rawVideos.length === 0) {
+    let finalSearchTerm = cleanQuery;
+    const lower = cleanQuery.toLowerCase();
 
-  // Filtrar: excluir transmisiones en vivo (0 segundos) o compilaciones excesivamente largas (> 15 minutos / 900s)
-  const filteredVideos = rawVideos
-    .filter(v => v.seconds > 30 && v.seconds <= 900)
-    .slice(0, 20)
-    .map(v => {
-      const titleLower = v.title.toLowerCase();
-      let versionType = 'general';
-      if (titleLower.includes('karaoke') || titleLower.includes('letra') || titleLower.includes('lyrics') || titleLower.includes('instrumental')) {
-        versionType = 'karaoke';
-      } else if (titleLower.includes('official') || titleLower.includes('oficial')) {
-        versionType = 'official';
-      } else if (titleLower.includes('live') || titleLower.includes('en vivo') || titleLower.includes('acústico') || titleLower.includes('acoustic')) {
-        versionType = 'live';
+    if (filter === 'karaoke') {
+      const hasKaraokeKeywords = lower.includes('karaoke') || lower.includes('letra') || lower.includes('instrumental') || lower.includes('lyrics') || lower.includes('pista');
+      if (!hasKaraokeKeywords) finalSearchTerm = `${cleanQuery} karaoke`;
+    } else if (filter === 'official') {
+      if (!lower.includes('oficial') && !lower.includes('official') && !lower.includes('video')) {
+        finalSearchTerm = `${cleanQuery} official video`;
       }
+    } else if (filter === 'live') {
+      if (!lower.includes('vivo') && !lower.includes('live') && !lower.includes('acustico') && !lower.includes('acoustic')) {
+        finalSearchTerm = `${cleanQuery} en vivo live`;
+      }
+    }
 
-      return {
-        videoId: v.videoId,
-        title: v.title,
-        author: v.author ? v.author.name : 'Desconocido',
-        thumbnail: v.thumbnail,
-        thumbnailUrl: v.thumbnail,
-        durationSeconds: v.seconds,
-        durationText: v.timestamp,
-        views: v.views,
-        versionType
-      };
-    });
+    const searchResults = await yts(finalSearchTerm);
+    const vids = searchResults.videos || [];
+    rawVideos = vids.filter(v => v.seconds > 30 && v.seconds <= 900);
+  }
 
-  // Guardar en caché
+  const filteredVideos = rawVideos.slice(0, 20).map(normalizeVideo);
+
   searchCache.set(cacheKey, {
     timestamp: Date.now(),
     results: filteredVideos
   });
 
-  // Limpieza periódica si la caché supera 500 entradas
   if (searchCache.size > 500) {
     const now = Date.now();
     for (const [k, v] of searchCache.entries()) {
-      if (now - v.timestamp > CACHE_TTL_MS) {
-        searchCache.delete(k);
-      }
+      if (now - v.timestamp > CACHE_TTL_MS) searchCache.delete(k);
     }
   }
 

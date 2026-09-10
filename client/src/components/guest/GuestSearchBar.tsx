@@ -1,6 +1,7 @@
 import type { FC, FormEvent } from 'react';
 import { Search, X, Loader2, Mic, MicOff } from 'lucide-react';
 import { GuestFilterChips } from './GuestFilterChips';
+import { GuestGenreChips } from './GuestGenreChips';
 import { useSpeechToText } from '../../hooks/useSpeechToText';
 import type { SearchFilterType } from '../../types';
 
@@ -22,6 +23,11 @@ export const GuestSearchBar: FC<GuestSearchBarProps> = ({
     if (e) e.preventDefault();
     if (onSearch) onSearch(query);
     (document.activeElement as HTMLElement)?.blur();
+  };
+
+  const handleSelectGenre = (genreQuery: string) => {
+    onQueryChange(genreQuery);
+    if (onSearch) onSearch(genreQuery);
   };
 
   return (
@@ -47,7 +53,7 @@ export const GuestSearchBar: FC<GuestSearchBarProps> = ({
               handleSubmit();
             }
           }}
-          placeholder={isListening ? '🎤 Escuchando... Di el tema' : 'Buscar artista, tema, video o karaoke...'}
+          placeholder={isListening ? '🎤 Escuchando... Di el tema' : 'Buscar artista, género (ej: rock 80s), tema...'}
           className={`w-full bg-zinc-900 border rounded-2xl pl-10 pr-20 py-3 text-sm text-white placeholder-zinc-500 focus:outline-none transition-colors ${
             isListening ? 'border-rose-500 ring-2 ring-rose-500/30' : 'border-zinc-800 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500'
           }`}
@@ -84,6 +90,7 @@ export const GuestSearchBar: FC<GuestSearchBarProps> = ({
       {speechError && <div className="text-[11px] text-amber-400 font-medium px-2">⚠️ {speechError}</div>}
 
       <GuestFilterChips selectedFilter={selectedFilter} onSelectFilter={onFilterChange} />
+      <GuestGenreChips currentQuery={query} onSelectGenre={handleSelectGenre} />
     </div>
   );
 };

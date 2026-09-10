@@ -12,13 +12,14 @@ export function useTvAutoDj(
   const lastQueuedAtRef = useRef(0);
 
   useEffect(() => {
-    if (!room || !room.auto_dj_enabled) return;
+    if (!room) return;
+    if (room.auto_dj_enabled === false) return;
     if (room.status === 'closed' || room.status === 'paused') return;
     if (nextSongs.length > 0) return;
     if (isQueueingRef.current) return;
 
     const now = Date.now();
-    if (now - lastQueuedAtRef.current < 8000) return;
+    if (now - lastQueuedAtRef.current < 6000) return;
 
     let isMounted = true;
     isQueueingRef.current = true;
@@ -35,7 +36,7 @@ export function useTvAutoDj(
       } finally {
         if (isMounted) isQueueingRef.current = false;
       }
-    }, currentSong ? 1500 : 300);
+    }, currentSong ? 2000 : 800);
 
     return () => {
       isMounted = false;
