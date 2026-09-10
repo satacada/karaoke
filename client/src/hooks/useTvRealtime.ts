@@ -72,6 +72,9 @@ export function useTvRealtime(roomCode: string, onRemoteCommand?: (command: Remo
       .on('broadcast', { event: 'set_tv_theme' }, ({ payload }) => {
         if (onCommandRef.current && payload?.theme) onCommandRef.current({ id: 'b_theme', room_id: roomId, command: 'volume', payload: { action: 'set_tv_theme', theme: payload.theme }, is_executed: true, created_at: new Date().toISOString() });
       })
+      .on('broadcast', { event: 'set_tv_scale' }, ({ payload }) => {
+        if (onCommandRef.current && payload?.scale) onCommandRef.current({ id: 'b_scale', room_id: roomId, command: 'volume', payload: { action: 'set_tv_scale', scale: payload.scale }, is_executed: true, created_at: new Date().toISOString() });
+      })
       .on('broadcast', { event: 'set_auto_dj' }, ({ payload }) => {
         if (payload) {
           setLocalAutoDjActive(roomCode, Boolean(payload.enabled), payload.genre);

@@ -20,6 +20,7 @@ export interface RoomRentalSession {
 }
 
 export type TvTheme = 'modern' | 'vintage' | 'neon_club' | 'karaoke_party' | 'dark_lounge' | 'synthwave_80s';
+export type TvScale = 'compact' | 'normal' | 'large' | 'xl';
 
 export interface KaraokeRoom {
   id: string; room_code: string; host_pin: string; name: string; status: RoomStatus;
@@ -30,7 +31,7 @@ export interface KaraokeRoom {
   promo_banners?: PromoBanner[]; allow_vip_boost?: boolean;
   is_queue_locked?: boolean; auto_dj_enabled?: boolean; auto_dj_genre?: string;
   zone_name?: string; allowed_genres?: string[]; vip_price_ars?: number; is_synced_master?: boolean; master_room_id?: string | null;
-  rental_session?: RoomRentalSession | null; tv_theme?: TvTheme;
+  rental_session?: RoomRentalSession | null; tv_theme?: TvTheme; tv_scale?: TvScale;
 }
 
 export type QueueStatus =

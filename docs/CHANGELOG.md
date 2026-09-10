@@ -4,6 +4,26 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.32.0] - 2026-09-10
+
+### 🚀 [ESPECIFICACIÓN / FEATURE]
+- **Calibrador Remoto de Escala de Pantalla TV en Tiempo Real (`HostTvScaleSelector.tsx`, `TvView.tsx`, `useTvRealtime.ts`):**
+  - **Problema Abordado:** En locales con salones de diferentes dimensiones o televisores de distintas pulgadas (32", 50", 75", 85"+), las letras o íconos podían percibirse demasiado grandes o pequeños según la distancia de los clientes.
+  - **Solución con Escalado Geométrico Transformacional:** Se implementó un control unificado en la consola del administrador con 4 niveles de calibración:
+    1. `85% (Compacta)`: Para pantallas de 32"-43" o cuando se busca maximizar la superficie del video musical.
+    2. `100% (Estándar)`: La escala equilibrada de referencia.
+    3. `115% (Grande)`: Para pantallas de 50"-55" o salones con clientes a distancia media.
+    4. `130% (Salón KTV)`: Para pantallas de 65"-85"+ o salones amplios donde el QR y los títulos deben verse a muchos metros.
+  - **Cero Descuadre ni Deformación:** Al aplicar `transform: scale(factor)` con anclajes fijos (`transform-origin: top left` para cola y alquiler, `top right` para QR/sidebar y `bottom center` para el HUD), todos los elementos (letras, íconos, botones, códigos QR y badges) escalan matemáticamente juntos sin desbordes ni superposiciones.
+  - **Sincronización Inmediata en Caliente:** El administrador toca la escala en su teléfono y la TV se ajusta en menos de 50ms sin interrumpir la reproducción.
+- **Ícono Oficial de la Aplicación Rockola Jukebox y Banner de Android TV (`configure-tv-manifest.js`, `assets/`):**
+  - **Diseño Personalizado:** Creado el ícono oficial basado en la rockola retro enviada por el usuario: ocupa el 100% del marco sin espacios negros ni bordes muertos, con tubos de neón siguiendo el contorno y el letrero central en relieve brillante **`JUKEBOX`**.
+  - **Incrustación en Recursos APK de Android:** Generadas todas las densidades mipmap (`mdpi`, `hdpi`, `xhdpi`, `xxhdpi`, `xxxhdpi`) para `ic_launcher.png` e `ic_launcher_round.png`.
+  - **Banner 16:9 para Android TV:** Incorporado `banner.png` (320x180 px) y asociado en `AndroidManifest.xml` con `android:banner="@drawable/banner"`, asegurando una carátula apaisada en la cuadrícula de apps de Android TV.
+  - **Web / PWA:** Actualizados `manifest.json`, `icon-192.png`, `icon-512.png` y `favicon.png`.
+
+---
+
 ## [1.31.0] - 2026-09-10
 
 ### 🚀 [ESPECIFICACIÓN / FEATURE]

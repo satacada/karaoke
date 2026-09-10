@@ -68,3 +68,50 @@ public class MainActivity extends BridgeActivity {
   fs.writeFileSync(activityPath, javaCode, 'utf8');
   console.log('✅ MainActivity.java configurado para detección nativa de Android TV.');
 }
+
+// 3. Inyección de Íconos Oficiales (Rockola Jukebox) y Banner Android TV
+const resDir = path.resolve(process.cwd(), 'android/app/src/main/res');
+const assetsDir = path.resolve(process.cwd(), 'scripts/assets');
+
+if (fs.existsSync(resDir) && fs.existsSync(assetsDir)) {
+  const mipmaps = [
+    { dir: 'mipmap-mdpi', size: '48' }, { dir: 'mipmap-hdpi', size: '72' },
+    { dir: 'mipmap-xhdpi', size: '96' }, { dir: 'mipmap-xxhdpi', size: '144' }, { dir: 'mipmap-xxxhdpi', size: '192' },
+  ];
+
+  mipmaps.forEach(({ dir, size }) => {
+    const targetFolder = path.join(resDir, dir);
+    if (!fs.existsSync(targetFolder)) fs.mkdirSync(targetFolder, { recursive: true });
+    const srcIcon = path.join(assetsDir, `icon-${size}.png`);
+    if (fs.existsSync(srcIcon)) {
+      fs.copyFileSync(srcIcon, path.join(targetFolder, 'ic_launcher.png'));
+      fs.copyFileSync(srcIcon, path.join(targetFolder, 'ic_launcher_round.png'));
+    }
+  });
+
+  const bannerSrc = path.join(assetsDir, 'banner.png');
+  if (fs.existsSync(bannerSrc)) {
+    ['drawable', 'drawable-xhdpi'].forEach((d) => {
+      const p = path.join(resDir, d);
+      if (!fs.existsSync(p)) fs.mkdirSync(p, { recursive: true });
+      fs.copyFileSync(bannerSrc, path.join(p, 'banner.png'));
+    });
+  }
+
+  const anyDpiDir = path.join(resDir, 'mipmap-anydpi-v26');
+  if (fs.existsSync(anyDpiDir)) {
+    ['ic_launcher.xml', 'ic_launcher_round.xml'].forEach((f) => {
+      const p = path.join(anyDpiDir, f);
+      if (fs.existsSync(p)) fs.unlinkSync(p);
+    });
+  }
+
+  if (fs.existsSync(manifestPath)) {
+    let manifestContent = fs.readFileSync(manifestPath, 'utf8');
+    if (!manifestContent.includes('android:banner=')) {
+      manifestContent = manifestContent.replace('<application', '<application android:banner="@drawable/banner"');
+      fs.writeFileSync(manifestPath, manifestContent, 'utf8');
+    }
+  }
+  console.log('✅ Íconos oficiales de Rockola y banner de Android TV inyectados.');
+}

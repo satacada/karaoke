@@ -1,8 +1,8 @@
 # 📊 PLAN MAESTRO DEL PROYECTO: ROCKOLA DIGITAL LIVE (SISTEMA MULTI-TENANT EN TIEMPO REAL)
 
-**Versión del Plan:** 2.28.0 (Escala Universal TV 32-85", Firma de Autor y Repertorio de 6 Máscaras TV)  
+**Versión del Plan:** 2.29.0 (Calibrador Remoto de Escala TV e Iconos Oficiales Rockola Jukebox)  
 **Fecha de Emisión:** Septiembre 2026  
-**Estado:** 🟢 Fase 2, Fase 3 y Fase 5 (Escala Clamp, Firma David Taboada, 6 Máscaras y CI/CD APK)  
+**Estado:** 🟢 Fase 2, Fase 3 y Fase 5 (Escala Transform TV, Iconos Jukebox, Banner TV y CI/CD APK)  
 **Metodología:** Agile / BDD / Clean Architecture con Compuertas de Control Formales  
 **Alineación:** Estructura inspirada en `boot-ventas-saas` y `aplicacion para ofertas`  
 
@@ -49,7 +49,7 @@ La **Rockola Digital Live** es una plataforma SaaS multi-tenant distribuida para
 | **2** | **Nodo TV / Android TV (Reproductor Sin Anuncios)** | 1.5 semanas | 🟢 **COMPLETA** | Reproducción continua, HUD, QR y comandos verificados. |
 | **3** | **Nodo Celular Anfitrión (Consola DJ Táctil)** | 1 semana | 🟢 **COMPLETA** | Drag-and-Drop, purga de ausentes y reset a cero verificados. |
 | **4** | **PWA Invitados Rockola + Swaps + Google Auth** | 1.5 semanas | 🟢 **COMPLETA** | Reemplazo de temas, swap propio y admin Google verificados. |
-| **5** | **Empaquetado APK Android TV y Pasarela de Pagos** | 1 semana | 🟡 **PAUSADA** | En pausa por indicación del usuario (prioridad afinamiento). |
+| **5** | **Empaquetado APK Android TV y Generación Cloud en GitHub Actions** | 1 semana | 🟢 **ACTIVA** | Compilación automática de APK con ícono de Rockola Jukebox y calibración de escala TV. |
 
 ---
 

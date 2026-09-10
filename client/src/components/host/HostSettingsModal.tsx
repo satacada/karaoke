@@ -2,15 +2,13 @@ import { useState, type FC } from 'react';
 import { Settings, X, Shield, KeyRound, Store, Check, Disc3 } from 'lucide-react';
 import { updateRoomSettings, sendRemoteCommand } from '../../services/karaokeApi';
 import { supabase } from '../../lib/supabaseClient';
-import type { KaraokeRoom, TvTheme } from '../../types';
+import type { KaraokeRoom, TvTheme, TvScale } from '../../types';
 import { HostTvMaskSelector } from './HostTvMaskSelector';
+import { HostTvScaleSelector } from './HostTvScaleSelector';
 
 interface HostSettingsModalProps {
-  isOpen: boolean;
-  room: KaraokeRoom | null;
-  ownerEmail?: string | null;
-  onClose: () => void;
-  onSaved: () => void;
+  isOpen: boolean; room: KaraokeRoom | null; ownerEmail?: string | null;
+  onClose: () => void; onSaved: () => void;
 }
 
 export const HostSettingsModal: FC<HostSettingsModalProps> = ({
@@ -19,9 +17,8 @@ export const HostSettingsModal: FC<HostSettingsModalProps> = ({
   const [businessName, setBusinessName] = useState(room?.business_name || room?.name || 'Mi Rockola');
   const [newPin, setNewPin] = useState(room?.host_pin || '1234');
   const [autoDj, setAutoDj] = useState(room?.auto_dj_enabled || false);
-  const [tvTheme, setTvTheme] = useState<TvTheme>(() => {
-    return (localStorage.getItem(`tv_theme_${room?.room_code}`) as TvTheme) || 'modern';
-  });
+  const [tvTheme, setTvTheme] = useState<TvTheme>(() => (localStorage.getItem(`tv_theme_${room?.room_code}`) as TvTheme) || 'modern');
+  const [tvScale, setTvScale] = useState<TvScale>(() => (localStorage.getItem(`tv_scale_${room?.room_code}`) as TvScale) || 'normal');
   const [saving, setSaving] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
 
@@ -34,17 +31,23 @@ export const HostSettingsModal: FC<HostSettingsModalProps> = ({
     try { localStorage.setItem(`tv_theme_${room.room_code}`, theme); } catch {}
   };
 
+  const handleScaleChange = (scale: TvScale) => {
+    setTvScale(scale);
+    sendRemoteCommand(room.id, 'volume', { action: 'set_tv_scale', scale }).catch(() => {});
+    supabase.channel(`tv-room-${room.id}`).send({ type: 'broadcast', event: 'set_tv_scale', payload: { scale } }).catch(() => {});
+    try { localStorage.setItem(`tv_scale_${room.room_code}`, scale); } catch {}
+  };
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newPin.length !== 4 || !/^\d{4}$/.test(newPin)) return;
     setSaving(true);
     handleThemeChange(tvTheme);
+    handleScaleChange(tvScale);
     supabase.channel(`tv-room-${room.id}`).send({ type: 'broadcast', event: 'set_auto_dj', payload: { enabled: autoDj, genre: room.auto_dj_genre } }).catch(() => {});
     const ok = await updateRoomSettings(room.id, {
-      name: businessName.trim(),
-      business_name: businessName.trim(),
-      host_pin: newPin,
-      auto_dj_enabled: autoDj,
+      name: businessName.trim(), business_name: businessName.trim(),
+      host_pin: newPin, auto_dj_enabled: autoDj,
     });
     setSaving(false);
     if (ok) {
@@ -86,6 +89,7 @@ export const HostSettingsModal: FC<HostSettingsModalProps> = ({
           </div>
 
           <HostTvMaskSelector selectedTheme={tvTheme} onSelectTheme={handleThemeChange} />
+          <HostTvScaleSelector selectedScale={tvScale} onSelectScale={handleScaleChange} />
 
           <div className="bg-zinc-950/60 border border-zinc-800/80 rounded-xl p-2 flex items-center gap-1.5 text-[10px] text-zinc-400 font-semibold">
             <Shield className="w-3 h-3 text-emerald-400 shrink-0" />
