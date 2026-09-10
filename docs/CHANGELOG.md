@@ -4,6 +4,31 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.21.0] - 2026-09-10
+
+### 🚀 [ESPECIFICACIÓN / FEATURE]
+- **Pausa y Reanudación Universal de Reproducción (Celular Anfitrión, Pantalla TV y Control Remoto Físico):**
+  - **En el Celular del Administrador (`HostTransportBar.tsx`):** Botón central destacado de Play/Pausa (`⏸` / `▶️`) ubicado permanentemente en la barra de transporte inferior fija. Al tocarlo, envía instantáneamente la orden remota por WebSockets a la TV (`command: 'pause'` / `'play'`).
+  - **En la Pantalla de la TV mediante Click o Toque (`TvPlayer.tsx`):** Si un mozo o encargado se acerca al televisor o pantalla táctil y hace click en cualquier sector del reproductor, el sistema conmuta inmediatamente entre Pausa y Reproducción (`togglePlayPause`).
+  - **Soporte Nativo de Control Remoto Físico de TV / Android TV (`TvPlayer.tsx`):**
+    - Soporte para el botón central circular `OK / Enter` de controles remotos de Android TV, Google TV, Smart TV Box y teclados.
+    - Soporte para botones dedicados multimedia de controles remotos: `MediaPlayPause`, `MediaPause`, `MediaPlay` (keyCode 179).
+    - Soporte para la barra espaciadora (`' '`).
+    - Un mozo puede simplemente apuntar el control remoto a la TV y presionar `OK` o `Pausa` para detener o continuar la música sin necesidad de abrir ningún menú.
+  - **Insignia Visual Accesible de Estado (`TvPauseOverlay.tsx`):** Al pausar, se proyecta un overlay elegante en el centro de la pantalla: `[ ⏸ Música en Pausa - Toca la pantalla o presiona OK en el control para continuar ]`, garantizando claridad total para los asistentes del bar.
+  - **Sincronización Bidireccional en Tiempo Real:** Si el mozo pausa desde la TV con el control físico, el celular del anfitrión actualiza su botón a `▶️ Play` a 0ms; si el dueño reanuda desde su teléfono, la TV oculta el cartel de pausa y reanuda el sonido.
+
+### 🔧 [AFINAMIENTO / REFINAMIENTO]
+- **Desacoplamiento Atómico Modular:** Creación de `TvPauseOverlay.tsx` (18 líneas).
+- **Estricto Cumplimiento Clean-by-Design ($\le 120$ líneas por archivo):**
+  - `client/src/components/tv/TvPlayer.tsx`: 116 líneas.
+  - `client/src/components/tv/TvPauseOverlay.tsx`: 18 líneas.
+- **Validación Automatizada y Compilación:**
+  - Suite de 10 pruebas unitarias con Vitest pasando al 100% (10/10 OK).
+  - Compilación de producción Vite 8 exitosa con código de salida 0.
+
+---
+
 ## [1.20.0] - 2026-09-10
 
 ### 🚀 [ESPECIFICACIÓN / FEATURE]
