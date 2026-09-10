@@ -1,24 +1,26 @@
 import { useRef, useState, useCallback, useEffect, type FC } from 'react';
-import { AlertCircle, Settings, Sparkles } from 'lucide-react';
+import { AlertCircle, Sparkles } from 'lucide-react';
 import { useTvRealtime } from '../../hooks/useTvRealtime'; import { useTvAutoDj } from '../../hooks/useTvAutoDj';
 import { TvPlayer, type TvPlayerRef } from './TvPlayer'; import { TvIdleScreen } from './TvIdleScreen';
 import { TvNowPlayingHUD } from './TvNowPlayingHUD'; import { TvNextQueueTicker } from './TvNextQueueTicker';
-import { TvFloatingQr } from './TvFloatingQr'; import { TvDedicationBanner } from './TvDedicationBanner';
-import { TvPromoTicker } from './TvPromoTicker'; import { TvFloatingReactions } from './TvFloatingReactions';
+import { TvSidebarOverlay } from './TvSidebarOverlay'; import { TvFloatingReactions } from './TvFloatingReactions';
 import { TvVintageFrame } from './TvVintageFrame'; import { TvUnlinkModal } from './TvUnlinkModal';
 import { updatePlaybackTick } from '../../services/karaokeApi';
+import { enqueueAutoDjSong } from '../../services/autoDjService';
 import type { RemoteCommand, PromoBanner } from '../../types';
 
 export const TvView: FC<{ roomCode?: string; onUnlink?: () => void }> = ({ roomCode = 'FIESTA', onUnlink }) => {
-  const playerRef = useRef<TvPlayerRef>(null); const lastSyncRef = useRef<number>(0); const handleNextSongRef = useRef<() => void>(() => {});
+  const playerRef = useRef<TvPlayerRef>(null); const lastSyncRef = useRef<number>(0);
+  const handleNextSongRef = useRef<() => void>(() => {}); const handleStartAutoDjRef = useRef<() => void>(() => {});
   const [currentTime, setCurrentTime] = useState(0); const [duration, setDuration] = useState(0);
   const [errorNotice, setErrorNotice] = useState<string | null>(null); const [banners, setBanners] = useState<PromoBanner[]>([]);
   const [showUnlinkModal, setShowUnlinkModal] = useState(false); const [isFlashing, setIsFlashing] = useState(false);
+  const [isStartingAutoDj, setIsStartingAutoDj] = useState(false);
   const [tvTheme, setTvTheme] = useState<'vintage' | 'modern'>(() => (localStorage.getItem(`tv_theme_${roomCode}`) as 'vintage' | 'modern') || 'modern');
 
   const handleRemoteCommand = useCallback((cmd: RemoteCommand) => {
     switch (cmd.command) {
-      case 'play': playerRef.current?.play(); break;
+      case 'play': playerRef.current?.play(); handleStartAutoDjRef.current(); break;
       case 'pause': playerRef.current?.pause(); break;
       case 'skip': handleNextSongRef.current(); break;
       case 'seek': if (cmd.payload?.seconds !== undefined) playerRef.current?.seekTo(cmd.payload.seconds); break;
@@ -36,10 +38,7 @@ export const TvView: FC<{ roomCode?: string; onUnlink?: () => void }> = ({ roomC
         } else if (cmd.payload?.volume !== undefined) playerRef.current?.setVolume(cmd.payload.volume);
         break;
       case 'set_promo_banners':
-        if (cmd.payload?.banners) {
-          setBanners(cmd.payload.banners as PromoBanner[]);
-          try { localStorage.setItem(`tv_banners_${roomCode}`, JSON.stringify(cmd.payload.banners)); } catch {}
-        }
+        if (cmd.payload?.banners) { setBanners(cmd.payload.banners as PromoBanner[]); try { localStorage.setItem(`tv_banners_${roomCode}`, JSON.stringify(cmd.payload.banners)); } catch {} }
         break;
     }
   }, [roomCode, onUnlink]);
@@ -48,14 +47,20 @@ export const TvView: FC<{ roomCode?: string; onUnlink?: () => void }> = ({ roomC
   handleNextSongRef.current = handleNextSong;
   useTvAutoDj(room, currentSong, nextSongs, refreshState);
 
+  const handleStartAutoDj = useCallback(async () => {
+    if (!room || isStartingAutoDj) return;
+    setIsStartingAutoDj(true);
+    try {
+      await enqueueAutoDjSong(room.id, room.auto_dj_genre);
+      await refreshState();
+    } catch (err) { console.error('[TvView] Error starting smart playlist:', err); }
+    finally { setIsStartingAutoDj(false); }
+  }, [room, isStartingAutoDj, refreshState]);
+  handleStartAutoDjRef.current = handleStartAutoDj;
+
   useEffect(() => {
-    if (room?.promo_banners && room.promo_banners.length > 0) {
-      setBanners(room.promo_banners);
-      try { localStorage.setItem(`tv_banners_${roomCode}`, JSON.stringify(room.promo_banners)); } catch {}
-    } else {
-      const saved = localStorage.getItem(`tv_banners_${roomCode}`);
-      if (saved) { try { setBanners(JSON.parse(saved)); } catch {} }
-    }
+    if (room?.promo_banners?.length) { setBanners(room.promo_banners); try { localStorage.setItem(`tv_banners_${roomCode}`, JSON.stringify(room.promo_banners)); } catch {} }
+    else { const s = localStorage.getItem(`tv_banners_${roomCode}`); if (s) { try { setBanners(JSON.parse(s)); } catch {} } }
   }, [room?.promo_banners, roomCode]);
 
   useEffect(() => {
@@ -92,7 +97,7 @@ export const TvView: FC<{ roomCode?: string; onUnlink?: () => void }> = ({ roomC
       )}
       {errorNotice && <div className="absolute top-20 left-1/2 -translate-x-1/2 z-50 bg-rose-600/90 backdrop-blur-md text-white px-5 py-2 rounded-2xl shadow-2xl border border-rose-400/40 text-sm font-semibold flex items-center gap-2"><AlertCircle className="w-4 h-4 text-amber-300 animate-pulse" /><span>{errorNotice}</span></div>}
       {!currentSong ? (
-        <TvIdleScreen roomCode={roomCode} joinUrl={joinUrl} roomName={room?.name || 'Rockola Digital Live'} zoneName={room?.zone_name} status={room?.status} banners={banners} autoDjActive={Boolean(room?.auto_dj_enabled)} />
+        <TvIdleScreen roomCode={roomCode} joinUrl={joinUrl} roomName={room?.name || 'Rockola Digital Live'} zoneName={room?.zone_name} status={room?.status} banners={banners} autoDjActive={Boolean(room?.auto_dj_enabled)} onStartAutoDj={handleStartAutoDj} isStartingAutoDj={isStartingAutoDj} />
       ) : (
         <>
           <TvVintageFrame active={tvTheme === 'vintage'}><TvPlayer ref={playerRef} videoId={currentSong.video_id} onEnded={handleNextSong} onError={handlePlayerError} onTimeUpdate={handleTimeUpdate} onPlayingStateChange={(pl) => { if (room) updatePlaybackTick(room.id, pl, currentTime).catch(() => {}); }} /></TvVintageFrame>
@@ -100,16 +105,7 @@ export const TvView: FC<{ roomCode?: string; onUnlink?: () => void }> = ({ roomC
           <TvNowPlayingHUD song={currentSong} currentTime={currentTime} duration={duration} />
         </>
       )}
-      <aside className="absolute top-6 right-6 z-40 flex flex-col gap-2.5 w-60 sm:w-64 pointer-events-none">
-        <div className="flex justify-end pointer-events-auto">
-          <button type="button" onClick={() => setShowUnlinkModal(true)} title="Configuración de pantalla" className="p-1.5 rounded-xl bg-black/40 hover:bg-black/80 text-zinc-400 hover:text-white border border-white/10 transition-colors">
-            <Settings className="w-3.5 h-3.5" />
-          </button>
-        </div>
-        <div className="pointer-events-auto"><TvFloatingQr roomCode={roomCode} joinUrl={joinUrl} currentSongId={currentSong?.id} /></div>
-        <TvPromoTicker banners={banners} roomCode={roomCode} />
-        <TvDedicationBanner currentSong={currentSong} />
-      </aside>
+      <TvSidebarOverlay roomCode={roomCode} joinUrl={joinUrl} currentSong={currentSong} banners={banners} onOpenSettings={() => setShowUnlinkModal(true)} />
       <TvFloatingReactions roomCode={roomCode} />
       <TvUnlinkModal isOpen={showUnlinkModal} roomCode={roomCode} roomName={room?.zone_name || room?.name} onClose={() => setShowUnlinkModal(false)} onConfirmUnlink={() => { try { localStorage.removeItem('tv_paired_room'); } catch {} setShowUnlinkModal(false); onUnlink?.(); }} />
     </div>

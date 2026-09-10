@@ -2,16 +2,13 @@ import { useState, useRef, useEffect, type FC } from 'react';
 import { ListMusic } from 'lucide-react';
 import { useTvRealtime } from '../../hooks/useTvRealtime';
 import { supabase } from '../../lib/supabaseClient';
-import { HostAuth } from './HostAuth';
-import { HostHeader } from './HostHeader';
-import { HostNowPlayingCard } from './HostNowPlayingCard';
-import { HostQueueItem } from './HostQueueItem';
-import { HostTransportBar } from './HostTransportBar';
-import { HostMultiRoomBar } from './multiroom/HostMultiRoomBar';
-import { HostModals } from './HostModals';
-import { HostPendingApprovalView } from './HostPendingApprovalView';
+import { HostAuth } from './HostAuth'; import { HostHeader } from './HostHeader';
+import { HostNowPlayingCard } from './HostNowPlayingCard'; import { HostQueueItem } from './HostQueueItem';
+import { HostTransportBar } from './HostTransportBar'; import { HostMultiRoomBar } from './multiroom/HostMultiRoomBar';
+import { HostModals } from './HostModals'; import { HostPendingApprovalView } from './HostPendingApprovalView';
 import { HostEmptyQueueCard } from './HostEmptyQueueCard';
-import { sendRemoteCommand, reorderQueueItem, purgeGuestSongs, deleteQueueItem, resetRoomQueue, updateRoomBanners, toggleQueueLock, getRoomsForOwner, updatePlaybackTick } from '../../services/karaokeApi';
+import { sendRemoteCommand, reorderQueueItem, purgeGuestSongs, deleteQueueItem, resetRoomQueue, updateRoomBanners, toggleQueueLock, getRoomsForOwner, updatePlaybackTick, updateRoomSettings } from '../../services/karaokeApi';
+import { enqueueAutoDjSong } from '../../services/autoDjService';
 import type { QueueItem, KaraokeRoom } from '../../types';
 
 const SUPER_ADMINS = (import.meta.env.VITE_SUPER_ADMIN_EMAILS || 'satacada@gmail.com,david@gmail.com,admin@karaoke.com').toLowerCase().split(',').map((s: string) => s.trim());
@@ -22,11 +19,13 @@ export const HostView: FC<{ roomCode?: string }> = ({ roomCode = 'FIESTA' }) => 
   const [isOwner, setIsOwner] = useState(false); const [ownerEmail, setOwnerEmail] = useState<string | null>(null);
   const [userName, setUserName] = useState<string | null>(null); const [ownerRooms, setOwnerRooms] = useState<KaraokeRoom[]>([]);
   const [volume, setVolume] = useState(100); const [isPlaying, setIsPlaying] = useState(true);
-  const [theme, setTheme] = useState<'dark' | 'blue' | 'neon' | 'light'>(() => (localStorage.getItem('host_theme') as 'dark' | 'blue' | 'neon' | 'light') || 'dark'); const [fontSize, setFontSize] = useState<'normal' | 'large' | 'xl'>(() => (localStorage.getItem('host_font_size') as 'normal' | 'large' | 'xl') || 'normal');
+  const [theme, setTheme] = useState<'dark' | 'blue' | 'neon' | 'light'>(() => (localStorage.getItem('host_theme') as 'dark' | 'blue' | 'neon' | 'light') || 'dark');
+  const [fontSize, setFontSize] = useState<'normal' | 'large' | 'xl'>(() => (localStorage.getItem('host_font_size') as 'normal' | 'large' | 'xl') || 'normal');
   const [showResetModal, setShowResetModal] = useState(false); const [showGuestModal, setShowGuestModal] = useState(false); const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showSuperAdminModal, setShowSuperAdminModal] = useState(false); const [showBannersModal, setShowBannersModal] = useState(false); const [showMasterHubModal, setShowMasterHubModal] = useState(false);
   const [showCreateRoomModal, setShowCreateRoomModal] = useState(false); const [roomToTransfer, setRoomToTransfer] = useState<KaraokeRoom | null>(null); const [songToDelete, setSongToDelete] = useState<QueueItem | null>(null);
   const [isResetting, setIsResetting] = useState(false); const [showAutoDjModal, setShowAutoDjModal] = useState(false);
+  const [isStartingAutoDj, setIsStartingAutoDj] = useState(false);
   const [showPairTvModal, setShowPairTvModal] = useState(() => Boolean(new URLSearchParams(window.location.search).get('pair')));
   const [pairCode] = useState(() => new URLSearchParams(window.location.search).get('pair') || '');
   const draggedIndexRef = useRef<number | null>(null);
@@ -34,38 +33,29 @@ export const HostView: FC<{ roomCode?: string }> = ({ roomCode = 'FIESTA' }) => 
   const { room, currentSong, nextSongs, handleNextSong, refreshState } = useTvRealtime(activeCode);
   const isSuperAdmin = Boolean(ownerEmail && SUPER_ADMINS.includes(ownerEmail.toLowerCase()));
 
-  useEffect(() => {
-    if (room?.is_playing !== undefined) setIsPlaying(room.is_playing);
-  }, [room?.is_playing]);
+  useEffect(() => { if (room?.is_playing !== undefined) setIsPlaying(room.is_playing); }, [room?.is_playing]);
 
-  const loadOwnerRooms = async (email: string) => {
-    const r = await getRoomsForOwner(email); setOwnerRooms(r);
-  };
+  const loadOwnerRooms = async (email: string) => { const r = await getRoomsForOwner(email); setOwnerRooms(r); };
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       if (data?.user?.email) {
         setIsOwner(true); setOwnerEmail(data.user.email);
         const name = data.user.user_metadata?.full_name || data.user.user_metadata?.name || data.user.email.split('@')[0];
-        setUserName(name); setIsAuthenticated(true);
-        sessionStorage.setItem(`host_auth_${activeCode}`, 'true');
-        loadOwnerRooms(data.user.email);
+        setUserName(name); setIsAuthenticated(true); sessionStorage.setItem(`host_auth_${activeCode}`, 'true'); loadOwnerRooms(data.user.email);
       } else { loadOwnerRooms('all'); }
     });
   }, [activeCode]);
 
   const handleAuth = (asOwner = false, email?: string) => {
     sessionStorage.setItem(`host_auth_${activeCode}`, 'true');
-    if (asOwner) {
-      setIsOwner(true);
-      if (email) { setOwnerEmail(email); setUserName(email.split('@')[0]); loadOwnerRooms(email); }
-    } else { loadOwnerRooms('all'); }
+    if (asOwner) { setIsOwner(true); if (email) { setOwnerEmail(email); setUserName(email.split('@')[0]); loadOwnerRooms(email); } }
+    else { loadOwnerRooms('all'); }
     setIsAuthenticated(true);
   };
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
-    sessionStorage.removeItem(`host_auth_${activeCode}`);
+    await supabase.auth.signOut(); sessionStorage.removeItem(`host_auth_${activeCode}`);
     setIsAuthenticated(false); setIsOwner(false); setOwnerEmail(null); setUserName(null);
   };
 
@@ -73,18 +63,27 @@ export const HostView: FC<{ roomCode?: string }> = ({ roomCode = 'FIESTA' }) => 
     if (room) sendRemoteCommand(room.id, cmd, payload);
   };
 
+  const handleStartAutoDj = async () => {
+    if (!room || isStartingAutoDj) return;
+    setIsStartingAutoDj(true);
+    try {
+      await updateRoomSettings(room.id, { auto_dj_enabled: true, is_playing: true });
+      await enqueueAutoDjSong(room.id, room.auto_dj_genre);
+      sendRemoteCommand(room.id, 'play', { start_playback: true });
+      refreshState();
+    } catch (err) { console.error('Error starting Auto-DJ from host:', err); }
+    finally { setIsStartingAutoDj(false); }
+  };
+
   const handleTogglePlayPause = () => {
-    const nextPlaying = !isPlaying;
-    setIsPlaying(nextPlaying);
-    handleCommand(nextPlaying ? 'play' : 'pause');
+    if (!currentSong && nextSongs.length === 0) { handleStartAutoDj(); return; }
+    const nextPlaying = !isPlaying; setIsPlaying(nextPlaying); handleCommand(nextPlaying ? 'play' : 'pause');
     if (room) updatePlaybackTick(room.id, nextPlaying, room.current_time_seconds || 0).catch(() => {});
   };
 
   const handleDrop = async (targetIndex: number) => {
     const src = draggedIndexRef.current;
-    if (src !== null && src !== targetIndex && room) {
-      await reorderQueueItem(room.id, nextSongs[src].id, targetIndex + 1); refreshState();
-    }
+    if (src !== null && src !== targetIndex && room) { await reorderQueueItem(room.id, nextSongs[src].id, targetIndex + 1); refreshState(); }
     draggedIndexRef.current = null;
   };
 
@@ -104,7 +103,7 @@ export const HostView: FC<{ roomCode?: string }> = ({ roomCode = 'FIESTA' }) => 
       <section className="flex-1 flex flex-col gap-2">
         <div className="flex items-center gap-1.5 text-xs text-zinc-400 font-bold uppercase tracking-wider mb-1"><ListMusic className="w-4 h-4 text-purple-400" /><span>Cola ({nextSongs.length})</span></div>
         {nextSongs.length === 0 ? (
-          <HostEmptyQueueCard room={room} onOpenAutoDj={() => setShowAutoDjModal(true)} />
+          <HostEmptyQueueCard room={room} onOpenAutoDj={() => setShowAutoDjModal(true)} onStartAutoDj={handleStartAutoDj} isStartingAutoDj={isStartingAutoDj} />
         ) : nextSongs.map((item, idx) => (
           <HostQueueItem key={item.id} item={item} index={idx} totalItems={nextSongs.length} onMoveToNext={async (id) => { if (room) { await reorderQueueItem(room.id, id, 1); refreshState(); } }} onMoveUp={async (id, pos) => { if (room) { await reorderQueueItem(room.id, id, pos - 1); refreshState(); } }} onMoveDown={async (id, pos) => { if (room) { await reorderQueueItem(room.id, id, pos + 1); refreshState(); } }} onDelete={setSongToDelete} onDragStart={(_, i) => { draggedIndexRef.current = i; }} onDragOver={(e) => e.preventDefault()} onDrop={(_, tIdx) => handleDrop(tIdx)} />
         ))}

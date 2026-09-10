@@ -1,6 +1,7 @@
 import { useState, useEffect, type FC } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
-import { Disc3, Sparkles, Smartphone, Signal, Tag, Music2 } from 'lucide-react';
+import { Disc3, Sparkles, Smartphone, Signal, Music2, Play } from 'lucide-react';
+import { TvIdlePromoCard } from './TvIdlePromoCard';
 import type { PromoBanner } from '../../types';
 
 interface TvIdleScreenProps {
@@ -11,14 +12,16 @@ interface TvIdleScreenProps {
   status?: 'active' | 'paused' | 'closed';
   banners?: PromoBanner[];
   autoDjActive?: boolean;
+  onStartAutoDj?: () => void;
+  isStartingAutoDj?: boolean;
 }
 
 export const TvIdleScreen: FC<TvIdleScreenProps> = ({
-  roomCode, joinUrl, roomName = 'Rockola Digital Live', zoneName, status = 'active', banners = [], autoDjActive = false,
+  roomCode, joinUrl, roomName = 'Rockola Digital Live', zoneName, status = 'active',
+  banners = [], autoDjActive = false, onStartAutoDj, isStartingAutoDj = false,
 }) => {
   const [localBanners, setLocalBanners] = useState<PromoBanner[]>(banners);
-  const [promoIdx, setPromoIdx] = useState(0);
-  const [now, setNow] = useState(() => Date.now());
+  const [promoIdx, setPromoIdx] = useState(0); const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 2000);
@@ -26,9 +29,8 @@ export const TvIdleScreen: FC<TvIdleScreenProps> = ({
   }, []);
 
   useEffect(() => {
-    if (banners && banners.length > 0) {
-      setLocalBanners(banners);
-    } else {
+    if (banners && banners.length > 0) setLocalBanners(banners);
+    else {
       const saved = localStorage.getItem(`tv_banners_${roomCode}`);
       if (saved) { try { setLocalBanners(JSON.parse(saved)); } catch {} }
     }
@@ -39,72 +41,74 @@ export const TvIdleScreen: FC<TvIdleScreenProps> = ({
 
   useEffect(() => {
     if (activeBanners.length <= 1) return;
-    const interval = setInterval(() => {
-      setPromoIdx((prev) => (prev + 1) % activeBanners.length);
-    }, 6000);
+    const interval = setInterval(() => setPromoIdx((p) => (p + 1) % activeBanners.length), 6000);
     return () => clearInterval(interval);
   }, [activeBanners.length]);
 
-  const currentPromo = activeBanners[promoIdx % activeBanners.length];
+  const currentPromo = activeBanners[promoIdx % activeBanners.length] || null;
 
   return (
-    <div className="relative w-full h-screen bg-gradient-to-br from-zinc-950 via-purple-950/40 to-zinc-950 flex flex-col items-center justify-center p-6 overflow-hidden">
+    <div className="relative w-full h-screen bg-gradient-to-br from-zinc-950 via-purple-950/40 to-zinc-950 flex flex-col items-center justify-center p-6 overflow-hidden select-none">
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-600/15 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-pink-600/15 rounded-full blur-3xl pointer-events-none" />
 
       <main className="relative z-10 flex flex-col items-center max-w-4xl text-center">
-        <div className="relative mb-4">
-          <div className="w-20 h-20 rounded-3xl bg-gradient-to-tr from-purple-600 via-pink-600 to-amber-500 flex items-center justify-center shadow-2xl shadow-purple-500/50 animate-bounce">
-            <Disc3 className="w-11 h-11 text-white animate-spin" style={{ animationDuration: '6s' }} />
+        <div className="relative mb-3">
+          <div className="w-16 h-16 rounded-3xl bg-gradient-to-tr from-purple-600 via-pink-600 to-amber-500 flex items-center justify-center shadow-2xl shadow-purple-500/50 animate-bounce">
+            <Disc3 className="w-9 h-9 text-white animate-spin" style={{ animationDuration: '6s' }} />
           </div>
-          <Sparkles className="w-7 h-7 text-amber-300 absolute -top-2 -right-2 animate-spin" />
+          <Sparkles className="w-6 h-6 text-amber-300 absolute -top-2 -right-2 animate-spin" />
         </div>
 
         {autoDjActive && (
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-pink-500/20 border border-pink-500/40 text-pink-300 text-xs font-bold mb-3 shadow-lg shadow-pink-500/10 animate-pulse">
-            <Disc3 className="w-3.5 h-3.5 animate-spin" /> Modo Auto-DJ Ambiente Activo
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-pink-500/20 border border-pink-500/40 text-pink-300 text-xs font-bold mb-2 shadow-lg shadow-pink-500/10">
+            <Disc3 className="w-3.5 h-3.5 animate-spin" /> Modo Auto-DJ Configurado
           </div>
         )}
         <h1 className="text-3xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-amber-300 tracking-tight mb-1">
           {cleanRoomName}
         </h1>
         {zoneName && zoneName !== 'Salón Principal' && (
-          <span className="text-sm font-bold text-purple-300 font-mono tracking-widest uppercase mb-2 block">Sector: {zoneName}</span>
+          <span className="text-xs font-bold text-purple-300 font-mono tracking-widest uppercase mb-2 block">Sector: {zoneName}</span>
         )}
-        <p className="text-lg md:text-xl text-zinc-300 font-medium max-w-xl mb-6">
+        <p className="text-base md:text-lg text-zinc-300 font-medium max-w-xl mb-5">
           {status === 'closed' ? 'Este ambiente ha cerrado pedidos por hoy. ¡Te esperamos en el salón principal!' : 'Escanea el código con tu celular para poner tus temas y videos favoritos'}
         </p>
 
         {status !== 'closed' && (
-        <div className="flex flex-col md:flex-row items-center gap-6 bg-zinc-900/80 backdrop-blur-xl border border-purple-500/30 p-6 rounded-3xl shadow-2xl shadow-purple-950/60">
-          <div className="bg-white p-3 rounded-2xl shadow-xl border-4 border-purple-500/20 shrink-0">
-            <QRCodeSVG value={joinUrl} size={190} level="H" includeMargin={false} />
-          </div>
-
-          <div className="flex flex-col items-center md:items-start text-center md:text-left gap-3">
-            <div>
-              <span className="text-[11px] uppercase tracking-widest text-purple-400 font-bold block mb-0.5">Código de Sala</span>
-              <span className="text-4xl font-mono font-black text-white tracking-widest bg-zinc-800/80 px-5 py-1.5 rounded-2xl border border-zinc-700 inline-block">{roomCode}</span>
+          <div className="flex flex-col md:flex-row items-center gap-6 bg-zinc-900/85 backdrop-blur-xl border border-purple-500/30 p-5 rounded-3xl shadow-2xl shadow-purple-950/60 max-w-2xl">
+            <div className="bg-white p-3 rounded-2xl shadow-xl border-4 border-purple-500/20 shrink-0">
+              <QRCodeSVG value={joinUrl} size={180} level="H" includeMargin={false} />
             </div>
 
-            <div className="flex flex-col gap-2 text-left text-xs text-zinc-300">
-              <div className="flex items-center gap-2"><Smartphone className="w-4 h-4 text-pink-400 shrink-0" /><span>1. Abre la cámara de tu celular</span></div>
-              <div className="flex items-center gap-2"><Signal className="w-4 h-4 text-emerald-400 shrink-0" /><span>2. Usa tus datos móviles (sin Wi-Fi)</span></div>
-              <div className="flex items-center gap-2"><Music2 className="w-4 h-4 text-purple-400 shrink-0" /><span>3. Busca tu canción favorita y pon tu música</span></div>
-            </div>
-
-            {currentPromo && (
-              <div className="w-full mt-1 bg-gradient-to-br from-amber-950/90 via-zinc-950/90 to-zinc-950/90 border-2 border-amber-400 rounded-xl p-2.5 text-left animate-in fade-in shadow-[0_0_20px_rgba(250,204,21,0.3)]">
-                <div className="flex items-center justify-between gap-1 mb-0.5">
-                  <span className="text-[10px] font-black uppercase tracking-wider text-amber-400 flex items-center gap-1"><Tag className="w-3 h-3" /> Promo del Local</span>
-                  {currentPromo.expires_at && <span className="text-[9px] font-mono font-bold text-amber-300 bg-black/70 px-1.5 py-0.5 rounded border border-amber-400/40 animate-pulse">⏳ {Math.max(1, Math.ceil((currentPromo.expires_at - now) / 60000))} min</span>}
-                </div>
-                <p className="text-xs font-black uppercase tracking-wide truncate animate-neon-tube neon-text-gold">{currentPromo.title}</p>
-                <p className="text-[11px] text-amber-200/90 truncate">{currentPromo.subtitle}</p>
+            <div className="flex flex-col items-center md:items-start text-center md:text-left gap-2.5 flex-1">
+              <div>
+                <span className="text-[10px] uppercase tracking-widest text-purple-400 font-bold block mb-0.5">Código de Sala</span>
+                <span className="text-3xl font-mono font-black text-white tracking-widest bg-zinc-800/80 px-4 py-1 rounded-xl border border-zinc-700 inline-block">{roomCode}</span>
               </div>
-            )}
+
+              <div className="flex flex-col gap-1.5 text-left text-xs text-zinc-300">
+                <div className="flex items-center gap-2"><Smartphone className="w-4 h-4 text-pink-400 shrink-0" /><span>1. Abre la cámara de tu celular</span></div>
+                <div className="flex items-center gap-2"><Signal className="w-4 h-4 text-emerald-400 shrink-0" /><span>2. Usa tus datos móviles (sin Wi-Fi)</span></div>
+                <div className="flex items-center gap-2"><Music2 className="w-4 h-4 text-purple-400 shrink-0" /><span>3. Busca tu canción favorita y pon tu música</span></div>
+              </div>
+
+              {onStartAutoDj && (
+                <button
+                  type="button"
+                  onClick={onStartAutoDj}
+                  disabled={isStartingAutoDj}
+                  className="w-full mt-1 py-2 px-4 rounded-xl bg-gradient-to-r from-purple-600 via-pink-600 to-amber-500 hover:from-purple-500 hover:to-pink-500 text-white font-bold text-xs uppercase tracking-wider shadow-lg shadow-purple-950/50 flex items-center justify-center gap-2 border border-white/20 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer disabled:opacity-50"
+                  title="Dar click para iniciar el sonido de la sala"
+                >
+                  <Play className="w-3.5 h-3.5 fill-white" />
+                  <span>{isStartingAutoDj ? 'Iniciando sonido...' : '▶ Iniciar Música Inteligente'}</span>
+                </button>
+              )}
+
+              <TvIdlePromoCard promo={currentPromo} now={now} />
+            </div>
           </div>
-        </div>
         )}
       </main>
     </div>

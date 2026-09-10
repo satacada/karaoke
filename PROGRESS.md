@@ -1,8 +1,8 @@
 # 📊 PLAN MAESTRO DEL PROYECTO: ROCKOLA DIGITAL LIVE (SISTEMA MULTI-TENANT EN TIEMPO REAL)
 
-**Versión del Plan:** 2.16.0 (Auto-DJ Autónomo Contextual y Búsqueda Inteligente Multi-Artista por Género y Época)  
+**Versión del Plan:** 2.17.0 (Control Humano Obligatorio y Señal de Activación de Sonido / Auto-DJ por Click)  
 **Fecha de Emisión:** Septiembre 2026  
-**Estado:** 🟢 Fase 2 y Fase 4 (Auto-DJ Continuo y Búsqueda de Géneros PWA - Completo y Verificado)  
+**Estado:** 🟢 Fase 2 y Fase 3 (Control de Arranque por Click en TV y Celular DJ - Completo y Verificado)  
 **Metodología:** Agile / BDD / Clean Architecture con Compuertas de Control Formales  
 **Alineación:** Estructura inspirada en `boot-ventas-saas` y `aplicacion para ofertas`  
 
@@ -178,6 +178,7 @@ La **Rockola Digital Live** es una plataforma SaaS multi-tenant distribuida para
 11. [x] **Cumplimiento Clean-by-Design:** todos los nuevos componentes y utilidades (`TvNextQueueTicker.tsx`, `useGuestRealtime.ts`, `GuestModals.tsx`, `GuestMercadoPagoModal.tsx`, etc.) cumplen estrictamente con el tope de $\le 120$ líneas.
 12. [x] **Auto-DJ Autónomo Contextual:** la TV nunca se queda congelada ni en silencio al vaciarse la cola; activa automáticamente temas inteligentes de fiesta o basados en el historial reciente de la sala (`autoDjService.ts`, `useTvAutoDj.ts`).
 13. [x] **Búsqueda Inteligente por Género y Ritmos:** detección de épocas/géneros ("música de los 80", "rock 80s", "salsa", "reggaeton", "blues", etc.) con carrusel de chips rápidos en PWA de invitados y expansión multi-artista en paralelo para evitar mixes largos de YouTube (`genreDefinitions.js`, `searchService.js`, `GuestGenreChips.tsx`).
+14. [x] **Control Humano Obligatorio y Señal de Inicio ("Dar el Click"):** la TV nunca arranca el sonido por sorpresa; requiere un click o señal expresa del usuario (botón en pantalla TV o botón en celular anfitrión) para iniciar la reproducción inteligente (`useTvAutoDj.ts`, `TvIdleScreen.tsx`, `HostEmptyQueueCard.tsx`).
 
 ---
 

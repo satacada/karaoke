@@ -4,6 +4,31 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.20.0] - 2026-09-10
+
+### 🚀 [ESPECIFICACIÓN / FEATURE]
+- **Control Humano Obligatorio y Señal Explícita de Inicio de Sonido ("Dar el Click"):**
+  - **Eliminación del Auto-Arranque Involuntario en Reposo (`useTvAutoDj.ts`):** El motor inteligente nunca iniciará la reproducción de audio automáticamente por el solo hecho de abrir la TV o tener la cola vacía (`if (!currentSong) return;`). La sala permanece en reposo silencioso hasta recibir la orden humana.
+  - **Botón de Señal en la Pantalla TV (`TvIdleScreen.tsx`):** La pantalla de reposo en la TV incluye un botón interactivo destacado `[ ▶ Iniciar Música Inteligente ]` con feedback visual. Al dar click directamente en el televisor, se desbloquea el contexto de audio del navegador (cumpliendo con las políticas de autoplay de Smart TVs y navegadores web) y se arranca la primera canción de inmediato.
+  - **Botón de Señal en el Celular del Administrador (`HostEmptyQueueCard.tsx` & `HostView.tsx`):** En la consola DJ móvil, cuando la cola está vacía, se presenta el botón de acción principal `[ ▶ Iniciar Música Inteligente ]` y el botón de Play en la barra de transporte. Al pulsar el botón desde el teléfono, se emite la señal remota por WebSockets en tiempo real (`command: 'play'`), se encola el tema inteligente seleccionado y arranca el sonido en la TV.
+  - **Continuidad de Fondo Únicamente con Sesión Activa:** El Auto-DJ solo asiste preparando el siguiente tema mientras una canción ya esté sonando en pantalla (`currentSong !== null`), garantizando una transición suave sin silencios solo mientras la fiesta esté en marcha.
+
+### 🔧 [AFINAMIENTO / REFINAMIENTO]
+- **Desacoplamiento Atómico Modular:**
+  - `client/src/components/tv/TvIdlePromoCard.tsx`: 29 líneas.
+  - `client/src/components/tv/TvSidebarOverlay.tsx`: 37 líneas.
+- **Estricto Cumplimiento Clean-by-Design ($\le 120$ líneas por archivo):**
+  - `client/src/hooks/useTvAutoDj.ts`: 48 líneas.
+  - `client/src/components/tv/TvIdleScreen.tsx`: 117 líneas.
+  - `client/src/components/tv/TvView.tsx`: 114 líneas.
+  - `client/src/components/host/HostEmptyQueueCard.tsx`: 46 líneas.
+  - `client/src/components/host/HostView.tsx`: 116 líneas.
+- **Validación Automatizada y Compilación:**
+  - Suite de 10 pruebas unitarias con Vitest pasando al 100% (10/10 OK).
+  - Compilación de producción Vite 8 exitosa con código de salida 0.
+
+---
+
 ## [1.19.0] - 2026-09-10
 
 ### 🚀 [ESPECIFICACIÓN / FEATURE]

@@ -13,8 +13,10 @@ export function useTvAutoDj(
 
   useEffect(() => {
     if (!room) return;
-    if (room.auto_dj_enabled === false) return;
+    if (!room.auto_dj_enabled) return;
     if (room.status === 'closed' || room.status === 'paused') return;
+    // NUNCA auto-iniciar en reposo: requiere señal o click del usuario para comenzar la reproducción
+    if (!currentSong) return;
     if (nextSongs.length > 0) return;
     if (isQueueingRef.current) return;
 
@@ -28,15 +30,13 @@ export function useTvAutoDj(
     const timer = setTimeout(async () => {
       try {
         const ok = await enqueueAutoDjSong(room.id, room.auto_dj_genre);
-        if (ok && isMounted) {
-          await refreshState();
-        }
+        if (ok && isMounted) await refreshState();
       } catch (err) {
         console.error('Auto-DJ queueing error:', err);
       } finally {
         if (isMounted) isQueueingRef.current = false;
       }
-    }, currentSong ? 2000 : 800);
+    }, 2000);
 
     return () => {
       isMounted = false;
