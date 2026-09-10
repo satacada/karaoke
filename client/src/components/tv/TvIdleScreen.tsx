@@ -18,19 +18,23 @@ export const TvIdleScreen: FC<TvIdleScreenProps> = ({
 }) => {
   const [localBanners, setLocalBanners] = useState<PromoBanner[]>(banners);
   const [promoIdx, setPromoIdx] = useState(0);
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 2000);
+    return () => clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     if (banners && banners.length > 0) {
       setLocalBanners(banners);
     } else {
       const saved = localStorage.getItem(`tv_banners_${roomCode}`);
-      if (saved) {
-        try { setLocalBanners(JSON.parse(saved)); } catch {}
-      }
+      if (saved) { try { setLocalBanners(JSON.parse(saved)); } catch {} }
     }
   }, [banners, roomCode]);
 
-  const activeBanners = localBanners.filter((b) => b.is_active);
+  const activeBanners = localBanners.filter((b) => b.is_active && (!b.expires_at || b.expires_at > now));
   const cleanRoomName = (!roomName || roomName.toLowerCase().includes('karaoke')) ? 'Rockola Digital Live' : roomName;
 
   useEffect(() => {
@@ -80,9 +84,7 @@ export const TvIdleScreen: FC<TvIdleScreenProps> = ({
           <div className="flex flex-col items-center md:items-start text-center md:text-left gap-3">
             <div>
               <span className="text-[11px] uppercase tracking-widest text-purple-400 font-bold block mb-0.5">Código de Sala</span>
-              <span className="text-4xl font-mono font-black text-white tracking-widest bg-zinc-800/80 px-5 py-1.5 rounded-2xl border border-zinc-700 inline-block">
-                {roomCode}
-              </span>
+              <span className="text-4xl font-mono font-black text-white tracking-widest bg-zinc-800/80 px-5 py-1.5 rounded-2xl border border-zinc-700 inline-block">{roomCode}</span>
             </div>
 
             <div className="flex flex-col gap-2 text-left text-xs text-zinc-300">
@@ -92,12 +94,13 @@ export const TvIdleScreen: FC<TvIdleScreenProps> = ({
             </div>
 
             {currentPromo && (
-              <div className="w-full mt-1 bg-amber-500/10 border border-amber-500/40 rounded-xl p-2.5 text-left animate-in fade-in">
-                <span className="text-[10px] font-black uppercase tracking-wider text-amber-400 flex items-center gap-1 mb-0.5">
-                  <Tag className="w-3 h-3" /> Promo del Local
-                </span>
-                <p className="text-xs font-bold text-white truncate">{currentPromo.title}</p>
-                <p className="text-[11px] text-amber-200/80 truncate">{currentPromo.subtitle}</p>
+              <div className="w-full mt-1 bg-gradient-to-br from-amber-950/90 via-zinc-950/90 to-zinc-950/90 border-2 border-amber-400 rounded-xl p-2.5 text-left animate-in fade-in shadow-[0_0_20px_rgba(250,204,21,0.3)]">
+                <div className="flex items-center justify-between gap-1 mb-0.5">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-amber-400 flex items-center gap-1"><Tag className="w-3 h-3" /> Promo del Local</span>
+                  {currentPromo.expires_at && <span className="text-[9px] font-mono font-bold text-amber-300 bg-black/70 px-1.5 py-0.5 rounded border border-amber-400/40 animate-pulse">⏳ {Math.max(1, Math.ceil((currentPromo.expires_at - now) / 60000))} min</span>}
+                </div>
+                <p className="text-xs font-black uppercase tracking-wide truncate animate-neon-tube neon-text-gold">{currentPromo.title}</p>
+                <p className="text-[11px] text-amber-200/90 truncate">{currentPromo.subtitle}</p>
               </div>
             )}
           </div>

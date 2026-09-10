@@ -4,6 +4,46 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.13.0] - 2026-09-10
+
+### 🚀 [ESPECIFICACIÓN / FEATURE]
+- **Promociones del Local en TV con Duración Programada & Expiración en Tiempo Real:**
+  - **Selector de Tiempo en Consola Anfitrión (`HostBannersModal.tsx`):**
+    - Nuevos controles rápidos por botones estilo pastilla para programar la vigencia de cada promoción:
+      - `15 min`: Activa durante 15 minutos exactos desde su publicación.
+      - `30 min`: Activa durante media hora.
+      - `Fin hora`: Válida hasta que finalice la hora actual (ej. si se activa a las 21:14 hs, finaliza exactamente a las 22:00:00 hs).
+      - `1 hora`: Activa durante 60 minutos.
+      - `Siempre`: Anuncio permanente hasta ser desactivado manualmente por el anfitrión.
+    - Cálculo dinámico de timestamp `expires_at` con visualización en vivo de la hora de vencimiento (`🕒 Expira: 22:00 hs`).
+  - **Auto-Expiración y Desaparición Automática en TV (`TvPromoTicker.tsx` & `TvIdleScreen.tsx`):**
+    - Timer ticker a nivel de segundo que evalúa la vigencia en tiempo real (`!b.expires_at || b.expires_at > now`).
+    - Las promociones vencidas desaparecen suavemente de la pantalla del televisor sin necesidad de recargar la página ni de intervención manual del encargado del local.
+    - Contador regresivo en vivo con badge de urgencia (`⏳ 14 min` o `⏳ 45s`) para incentivar el consumo rápido de la oferta en barra.
+
+- **Efecto Visual Letrero Neón Fosforescente con Parpadeo Eléctrico (Prende y Apaga):**
+  - **Animación Neón Intermitente Realista (`@keyframes neon-tube-blink` & `.animate-neon-tube` en `client/src/index.css`):**
+    - Simula el encendido, zumbido y destello titilante característico de los letreros de gas neón de pubs y bares nocturnos ("letras fosforescentes que se prenden y apagan para captar la mirada").
+  - **Tipografía y Brillo Fosforescente de Alto Impacto:**
+    - `.neon-text-gold`: Dorado/ámbar eléctrico con capas de resplandor `text-shadow` fluorescente.
+    - `.neon-text-emerald`: Verde lima/ácido fosforescente.
+    - `.neon-text-purple`: Violeta/cian láser con halo brillante.
+    - `.neon-text-ruby`: Fucsia/carmín brillante de neón.
+    - Contenedores con borde reflectivo brillante y sombra ambiental difusa (`shadow-[0_0_25px_...]`).
+  - **Ubicación Estratégica en TV:**
+    - Emplazado directamente debajo del módulo de código QR y contador de reacciones (`TvFloatingQr.tsx`), en la columna lateral derecha del televisor, con interacción desvinculada del reproductor (`pointer-events-auto`) para no interferir con la letra ni el video.
+
+### 🔧 [AFINAMIENTO / REFINAMIENTO]
+- **Estándar Clean-by-Design Estricto ($\le 120$ líneas):**
+  - `client/src/components/host/HostBannersModal.tsx`: 108 líneas.
+  - `client/src/components/tv/TvPromoTicker.tsx`: 94 líneas.
+  - `client/src/components/tv/TvIdleScreen.tsx`: 113 líneas.
+  - `client/src/components/tv/TvView.tsx`: 119 líneas.
+  - `client/src/types/index.ts`: 83 líneas.
+- **Compilación Limpia:** 0 errores TypeScript (`tsc -b`) y empaquetado de producción Vite exitoso.
+
+---
+
 ## [1.12.0] - 2026-09-10
 
 ### 🚀 [ESPECIFICACIÓN / FEATURE]

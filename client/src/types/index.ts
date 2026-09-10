@@ -1,11 +1,15 @@
 export type RoomStatus = 'active' | 'paused' | 'closed';
 
+export type PromoDurationType = '15m' | '30m' | 'end_of_hour' | '1h' | 'indefinite';
+
 export interface PromoBanner {
   id: string;
   title: string;
   subtitle: string;
   color: 'gold' | 'emerald' | 'purple' | 'ruby';
   is_active: boolean;
+  duration_type?: PromoDurationType;
+  expires_at?: number | null;
 }
 
 export interface KaraokeRoom {

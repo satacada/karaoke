@@ -1,12 +1,11 @@
 import { useRef, useState, useCallback, useEffect, type FC } from 'react';
 import { AlertCircle } from 'lucide-react';
 import { useTvRealtime } from '../../hooks/useTvRealtime'; import { useTvAutoDj } from '../../hooks/useTvAutoDj';
-import { TvPlayer, type TvPlayerRef } from './TvPlayer';
-import { TvIdleScreen } from './TvIdleScreen'; import { TvNowPlayingHUD } from './TvNowPlayingHUD';
-import { TvNextQueueTicker } from './TvNextQueueTicker'; import { TvFloatingQr } from './TvFloatingQr';
-import { TvDedicationBanner } from './TvDedicationBanner'; import { TvPromoTicker } from './TvPromoTicker';
-import { TvFloatingReactions } from './TvFloatingReactions'; import { TvVintageFrame } from './TvVintageFrame';
-import { updatePlaybackTick } from '../../services/karaokeApi';
+import { TvPlayer, type TvPlayerRef } from './TvPlayer'; import { TvIdleScreen } from './TvIdleScreen';
+import { TvNowPlayingHUD } from './TvNowPlayingHUD'; import { TvNextQueueTicker } from './TvNextQueueTicker';
+import { TvFloatingQr } from './TvFloatingQr'; import { TvDedicationBanner } from './TvDedicationBanner';
+import { TvPromoTicker } from './TvPromoTicker'; import { TvFloatingReactions } from './TvFloatingReactions';
+import { TvVintageFrame } from './TvVintageFrame'; import { updatePlaybackTick } from '../../services/karaokeApi';
 import type { RemoteCommand, PromoBanner } from '../../types';
 
 export const TvView: FC<{ roomCode?: string }> = ({ roomCode = 'FIESTA' }) => {
@@ -17,9 +16,7 @@ export const TvView: FC<{ roomCode?: string }> = ({ roomCode = 'FIESTA' }) => {
   const [duration, setDuration] = useState(0);
   const [errorNotice, setErrorNotice] = useState<string | null>(null);
   const [banners, setBanners] = useState<PromoBanner[]>([]);
-  const [tvTheme, setTvTheme] = useState<'vintage' | 'modern'>(() => {
-    return (localStorage.getItem(`tv_theme_${roomCode}`) as 'vintage' | 'modern') || 'modern';
-  });
+  const [tvTheme, setTvTheme] = useState<'vintage' | 'modern'>(() => (localStorage.getItem(`tv_theme_${roomCode}`) as 'vintage' | 'modern') || 'modern');
 
   const handleRemoteCommand = useCallback((cmd: RemoteCommand) => {
     switch (cmd.command) {
@@ -31,6 +28,9 @@ export const TvView: FC<{ roomCode?: string }> = ({ roomCode = 'FIESTA' }) => {
         if (cmd.payload?.action === 'set_tv_theme' && cmd.payload.theme) {
           const t = cmd.payload.theme as 'vintage' | 'modern'; setTvTheme(t);
           try { localStorage.setItem(`tv_theme_${roomCode}`, t); } catch {}
+        } else if (cmd.payload?.action === 'set_promo_banners' && cmd.payload.banners) {
+          const b = cmd.payload.banners as PromoBanner[]; setBanners(b);
+          try { localStorage.setItem(`tv_banners_${roomCode}`, JSON.stringify(b)); } catch {}
         } else if (cmd.payload?.volume !== undefined) playerRef.current?.setVolume(cmd.payload.volume);
         break;
       case 'set_promo_banners':
@@ -61,8 +61,7 @@ export const TvView: FC<{ roomCode?: string }> = ({ roomCode = 'FIESTA' }) => {
   }, [isLoading, currentSong, nextSongs.length]);
 
   const handlePlayerError = useCallback(() => {
-    setErrorNotice('Video con restricción de derechos en YouTube. Saltando al siguiente...');
-    setTimeout(() => { setErrorNotice(null); handleNextSongRef.current(); }, 2000);
+    setErrorNotice('Video con restricción de derechos en YouTube. Saltando al siguiente...'); setTimeout(() => { setErrorNotice(null); handleNextSongRef.current(); }, 2000);
   }, []);
 
   const handleTimeUpdate = useCallback((curr: number, dur: number) => {

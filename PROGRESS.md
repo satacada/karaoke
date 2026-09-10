@@ -1,8 +1,8 @@
 # 📊 PLAN MAESTRO DEL PROYECTO: ROCKOLA DIGITAL LIVE (SISTEMA MULTI-TENANT EN TIEMPO REAL)
 
-**Versión del Plan:** 2.9.0 (Escalamiento de Tamaño de Letra A/A+/A++, Consola Host Responsive, Tema Celeste y Voz en Semilla)  
+**Versión del Plan:** 2.10.0 (Promociones en TV con Duración Programada, Expiración Automática y Letrero Neón Fosforescente)  
 **Fecha de Emisión:** Septiembre 2026  
-**Estado:** 🟢 Fase 4 (Accesibilidad de Letra + Host Responsive + Tema Celeste/Azul + Auto-DJ por Voz - Completa y Verificada)  
+**Estado:** 🟢 Fase 4 (Promociones en TV con Auto-Expiración y Neón Titilante - Completa y Verificada)  
 **Metodología:** Agile / BDD / Clean Architecture con Compuertas de Control Formales  
 **Alineación:** Estructura inspirada en `boot-ventas-saas` y `aplicacion para ofertas`  
 
