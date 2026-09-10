@@ -4,6 +4,45 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.31.0] - 2026-09-10
+
+### 🚀 [ESPECIFICACIÓN / FEATURE]
+- **Galería de Máscaras Visuales Temáticas (Skins) para Pantalla TV (`HostTvMaskSelector.tsx`, `TvThemeFrame.tsx`):**
+  - Creado un repertorio de 6 máscaras visuales profesionales seleccionables por el administrador desde su teléfono:
+    1. 📺 **`modern` (Pantalla Completa):** Cinematográfica, limpia, sin bordes y con HUD flotante en glassmorphism.
+    2. 📻 **`vintage` (Wurlitzer Retro 1950):** Arco retro clásico con disco de vinilo, tubos de neón con burbujas animados y parrilla cromada.
+    3. ⚡ **`neon_club` (Cyber Club Neón):** Iluminación cian & fucsia fosforescente, ecualizador gráfico visual animado y vibras nocturnas.
+    4. 🎤 **`karaoke_party` (Fiesta Glow KTV):** Gradientes rosa neón y púrpura festivo con insignias de micrófono y destellos.
+    5. 🍸 **`dark_lounge` (Velvet Gold Lounge):** Elegante marco de oro viejo y obsidiana con acentos de latón para bares y pubs acústicos.
+    6. 🕹️ **`synthwave_80s` (Retro Wave 80s):** Estética arcade retro-futurista con paleta naranja y violeta outrun.
+  - **Sincronización en Caliente vía WebSockets:** Al tocar cualquier máscara en la consola del celular, se transmite la señal `set_tv_theme` en tiempo real y la TV cambia de piel instantáneamente.
+- **Firma Oficial de Autoría (`TvNowPlayingHUD.tsx`, `TvIdleScreen.tsx`, `TvView.tsx`):**
+  - Se incorporó la leyenda `powered : David Taboada` en la pantalla de la TV (tanto en reproducción activa como en pantalla de reposo) con escala tipográfica diminuta (`text-[clamp(8px,0.65vw,10px)]`), contorno protector (`tv-text-outline-sm`) y posicionamiento no invasivo.
+
+### 🔧 [AFINAMIENTO / REFINAMIENTO]
+- **Escalado Matemático y Proporcional Universal para TVs de Cualquier Pulgada (32" a 85"+):**
+  - **Código QR Dinámico (`TvFloatingQr.tsx`):** Reemplazadas medidas en píxeles fijos por `clamp(76px, 7.5vw, 115px)` con contenedor SVG responsivo. Ocupa invariablemente entre el 6% y 8% del ancho de pantalla en cualquier TV o proyector.
+  - **Sidebar de Pantalla (`TvSidebarOverlay.tsx`):** Ancho fluido `w-[clamp(115px,11vw,175px)]` y márgenes proporcionales con el viewport.
+  - **HUD Inferior Cinematográfico (`TvNowPlayingHUD.tsx`):** Tipografía fluida con funciones `clamp()` en títulos, autores, tiempos y barra de reproducción.
+  - **Cintillo Superior de Cola (`TvNextQueueTicker.tsx`):** Ancho relativo `max-w-[clamp(13rem,24vw,22rem)]` y tarjetas proporcionadas.
+- **Cumplimiento Estricto Clean-by-Design ($\le 120$ líneas por archivo):**
+  - `TvFloatingQr.tsx`: 39 líneas.
+  - `TvSidebarOverlay.tsx`: 37 líneas.
+  - `TvNowPlayingHUD.tsx`: 98 líneas.
+  - `TvNextQueueTicker.tsx`: 67 líneas.
+  - `TvIdleScreen.tsx`: 105 líneas.
+  - `TvNeonClubFrame.tsx`: 46 líneas.
+  - `TvPartyFrame.tsx`: 44 líneas.
+  - `TvLoungeFrame.tsx`: 44 líneas.
+  - `TvSynthwaveFrame.tsx`: 44 líneas.
+  - `TvThemeFrame.tsx`: 30 líneas.
+  - `TvView.tsx`: 109 líneas.
+  - `HostTvMaskSelector.tsx`: 63 líneas.
+  - `HostSettingsModal.tsx`: 93 líneas.
+  - `client/src/types/index.ts`: 93 líneas.
+
+---
+
 ## [1.30.0] - 2026-09-10
 
 ### 🚀 [ESPECIFICACIÓN / FEATURE]

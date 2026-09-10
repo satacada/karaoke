@@ -16,7 +16,7 @@ interface TvSidebarOverlayProps {
 export const TvSidebarOverlay: FC<TvSidebarOverlayProps> = ({
   roomCode, joinUrl, currentSong, banners, onOpenSettings
 }) => (
-  <aside className="absolute top-4 right-4 z-40 flex flex-col items-end gap-1.5 w-36 sm:w-40 pointer-events-none transition-all">
+  <aside className="absolute top-[clamp(0.75rem,2vh,1.5rem)] right-[clamp(0.75rem,2vw,1.5rem)] z-40 flex flex-col items-end gap-1.5 w-[clamp(115px,11vw,175px)] pointer-events-none transition-all">
     <div className="flex justify-end pointer-events-auto">
       <button
         type="button"

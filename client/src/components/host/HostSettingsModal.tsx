@@ -1,8 +1,9 @@
 import { useState, type FC } from 'react';
-import { Settings, X, Shield, KeyRound, Store, Check, Disc3, Tv } from 'lucide-react';
+import { Settings, X, Shield, KeyRound, Store, Check, Disc3 } from 'lucide-react';
 import { updateRoomSettings, sendRemoteCommand } from '../../services/karaokeApi';
 import { supabase } from '../../lib/supabaseClient';
-import type { KaraokeRoom } from '../../types';
+import type { KaraokeRoom, TvTheme } from '../../types';
+import { HostTvMaskSelector } from './HostTvMaskSelector';
 
 interface HostSettingsModalProps {
   isOpen: boolean;
@@ -18,22 +19,27 @@ export const HostSettingsModal: FC<HostSettingsModalProps> = ({
   const [businessName, setBusinessName] = useState(room?.business_name || room?.name || 'Mi Rockola');
   const [newPin, setNewPin] = useState(room?.host_pin || '1234');
   const [autoDj, setAutoDj] = useState(room?.auto_dj_enabled || false);
-  const [tvTheme, setTvTheme] = useState<'modern' | 'vintage'>(() => {
-    return (localStorage.getItem(`tv_theme_${room?.room_code}`) as 'modern' | 'vintage') || 'modern';
+  const [tvTheme, setTvTheme] = useState<TvTheme>(() => {
+    return (localStorage.getItem(`tv_theme_${room?.room_code}`) as TvTheme) || 'modern';
   });
   const [saving, setSaving] = useState(false);
   const [savedSuccess, setSavedSuccess] = useState(false);
 
   if (!isOpen || !room) return null;
 
+  const handleThemeChange = (theme: TvTheme) => {
+    setTvTheme(theme);
+    sendRemoteCommand(room.id, 'volume', { action: 'set_tv_theme', theme }).catch(() => {});
+    supabase.channel(`tv-room-${room.id}`).send({ type: 'broadcast', event: 'set_tv_theme', payload: { theme } }).catch(() => {});
+    try { localStorage.setItem(`tv_theme_${room.room_code}`, theme); } catch {}
+  };
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (newPin.length !== 4 || !/^\d{4}$/.test(newPin)) return;
     setSaving(true);
-    sendRemoteCommand(room.id, 'volume', { action: 'set_tv_theme', theme: tvTheme });
-    supabase.channel(`tv-room-${room.id}`).send({ type: 'broadcast', event: 'set_tv_theme', payload: { theme: tvTheme } }).catch(() => {});
+    handleThemeChange(tvTheme);
     supabase.channel(`tv-room-${room.id}`).send({ type: 'broadcast', event: 'set_auto_dj', payload: { enabled: autoDj, genre: room.auto_dj_genre } }).catch(() => {});
-    try { localStorage.setItem(`tv_theme_${room.room_code}`, tvTheme); } catch {}
     const ok = await updateRoomSettings(room.id, {
       name: businessName.trim(),
       business_name: businessName.trim(),
@@ -79,13 +85,7 @@ export const HostSettingsModal: FC<HostSettingsModalProps> = ({
             </button>
           </div>
 
-          <div>
-            <label className="block text-[11px] font-bold text-zinc-400 uppercase tracking-wider mb-1 flex items-center gap-1.5"><Tv className="w-3.5 h-3.5 text-amber-400" /> Diseño de Pantalla TV</label>
-            <div className="grid grid-cols-2 gap-2">
-              <button type="button" onClick={() => setTvTheme('modern')} className={`py-2 px-2 rounded-xl border text-xs font-bold transition-all ${tvTheme === 'modern' ? 'bg-purple-600 text-white border-purple-500 shadow-md' : 'bg-zinc-950 text-zinc-400 border-zinc-800 hover:text-zinc-200'}`}>📺 Pantalla Completa</button>
-              <button type="button" onClick={() => setTvTheme('vintage')} className={`py-2 px-2 rounded-xl border text-xs font-bold transition-all ${tvTheme === 'vintage' ? 'bg-gradient-to-r from-amber-600 to-yellow-600 text-white border-amber-400 shadow-md' : 'bg-zinc-950 text-zinc-400 border-zinc-800 hover:text-zinc-200'}`}>📻 Rockola Retro</button>
-            </div>
-          </div>
+          <HostTvMaskSelector selectedTheme={tvTheme} onSelectTheme={handleThemeChange} />
 
           <div className="bg-zinc-950/60 border border-zinc-800/80 rounded-xl p-2 flex items-center gap-1.5 text-[10px] text-zinc-400 font-semibold">
             <Shield className="w-3 h-3 text-emerald-400 shrink-0" />

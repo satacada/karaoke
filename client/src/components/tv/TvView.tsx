@@ -5,12 +5,13 @@ import { useMediaSession } from '../../hooks/useMediaSession'; import { useWakeL
 import { useTvVoiceControl } from '../../hooks/useTvVoiceControl';
 import { TvPlayer, type TvPlayerRef } from './TvPlayer'; import { TvIdleScreen } from './TvIdleScreen';
 import { TvNowPlayingHUD } from './TvNowPlayingHUD'; import { TvNextQueueTicker } from './TvNextQueueTicker';
-import { TvVintageFrame } from './TvVintageFrame'; import { TvRentalBadge } from './TvRentalBadge';
+import { TvThemeFrame } from './TvThemeFrame'; import { TvRentalBadge } from './TvRentalBadge';
 import { TvVoiceHUD } from './TvVoiceHUD'; import { TvViewOverlays } from './TvViewOverlays';
 import { updatePlaybackTick, updateRoomSettings } from '../../services/karaokeApi';
 import { enqueueAutoDjSong, purgeAutoDjSongs } from '../../services/autoDjService';
 import { setLocalAutoDjActive } from '../../services/autoDjStateService'; import { getLocalRentalSession } from '../../services/rentalService';
-import { getJoinUrl } from '../../utils/appUrl'; import { supabase } from '../../lib/supabaseClient'; import type { RemoteCommand, PromoBanner, RoomRentalSession } from '../../types';
+import { getJoinUrl } from '../../utils/appUrl'; import { supabase } from '../../lib/supabaseClient';
+import type { RemoteCommand, PromoBanner, RoomRentalSession, TvTheme } from '../../types';
 
 export const TvView: FC<{ roomCode?: string; onUnlink?: () => void }> = ({ roomCode = 'FIESTA', onUnlink }) => {
   const playerRef = useRef<TvPlayerRef>(null); const lastSyncRef = useRef<number>(0);
@@ -20,7 +21,7 @@ export const TvView: FC<{ roomCode?: string; onUnlink?: () => void }> = ({ roomC
   const [showUnlinkModal, setShowUnlinkModal] = useState(false); const [isFlashing, setIsFlashing] = useState(false);
   const [isStartingAutoDj, setIsStartingAutoDj] = useState(false); const [isPaused, setIsPaused] = useState(false);
   const [rentalSession, setRentalSession] = useState<RoomRentalSession | null>(() => getLocalRentalSession(roomCode));
-  const [tvTheme, setTvTheme] = useState<'vintage' | 'modern'>(() => (localStorage.getItem(`tv_theme_${roomCode}`) as 'vintage' | 'modern') || 'modern');
+  const [tvTheme, setTvTheme] = useState<TvTheme>(() => (localStorage.getItem(`tv_theme_${roomCode}`) as TvTheme) || 'modern');
 
   const handleRemoteCommand = useCallback((cmd: RemoteCommand) => {
     switch (cmd.command) {
@@ -33,7 +34,7 @@ export const TvView: FC<{ roomCode?: string; onUnlink?: () => void }> = ({ roomC
       case 'set_rental_time': if (cmd.payload?.rental_session) setRentalSession((cmd.payload.rental_session as RoomRentalSession).enabled ? (cmd.payload.rental_session as RoomRentalSession) : null); break;
       case 'volume':
         if (cmd.payload?.action === 'unlink_tv') { try { localStorage.removeItem('tv_paired_room'); } catch {} onUnlink?.(); }
-        else if (cmd.payload?.action === 'set_tv_theme' && cmd.payload.theme) { const t = cmd.payload.theme as 'vintage' | 'modern'; setTvTheme(t); try { localStorage.setItem(`tv_theme_${roomCode}`, t); } catch {} }
+        else if (cmd.payload?.action === 'set_tv_theme' && cmd.payload.theme) { const t = cmd.payload.theme as TvTheme; setTvTheme(t); try { localStorage.setItem(`tv_theme_${roomCode}`, t); } catch {} }
         else if (cmd.payload?.action === 'set_rental_time' && cmd.payload.rental_session) { setRentalSession((cmd.payload.rental_session as RoomRentalSession).enabled ? (cmd.payload.rental_session as RoomRentalSession) : null); }
         else if (cmd.payload?.volume !== undefined) playerRef.current?.setVolume(cmd.payload.volume);
         break;
@@ -108,12 +109,13 @@ export const TvView: FC<{ roomCode?: string; onUnlink?: () => void }> = ({ roomC
         <TvIdleScreen roomCode={roomCode} joinUrl={joinUrl} roomName={room?.name || 'Rockola Digital Live'} zoneName={room?.zone_name} status={room?.status} banners={banners} autoDjActive={Boolean(room?.auto_dj_enabled)} onStartAutoDj={handleStartAutoDj} isStartingAutoDj={isStartingAutoDj} />
       ) : (
         <>
-          <TvVintageFrame active={tvTheme === 'vintage'}><TvPlayer ref={playerRef} videoId={currentSong.video_id} onEnded={handleNextSong} onError={handlePlayerError} onTimeUpdate={handleTimeUpdate} rentalSession={rentalSession} onPlayingStateChange={(pl) => { setIsPaused(!pl); if (room) updatePlaybackTick(room.id, pl, currentTime).catch(() => {}); }} /></TvVintageFrame>
+          <TvThemeFrame theme={tvTheme}><TvPlayer ref={playerRef} videoId={currentSong.video_id} onEnded={handleNextSong} onError={handlePlayerError} onTimeUpdate={handleTimeUpdate} rentalSession={rentalSession} onPlayingStateChange={(pl) => { setIsPaused(!pl); if (room) updatePlaybackTick(room.id, pl, currentTime).catch(() => {}); }} /></TvThemeFrame>
           <TvNextQueueTicker queue={nextSongs} />
           <TvNowPlayingHUD song={currentSong} currentTime={currentTime} duration={duration} isPaused={isPaused} onTogglePlayPause={() => playerRef.current?.togglePlayPause()} />
         </>
       )}
       <TvViewOverlays roomCode={roomCode} roomName={room?.zone_name || room?.name} joinUrl={joinUrl} currentSong={currentSong} banners={banners} showUnlinkModal={showUnlinkModal} setShowUnlinkModal={setShowUnlinkModal} onUnlink={onUnlink} />
+      <div className="absolute bottom-1 right-3 z-30 pointer-events-none select-none text-[clamp(8px,0.65vw,10px)] font-mono text-zinc-400/80 tracking-widest uppercase tv-text-outline-sm">powered : David Taboada</div>
     </div>
   );
 };
