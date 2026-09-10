@@ -38,7 +38,7 @@ export interface KaraokeGuest {
   is_active: boolean; joined_at: string; last_seen_at: string;
 }
 
-export type CommandType = 'play' | 'pause' | 'skip' | 'previous' | 'seek' | 'volume' | 'set_promo_banners' | 'toggle_queue_lock' | 'sync_master_track';
+export type CommandType = 'play' | 'pause' | 'skip' | 'previous' | 'seek' | 'volume' | 'set_promo_banners' | 'toggle_queue_lock' | 'sync_master_track' | 'flash_identify' | 'unlink_tv';
 
 export interface LiveReaction {
   id: string;

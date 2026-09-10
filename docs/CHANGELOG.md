@@ -4,6 +4,35 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.17.0] - 2026-09-10
+
+### 🚀 [ESPECIFICACIÓN / FEATURE]
+- **Sistema de Activación y Emparejamiento TV Estilo Netflix / YouTube TV (QR + Código Corto 6 Caracteres):**
+  - **Pantalla de Activación TV (`TvActivationScreen.tsx`):** Si un televisor nuevo o recién instalado arranca sin sala asignada, presenta un código QR grande y un código alfanumérico visible de 6 caracteres (ej. `TV-4821`). Elimina la necesidad de escribir nombres largos o contraseñas con el control remoto físico.
+  - **Canal de Broadcast Realtime Efímero (`tv-activation-${code}`):** La TV se suscribe a su canal de activación. Cuando el anfitrión confirma el enlace desde su teléfono móvil, la pantalla recibe el evento `paired` en tiempo real, persiste la sala asignada en `localStorage.setItem('tv_paired_room', roomCode)` y transiciona al reproductor `TvView` de inmediato.
+  - **Persistencia y Resiliencia ante Cortes de Energía:** La vinculación se mantiene guardada localmente en el televisor o Android TV; al reiniciar el equipo o volver la electricidad, la pantalla reanuda automáticamente el sector asignado sin re-solicitar emparejamiento.
+  - **Apertura Instantánea vía Escaneo de QR Móvil (`/host?pair=TV-XXXX`):** Al escanear el QR con la cámara de cualquier teléfono del dueño o encargado, se abre directamente la consola del anfitrión con el modal `HostPairTvModal.tsx` precargado con el código del televisor.
+  - **Identificación Visual por Destello Neón ("⚡ Hacer Parpadear"):** Diseñado para locales con múltiples ambientes y televisores. Tanto al emparejar como desde la consola de administración, el anfitrión puede disparar un destello que hace vibrar la pantalla seleccionada con un marco verde esmeralda y el mensaje `⚡ PANTALLA IDENTIFICADA: [Sector]`, evitando emparejar la pantalla equivocada.
+  - **Desvinculación y Re-enlace Bidireccional (Local y Remoto):**
+    - **Remoto desde Master Venue Hub (`HostMasterHubModal.tsx`):** El dueño puede enviar la orden `unlink_tv` a cualquier ambiente para desvincular la TV y enviarla de regreso a la pantalla de emparejamiento.
+    - **Local desde la TV (`TvUnlinkModal.tsx`):** En la esquina de la TV, un botón de ajustes ⚙️ permite confirmar la desvinculación local mediante un modal accesible, limpiando el almacenamiento y permitiendo reasignar el televisor a otro sector o anfitrión.
+
+### 🔧 [AFINAMIENTO / REFINAMIENTO]
+- **Ampliación de Tipos de Control Remoto:** Incorporación de `'flash_identify' | 'unlink_tv'` a `CommandType` en `client/src/types/index.ts`.
+- **Integración en Hub Multi-Ambiente (`HostMasterHubModal.tsx`):** Acceso rápido con botones dedicados para probar destello (`Sparkles`), desvincular (`Tv`) y vincular nueva pantalla TV.
+- **Estricto Cumplimiento Clean-by-Design ($\le 120$ líneas por archivo):**
+  - `client/src/App.tsx`: 70 líneas.
+  - `client/src/components/tv/TvActivationScreen.tsx`: 96 líneas.
+  - `client/src/components/tv/TvUnlinkModal.tsx`: 52 líneas.
+  - `client/src/components/tv/TvView.tsx`: 116 líneas.
+  - `client/src/components/host/HostPairTvModal.tsx`: 108 líneas.
+  - `client/src/components/host/HostModals.tsx`: 61 líneas.
+  - `client/src/components/host/multiroom/HostMasterHubModal.tsx`: 112 líneas.
+  - `client/src/components/host/HostView.tsx`: 117 líneas.
+- **Compilación Limpia:** 0 errores TypeScript (`tsc -b`) y empaquetado de producción Vite exitoso.
+
+---
+
 ## [1.16.0] - 2026-09-10
 
 ### 🚀 [ESPECIFICACIÓN / FEATURE]

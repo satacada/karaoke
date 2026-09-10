@@ -9,6 +9,7 @@ import { HostMasterHubModal } from './multiroom/HostMasterHubModal';
 import { HostCreateRoomModal } from './multiroom/HostCreateRoomModal';
 import { HostTransferQueueModal } from './multiroom/HostTransferQueueModal';
 import { HostAutoDjModal } from './HostAutoDjModal';
+import { HostPairTvModal } from './HostPairTvModal';
 import type { KaraokeRoom, QueueItem, PromoBanner } from '../../types';
 
 interface HostModalsProps {
@@ -23,6 +24,7 @@ interface HostModalsProps {
   showCreateRoomModal: boolean; onCloseCreateRoom: () => void; onCreatedRoom: (newRoom: KaraokeRoom) => void;
   roomToTransfer: KaraokeRoom | null; onCloseTransfer: () => void; onTransferred: () => void;
   showAutoDjModal?: boolean; onCloseAutoDj?: () => void; onUpdatedAutoDj?: () => void;
+  showPairTvModal?: boolean; initialTvCode?: string; onOpenPairTv?: () => void; onClosePairTv?: () => void; onPairedTv?: (roomCode: string) => void;
 }
 
 export const HostModals: FC<HostModalsProps> = ({
@@ -36,6 +38,7 @@ export const HostModals: FC<HostModalsProps> = ({
   onOpenTransfer, onOpenCreateRoom, showCreateRoomModal, onCloseCreateRoom, onCreatedRoom,
   roomToTransfer, onCloseTransfer, onTransferred,
   showAutoDjModal = false, onCloseAutoDj = () => {}, onUpdatedAutoDj = () => {},
+  showPairTvModal = false, initialTvCode = '', onOpenPairTv = () => {}, onClosePairTv = () => {}, onPairedTv = () => {},
 }) => {
   return (
     <>
@@ -45,12 +48,13 @@ export const HostModals: FC<HostModalsProps> = ({
       <HostSettingsModal isOpen={showSettingsModal} room={room} ownerEmail={ownerEmail} onClose={onCloseSettings} onSaved={onSavedSettings} />
       <SuperAdminApprovalModal isOpen={showSuperAdminModal} superAdminEmail={ownerEmail || 'SuperAdmin'} onClose={onCloseSuperAdmin} onUpdated={onUpdatedSuperAdmin} />
       <HostBannersModal isOpen={showBannersModal} banners={room?.promo_banners || []} onClose={onCloseBanners} onSave={onSaveBanners} />
-      <HostMasterHubModal isOpen={showMasterHubModal} rooms={ownerRooms} ownerEmail={ownerEmail} onClose={onCloseMasterHub} onRefresh={onRefreshMasterHub} onOpenTransfer={onOpenTransfer} onOpenCreateRoom={onOpenCreateRoom} />
+      <HostMasterHubModal isOpen={showMasterHubModal} rooms={ownerRooms} ownerEmail={ownerEmail} onClose={onCloseMasterHub} onRefresh={onRefreshMasterHub} onOpenTransfer={onOpenTransfer} onOpenCreateRoom={onOpenCreateRoom} onOpenPairTv={onOpenPairTv} />
       <HostCreateRoomModal isOpen={showCreateRoomModal} ownerEmail={ownerEmail || ''} businessName={room?.business_name || room?.name || 'Mi Local'} onClose={onCloseCreateRoom} onCreated={onCreatedRoom} />
       {roomToTransfer && (
         <HostTransferQueueModal isOpen={Boolean(roomToTransfer)} sourceRoom={roomToTransfer} allRooms={ownerRooms} pendingQueueCount={nextSongs.length} onClose={onCloseTransfer} onTransferred={onTransferred} />
       )}
       <HostAutoDjModal isOpen={showAutoDjModal} room={room} onClose={onCloseAutoDj} onUpdated={onUpdatedAutoDj} />
+      <HostPairTvModal isOpen={showPairTvModal} initialCode={initialTvCode} rooms={ownerRooms} onClose={onClosePairTv} onSuccess={onPairedTv} />
     </>
   );
 };

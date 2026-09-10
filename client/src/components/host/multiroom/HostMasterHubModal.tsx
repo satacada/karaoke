@@ -1,20 +1,15 @@
 import { useState, type FC } from 'react';
-import { X, SlidersHorizontal, Radio, ArrowRightLeft } from 'lucide-react';
+import { X, SlidersHorizontal, Radio, ArrowRightLeft, Tv, Sparkles } from 'lucide-react';
 import { setRoomStatus, updateRoomZoneConfig, sendRemoteCommand } from '../../../services/karaokeApi';
 import type { KaraokeRoom, RoomStatus } from '../../../types';
 
 interface HostMasterHubModalProps {
-  isOpen: boolean;
-  rooms: KaraokeRoom[];
-  ownerEmail?: string | null;
-  onClose: () => void;
-  onRefresh: () => void;
-  onOpenTransfer: (room: KaraokeRoom) => void;
-  onOpenCreateRoom: () => void;
+  isOpen: boolean; rooms: KaraokeRoom[]; ownerEmail?: string | null; onClose: () => void; onRefresh: () => void;
+  onOpenTransfer: (room: KaraokeRoom) => void; onOpenCreateRoom: () => void; onOpenPairTv?: () => void;
 }
 
 export const HostMasterHubModal: FC<HostMasterHubModalProps> = ({
-  isOpen, rooms, ownerEmail, onClose, onRefresh, onOpenTransfer, onOpenCreateRoom,
+  isOpen, rooms, ownerEmail, onClose, onRefresh, onOpenTransfer, onOpenCreateRoom, onOpenPairTv = () => {},
 }) => {
   const [tab, setTab] = useState<'status' | 'sound' | 'pricing'>('status');
   const [globalSync, setGlobalSync] = useState(false);
@@ -26,11 +21,8 @@ export const HostMasterHubModal: FC<HostMasterHubModalProps> = ({
   };
 
   const handleToggleGlobalSync = async () => {
-    const nextSync = !globalSync;
-    setGlobalSync(nextSync);
-    for (const r of rooms) {
-      await sendRemoteCommand(r.id, 'sync_master_track', { enabled: nextSync });
-    }
+    const nextSync = !globalSync; setGlobalSync(nextSync);
+    for (const r of rooms) { await sendRemoteCommand(r.id, 'sync_master_track', { enabled: nextSync }); }
   };
 
   return (
@@ -62,14 +54,19 @@ export const HostMasterHubModal: FC<HostMasterHubModalProps> = ({
                   <div className="flex items-center gap-1.5">
                     {(['active', 'paused', 'closed'] as RoomStatus[]).map((st) => (
                       <button key={st} onClick={() => handleStatusChange(r.id, st)} className={`px-2 py-1 rounded-lg text-[10px] font-black uppercase transition-all ${r.status === st ? (st === 'active' ? 'bg-emerald-500 text-zinc-950' : st === 'paused' ? 'bg-amber-500 text-zinc-950' : 'bg-rose-600 text-white') : 'bg-zinc-900 border border-zinc-800 text-zinc-500'}`}>
-                        {st === 'active' ? '🟢 Abierto' : st === 'paused' ? '🟡 Pausa' : '🔴 Cierre'}
+                        {st === 'active' ? '🟢' : st === 'paused' ? '🟡' : '🔴'}
                       </button>
                     ))}
+                    <button onClick={() => sendRemoteCommand(r.id, 'flash_identify')} title="Identificar pantalla TV" className="p-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-amber-400 hover:text-white"><Sparkles className="w-3.5 h-3.5" /></button>
+                    <button onClick={() => sendRemoteCommand(r.id, 'unlink_tv')} title="Desvincular pantalla TV" className="p-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-rose-400 hover:text-white"><Tv className="w-3.5 h-3.5" /></button>
                     <button onClick={() => onOpenTransfer(r)} title="Traspasar cola" className="p-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-purple-400 hover:text-white"><ArrowRightLeft className="w-3.5 h-3.5" /></button>
                   </div>
                 </div>
               ))}
-              <button onClick={onOpenCreateRoom} className="w-full py-2.5 rounded-xl border border-dashed border-purple-500/40 text-purple-300 hover:bg-purple-950/20 font-bold text-xs flex items-center justify-center gap-1.5">+ Agregar Nuevo Sector</button>
+              <div className="grid grid-cols-2 gap-2 pt-1">
+                <button onClick={onOpenCreateRoom} className="py-2.5 rounded-xl border border-dashed border-purple-500/40 text-purple-300 hover:bg-purple-950/20 font-bold text-xs flex items-center justify-center gap-1">+ Sector</button>
+                <button onClick={onOpenPairTv} className="py-2.5 rounded-xl bg-purple-600/20 border border-purple-500/50 text-purple-200 hover:bg-purple-600/30 font-bold text-xs flex items-center justify-center gap-1"><Tv className="w-3.5 h-3.5" /> Vincular TV</button>
+              </div>
             </div>
           )}
 
