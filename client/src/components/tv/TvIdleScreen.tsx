@@ -1,6 +1,6 @@
 import { useState, useEffect, type FC } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
-import { Disc3, Sparkles, Smartphone, Signal, Music2, Play } from 'lucide-react';
+import { Disc3, Sparkles, Smartphone, Signal, Music2, Play, Pause } from 'lucide-react';
 import { TvIdlePromoCard } from './TvIdlePromoCard';
 import type { PromoBanner } from '../../types';
 
@@ -94,16 +94,15 @@ export const TvIdleScreen: FC<TvIdleScreenProps> = ({
               </div>
 
               {onStartAutoDj && (
-                <button
-                  type="button"
-                  onClick={onStartAutoDj}
-                  disabled={isStartingAutoDj}
-                  className="w-full mt-1 py-2 px-4 rounded-xl bg-gradient-to-r from-purple-600 via-pink-600 to-amber-500 hover:from-purple-500 hover:to-pink-500 text-white font-bold text-xs uppercase tracking-wider shadow-lg shadow-purple-950/50 flex items-center justify-center gap-2 border border-white/20 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer disabled:opacity-50"
-                  title="Dar click para iniciar el sonido de la sala"
-                >
-                  <Play className="w-3.5 h-3.5 fill-white" />
-                  <span>{isStartingAutoDj ? 'Iniciando sonido...' : '▶ Iniciar Música Inteligente'}</span>
-                </button>
+                <div className="w-full mt-1">
+                  <button type="button" onClick={onStartAutoDj} disabled={isStartingAutoDj} className="w-full py-2 px-4 rounded-xl bg-gradient-to-r from-purple-600 via-pink-600 to-amber-500 hover:from-purple-500 hover:to-pink-500 text-white font-bold text-xs uppercase tracking-wider shadow-lg shadow-purple-950/50 flex items-center justify-center gap-2 border border-white/20 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer disabled:opacity-50" title="Dar click para iniciar el sonido de la sala">
+                    <Play className="w-3.5 h-3.5 fill-white" />
+                    <span>{isStartingAutoDj ? 'Iniciando sonido...' : '▶ Iniciar Música Inteligente'}</span>
+                  </button>
+                  <p className="text-[10px] text-zinc-400 mt-1 flex items-center justify-center gap-1">
+                    <Pause className="w-3 h-3 text-pink-400" /> Puedes pausar con botón <b>Pausa</b> u <b>OK</b> del control remoto
+                  </p>
+                </div>
               )}
 
               <TvIdlePromoCard promo={currentPromo} now={now} />

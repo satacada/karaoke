@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Póster Imprimible - Rockola & Karaoke para Clientes</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800;900&family=JetBrains+Mono:wght@700&display=swap');
+
+    @page {
+      size: A4 portrait;
+      margin: 10mm;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background-color: #09090b;
+      color: #f4f4f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 15px;
+    }
+
+    .poster {
+      width: 100%;
+      max-width: 800px;
+      background: linear-gradient(135deg, #18181b 0%, #09090b 100%);
+      border: 3px solid #a855f7;
+      border-radius: 28px;
+      padding: 36px 32px;
+      box-shadow: 0 25px 50px -12px rgba(168, 85, 247, 0.25);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .glow-bg {
+      position: absolute;
+      top: -100px;
+      right: -100px;
+      width: 300px;
+      height: 300px;
+      background: radial-gradient(circle, rgba(236, 72, 153, 0.25) 0%, transparent 70%);
+      border-radius: 50%;
+      pointer-events-none;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 24px;
+      border-bottom: 2px dashed #3f3f46;
+      padding-bottom: 20px;
+    }
+
+    .badge-top {
+      display: inline-block;
+      background: linear-gradient(90deg, #ec4899, #8b5cf6);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      padding: 6px 18px;
+      border-radius: 50px;
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      font-size: 38px;
+      font-weight: 900;
+      letter-spacing: -1px;
+      text-transform: uppercase;
+      background: linear-gradient(to right, #c084fc, #f472b6, #fbbf24);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 6px;
+    }
+
+    .subtitle {
+      font-size: 16px;
+      font-weight: 600;
+      color: #a1a1aa;
+    }
+
+    .no-friction {
+      display: flex;
+      justify-content: center;
+      gap: 18px;
+      margin: 16px 0;
+    }
+
+    .tag-zero {
+      background: rgba(244, 63, 94, 0.15);
+      border: 1px solid rgba(244, 63, 94, 0.4);
+      color: #fda4af;
+      padding: 6px 14px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    /* 3 PASOS */
+    .steps-container {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin: 24px 0;
+    }
+
+    .step-card {
+      display: flex;
+      align-items: center;
+      background: rgba(24, 24, 27, 0.85);
+      border: 1.5px solid #3f3f46;
+      border-radius: 20px;
+      padding: 16px 20px;
+      gap: 20px;
+    }
+
+    .step-num {
+      width: 52px;
+      height: 52px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, #a855f7, #ec4899);
+      color: #fff;
+      font-size: 26px;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 8px 16px rgba(168, 85, 247, 0.4);
+    }
+
+    .step-content h3 {
+      font-size: 18px;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+
+    .step-content p {
+      font-size: 13px;
+      color: #d4d4d8;
+      line-height: 1.4;
+    }
+
+    /* TIPS Y CONTROL REMOTO */
+    .tips-box {
+      background: rgba(88, 28, 135, 0.25);
+      border: 1.5px solid #9333ea;
+      border-radius: 20px;
+      padding: 16px 20px;
+      margin-top: 20px;
+    }
+
+    .tips-title {
+      font-size: 14px;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: #d8b4fe;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .tips-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      font-size: 12px;
+      color: #e4e4e7;
+    }
+
+    .tip-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .tip-icon {
+      color: #f472b6;
+      font-weight: 900;
+    }
+
+    /* FOOTER CONTROL REMOTO */
+    .remote-footer {
+      margin-top: 18px;
+      background: #18181b;
+      border: 1.5px solid #fbbf24;
+      border-radius: 16px;
+      padding: 12px 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .remote-title {
+      font-size: 13px;
+      font-weight: 800;
+      color: #fbbf24;
+    }
+
+    .remote-desc {
+      font-size: 11px;
+      color: #a1a1aa;
+    }
+
+    .btn-print {
+      display: block;
+      margin: 20px auto 0 auto;
+      padding: 10px 24px;
+      background: #a855f7;
+      color: #fff;
+      font-weight: 800;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    @media print {
+      body {
+        background-color: #fff !important;
+        color: #000 !important;
+        padding: 0;
+      }
+      .poster {
+        border: 2px solid #000;
+        box-shadow: none;
+        background: #fff !important;
+        color: #000 !important;
+        max-width: 100%;
+        padding: 20px;
+      }
+      .step-card {
+        background: #f4f4f5 !important;
+        border: 1px solid #ccc;
+        color: #000 !important;
+      }
+      .step-content h3, .step-content p {
+        color: #000 !important;
+      }
+      .tips-box {
+        background: #faf5ff !important;
+        border: 1px solid #9333ea;
+        color: #000 !important;
+      }
+      .tips-grid {
+        color: #000 !important;
+      }
+      .remote-footer {
+        background: #fefce8 !important;
+        border: 1px solid #ca8a04;
+        color: #000 !important;
+      }
+      .remote-desc {
+        color: #333 !important;
+      }
+      .btn-print {
+        display: none;
+      }
+      h1 {
+        color: #000 !important;
+        -webkit-text-fill-color: initial !important;
+      }
+      .tag-zero {
+        border: 1px solid #e11d48;
+        color: #9f1239;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="poster">
+    <div class="glow-bg"></div>
+
+    <header>
+      <div class="badge-top">🎤 ¡Pon tu música en la tele!</div>
+      <h1>Rockola & Karaoke en Vivo</h1>
+      <p class="subtitle">Tú eliges lo que suena desde tu propio celular</p>
+
+      <div class="no-friction">
+        <span class="tag-zero">🚫 Sin descargar aplicaciones</span>
+        <span class="tag-zero">🚫 Sin pedir contraseña de Wi-Fi</span>
+        <span class="tag-zero">📶 Usa tus datos móviles (4G/5G)</span>
+      </div>
+    </header>
+
+    <div class="steps-container">
+      <div class="step-card">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h3>Escanea el Código QR de la Tele</h3>
+          <p>Abre la cámara de tu celular, apunta al código QR que aparece en la pantalla y toca el enlace. ¡Entras al instante!</p>
+        </div>
+      </div>
+
+      <div class="step-card">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h3>Escribe tu Nombre o Apodo</h3>
+          <p>Así tus amigos y todo el local sabrán quién puso la canción cuando comience a sonar en la televisión.</p>
+        </div>
+      </div>
+
+      <div class="step-card">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h3>Busca tu Tema Favorito y Dale a "Agregar"</h3>
+          <p>Busca cualquier canción, artista o ritmo (Rock, Cumbia, 80s, Pop, Reggaeton). Elige entre videoclip oficial, recital en vivo o pista de karaoke con letra.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="tips-box">
+      <div class="tips-title">💡 Funciones Especiales para Clientes:</div>
+      <div class="tips-grid">
+        <div class="tip-item">
+          <span class="tip-icon">🔄</span>
+          <span><b>¿Te arrepentiste?</b> Toca <i>"Cambiar canción"</i> en tu celular y elige otra sin perder tu lugar en la fila.</span>
+        </div>
+        <div class="tip-item">
+          <span class="tip-icon">💌</span>
+          <span><b>Dedicatorias:</b> Manda un mensaje especial que saldrá en la pantalla mientras suena tu tema.</span>
+        </div>
+        <div class="tip-item">
+          <span class="tip-icon">🎧</span>
+          <span><b>Música Continua:</b> Cuando nadie pide temas, nuestra Rockola Inteligente toca los mejores éxitos sin parar.</span>
+        </div>
+        <div class="tip-item">
+          <span class="tip-icon">⏳</span>
+          <span><b>Salas por Horas:</b> Si alquilaste la sala privada (ej. 2 horas), verás tu tiempo restante en vivo en la tele.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="remote-footer">
+      <div>
+        <div class="remote-title">⏸️ ¿Necesitas pausar la música en tu sala?</div>
+        <div class="remote-desc">Presiona el botón <b>PAUSA</b> u <b>OK</b> en el control remoto de la TV para detener o continuar cuando quieran hablar o brindar.</div>
+      </div>
+      <div style="font-size: 28px;">📺 🕹️</div>
+    </div>
+  </div>
+
+  <button class="btn-print" onclick="window.print()">🖨️ Imprimir Afiche para el Local (A4 / Póster)</button>
+
+</body>
+</html>

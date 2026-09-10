@@ -4,6 +4,29 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.24.0] - 2026-09-10
+
+### 🚀 [ESPECIFICACIÓN / FEATURE]
+- **Indicador en Pantalla TV para Pausar Música Inteligente con Control Remoto:**
+  - **Aviso en Reproducción (`TvNowPlayingHUD.tsx`):** Mientras suena un tema de Auto-DJ, se muestra el distintivo: `[ ⏸ Pausar: botón Pausa u OK del control remoto ]`, permitiendo al personal y a los clientes saber de inmediato que pueden pausar la música en cualquier momento.
+  - **Aviso en Reposo (`TvIdleScreen.tsx`):** Bajo el botón de inicio de música inteligente se visualiza: *"Puedes pausar con botón Pausa u OK del control remoto"*.
+- **Manual de Uso y Guía para Clientes del Local (`docs/MANUAL_CLIENTES_LOCAL.md`):**
+  - Documento fundamentado en principios de psicología cognitiva, Ley de Hick (3 pasos de oro) y reducción radical de fricción (sin instalar apps, sin pedir contraseña de Wi-Fi, con datos móviles 4G/5G).
+  - Guía operativa para mozos y encargados de sala con respuestas a situaciones comunes de clientes.
+- **Afiche Imprimible A4 / Póster para Salones y Mesas (`docs/poster_karaoke_clientes.html`):**
+  - Plantilla HTML/CSS de alto impacto visual lista para imprimir (`Ctrl + P`) o plastificar para mesas y paredes del local.
+  - Destaca los 3 pasos, tips de cambio de canción sin perder turno, dedicatorias, control remoto y tiempo de sala.
+
+### 🔧 [AFINAMIENTO / REFINAMIENTO]
+- **Clean-by-Design Compliance:**
+  - `TvNowPlayingHUD.tsx`: 74 líneas ($\le 120$).
+  - `TvIdleScreen.tsx`: 116 líneas ($\le 120$).
+- **Validación Automatizada:**
+  - Compilación exitosa Vite 8 (código 0).
+  - 10/10 pruebas unitarias con Vitest pasando.
+
+---
+
 ## [1.23.0] - 2026-09-10
 
 ### 🚀 [ESPECIFICACIÓN / FEATURE]

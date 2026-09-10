@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import { Disc3, Music2, Clock } from 'lucide-react';
+import { Disc3, Music2, Clock, Pause } from 'lucide-react';
 import type { QueueItem } from '../../types';
 
 interface TvNowPlayingHUDProps {
@@ -44,11 +44,19 @@ export const TvNowPlayingHUD: FC<TvNowPlayingHUDProps> = ({
             </div>
           </div>
 
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-zinc-900/80 border border-zinc-800 text-sm font-mono text-zinc-300">
-            <Clock className="w-4 h-4 text-purple-400" />
-            <span>{formatTime(currentTime)}</span>
-            <span className="text-zinc-600">/</span>
-            <span>{formatTime(effectiveDuration)}</span>
+          <div className="flex items-center gap-2.5">
+            {song.requested_by.includes('Auto-DJ') && (
+              <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-900/90 border border-purple-500/40 text-xs text-zinc-300 font-semibold shadow-lg backdrop-blur-md">
+                <Pause className="w-3.5 h-3.5 text-pink-400 fill-pink-400/40 shrink-0" />
+                <span>Pausar: botón <b className="text-white">Pausa</b> u <b className="text-white">OK</b> del control remoto</span>
+              </div>
+            )}
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-zinc-900/80 border border-zinc-800 text-sm font-mono text-zinc-300">
+              <Clock className="w-4 h-4 text-purple-400" />
+              <span>{formatTime(currentTime)}</span>
+              <span className="text-zinc-600">/</span>
+              <span>{formatTime(effectiveDuration)}</span>
+            </div>
           </div>
         </div>
 
