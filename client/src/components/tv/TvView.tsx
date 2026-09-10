@@ -28,16 +28,30 @@ export const TvView: FC<{ roomCode?: string }> = ({ roomCode = 'FIESTA' }) => {
       case 'skip': handleNextSongRef.current(); break;
       case 'seek': if (cmd.payload?.seconds !== undefined) playerRef.current?.seekTo(cmd.payload.seconds); break;
       case 'volume': if (cmd.payload?.volume !== undefined) playerRef.current?.setVolume(cmd.payload.volume); break;
-      case 'set_promo_banners': if (cmd.payload?.banners) setBanners(cmd.payload.banners as PromoBanner[]); break;
+      case 'set_promo_banners':
+        if (cmd.payload?.banners) {
+          const b = cmd.payload.banners as PromoBanner[];
+          setBanners(b);
+          try { localStorage.setItem(`tv_banners_${roomCode}`, JSON.stringify(b)); } catch {}
+        }
+        break;
     }
-  }, []);
+  }, [roomCode]);
 
   const { room, currentSong, nextSongs, isLoading, handleNextSong } = useTvRealtime(roomCode, handleRemoteCommand);
   handleNextSongRef.current = handleNextSong;
 
   useEffect(() => {
-    if (room?.promo_banners) setBanners(room.promo_banners);
-  }, [room?.promo_banners]);
+    if (room?.promo_banners && room.promo_banners.length > 0) {
+      setBanners(room.promo_banners);
+      try { localStorage.setItem(`tv_banners_${roomCode}`, JSON.stringify(room.promo_banners)); } catch {}
+    } else {
+      const saved = localStorage.getItem(`tv_banners_${roomCode}`);
+      if (saved) {
+        try { setBanners(JSON.parse(saved)); } catch {}
+      }
+    }
+  }, [room?.promo_banners, roomCode]);
 
   useEffect(() => {
     if (!isLoading && !currentSong && nextSongs.length > 0) handleNextSongRef.current();

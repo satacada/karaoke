@@ -14,9 +14,22 @@ const COLOR_STYLES: Record<string, { bg: string; border: string; text: string; b
 };
 
 export const TvPromoTicker: FC<TvPromoTickerProps> = ({ banners = [] }) => {
-  const activeBanners = banners.filter((b) => b.is_active);
+  const [localBanners, setLocalBanners] = useState<PromoBanner[]>(banners);
   const [currentIdx, setCurrentIdx] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    if (banners.length > 0) {
+      setLocalBanners(banners);
+    } else {
+      const saved = localStorage.getItem('tv_banners_FIESTA');
+      if (saved) {
+        try { setLocalBanners(JSON.parse(saved)); } catch {}
+      }
+    }
+  }, [banners]);
+
+  const activeBanners = localBanners.filter((b) => b.is_active);
 
   useEffect(() => {
     if (activeBanners.length === 0) {
@@ -24,18 +37,17 @@ export const TvPromoTicker: FC<TvPromoTickerProps> = ({ banners = [] }) => {
       return;
     }
 
-    // Mostrar durante 10 segundos, pausar 65 segundos
+    // Mostrar durante 12 segundos, pausar 35 segundos
     const cycle = () => {
       setIsVisible(true);
       setTimeout(() => {
         setIsVisible(false);
         setCurrentIdx((prev) => (prev + 1) % activeBanners.length);
-      }, 10000);
+      }, 12000);
     };
 
-    const interval = setInterval(cycle, 75000);
-    // Mostrar por primera vez a los 5 segundos
-    const initialTimer = setTimeout(cycle, 5000);
+    const interval = setInterval(cycle, 45000);
+    const initialTimer = setTimeout(cycle, 1500);
 
     return () => {
       clearInterval(interval);

@@ -431,6 +431,20 @@ export async function updateRoomBanners(
   roomId: string,
   banners: PromoBanner[]
 ): Promise<boolean> {
+  try {
+    const channel = supabase.channel(`tv-room-${roomId}`);
+    channel.subscribe((status) => {
+      if (status === 'SUBSCRIBED') {
+        channel.send({
+          type: 'broadcast',
+          event: 'set_promo_banners',
+          payload: { banners },
+        });
+      }
+    });
+  } catch {
+    // Fallback broadcast
+  }
   await sendRemoteCommand(roomId, 'set_promo_banners', { banners });
   try {
     await supabase.from('karaoke_rooms').update({ promo_banners: banners }).eq('id', roomId);
@@ -472,11 +486,11 @@ export async function toggleSongLike(
 }
 
 export async function getRoomsForOwner(ownerEmail: string): Promise<KaraokeRoom[]> {
-  const { data, error } = await supabase
-    .from('karaoke_rooms')
-    .select('*')
-    .or(`owner_email.eq.${ownerEmail},room_code.eq.FIESTA`)
-    .order('created_at', { ascending: true });
+  let query = supabase.from('karaoke_rooms').select('*');
+  if (ownerEmail && ownerEmail !== 'all') {
+    query = query.or(`owner_email.eq.${ownerEmail},room_code.eq.FIESTA`);
+  }
+  const { data, error } = await query.order('created_at', { ascending: true });
 
   if (error || !data) return [];
   return data as KaraokeRoom[];

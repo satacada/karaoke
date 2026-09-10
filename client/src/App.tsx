@@ -27,8 +27,8 @@ export const App: FC = () => {
 
   return (
     <div className="relative min-h-screen bg-zinc-950 text-zinc-100 flex flex-col w-full overflow-x-hidden">
-      {/* Dev Mode Switcher Bar (solo visible en modo TV o Host para desarrollo) */}
-      {currentMode !== 'guest' && (
+      {/* Dev Mode Switcher Bar (solo visible en desarrollo local) */}
+      {import.meta.env.DEV && currentMode !== 'guest' && (
         <nav
           aria-label="Barra de selección de rol"
           className="fixed top-2 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1 bg-zinc-900/90 backdrop-blur-md border border-zinc-800/80 rounded-full px-3 py-1 shadow-lg opacity-40 hover:opacity-100 transition-opacity"

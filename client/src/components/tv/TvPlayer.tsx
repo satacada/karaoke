@@ -24,15 +24,10 @@ export const TvPlayer = forwardRef<TvPlayerRef, TvPlayerProps>(function TvPlayer
   const playerRef = useRef<YTPlayerInstance | null>(null);
   const isReadyRef = useRef<boolean>(false);
   const currentVideoRef = useRef<string>(videoId);
-
-  const onEndedRef = useRef(onEnded);
-  onEndedRef.current = onEnded;
-  const onErrorRef = useRef(onError);
-  onErrorRef.current = onError;
-  const onPlayingRef = useRef(onPlayingStateChange);
-  onPlayingRef.current = onPlayingStateChange;
-  const onTimeUpdateRef = useRef(onTimeUpdate);
-  onTimeUpdateRef.current = onTimeUpdate;
+  const onEndedRef = useRef(onEnded); onEndedRef.current = onEnded;
+  const onErrorRef = useRef(onError); onErrorRef.current = onError;
+  const onPlayingRef = useRef(onPlayingStateChange); onPlayingRef.current = onPlayingStateChange;
+  const onTimeUpdateRef = useRef(onTimeUpdate); onTimeUpdateRef.current = onTimeUpdate;
 
   useImperativeHandle(ref, () => ({
     play: () => playerRef.current?.playVideo(),
@@ -82,19 +77,13 @@ export const TvPlayer = forwardRef<TvPlayerRef, TvPlayerProps>(function TvPlayer
           origin: window.location.origin,
         },
         events: {
-          onReady: (evt) => {
-            if (!isMounted) return;
-            isReadyRef.current = true;
-            evt.target.playVideo();
-          },
+          onReady: (evt) => { if (isMounted) { isReadyRef.current = true; evt.target.playVideo(); } },
           onStateChange: (evt) => {
             if (evt.data === 0) onEndedRef.current();
             else if (evt.data === 1) onPlayingRef.current?.(true);
             else if (evt.data === 2) onPlayingRef.current?.(false);
           },
-          onError: (evt) => {
-            onErrorRef.current?.(evt.data);
-          },
+          onError: (evt) => onErrorRef.current?.(evt.data),
         },
       });
     }
@@ -104,19 +93,12 @@ export const TvPlayer = forwardRef<TvPlayerRef, TvPlayerProps>(function TvPlayer
       tag.src = 'https://www.youtube.com/iframe_api';
       window.onYouTubeIframeAPIReady = init;
       document.body.appendChild(tag);
-    } else {
-      init();
-    }
+    } else { init(); }
 
     return () => {
       isMounted = false;
-      try {
-        playerRef.current?.destroy();
-      } catch {
-        // ignore error on unmount
-      }
-      playerRef.current = null;
-      isReadyRef.current = false;
+      try { playerRef.current?.destroy(); } catch {}
+      playerRef.current = null; isReadyRef.current = false;
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -124,9 +106,9 @@ export const TvPlayer = forwardRef<TvPlayerRef, TvPlayerProps>(function TvPlayer
   return (
     <div
       onClick={() => playerRef.current?.playVideo()}
-      className="relative w-full h-full bg-black flex items-center justify-center overflow-hidden cursor-pointer"
+      className="relative w-full h-full bg-black flex items-center justify-center overflow-hidden cursor-pointer tv-player-container"
     >
-      <div ref={containerRef} className="w-full h-full scale-105" />
+      <div ref={containerRef} className="w-full h-full" />
     </div>
   );
 });

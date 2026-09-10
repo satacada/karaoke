@@ -83,15 +83,24 @@ export function useTvRealtime(
           }
         }
       )
+      .on('broadcast', { event: 'set_promo_banners' }, ({ payload }) => {
+        if (onCommandRef.current && payload?.banners) {
+          onCommandRef.current({ id: 'b_local', room_id: roomId, command: 'set_promo_banners', payload: { banners: payload.banners }, is_executed: true, created_at: new Date().toISOString() });
+        }
+      })
       .on(
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'karaoke_rooms', filter: `id=eq.${roomId}` },
         (payload) => {
           const updated = payload.new as KaraokeRoom;
-          // Only update if critical metadata changed, avoiding playback-tick churn
           setRoom((prev) => {
             if (!prev) return updated;
-            if (prev.current_song_id !== updated.current_song_id || prev.status !== updated.status) {
+            if (
+              prev.current_song_id !== updated.current_song_id ||
+              prev.status !== updated.status ||
+              prev.is_queue_locked !== updated.is_queue_locked ||
+              JSON.stringify(prev.promo_banners) !== JSON.stringify(updated.promo_banners)
+            ) {
               return updated;
             }
             return prev;

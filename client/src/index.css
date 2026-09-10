@@ -13,6 +13,14 @@
   }
 }
 
+/* TV Video Player: evitar que los controles internos de YouTube aparezcan/desaparezcan al mover el cursor */
+.tv-player-container iframe {
+  width: 100% !important;
+  height: 100% !important;
+  pointer-events: none !important;
+  border: none !important;
+}
+
 /* Custom scrollbar for queue lists */
 ::-webkit-scrollbar {
   width: 6px;
