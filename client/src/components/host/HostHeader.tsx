@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import { RotateCcw, Users, Settings, Crown, ShieldCheck, Megaphone, Lock, LockOpen, SlidersHorizontal, Disc3, Sun, Moon, Sparkles, Droplets, Type } from 'lucide-react';
+import { RotateCcw, Users, Settings, Crown, ShieldCheck, Megaphone, Lock, LockOpen, SlidersHorizontal, Disc3, Sun, Moon, Sparkles, Droplets, Type, Tv } from 'lucide-react';
 
 interface HostHeaderProps {
   roomCode: string; zoneName?: string; isOwner?: boolean; isSuperAdmin?: boolean;
@@ -8,14 +8,14 @@ interface HostHeaderProps {
   currentFontSize?: 'normal' | 'large' | 'xl'; onToggleFontSize?: () => void; onLogout?: () => void;
   onOpenGuests: () => void; onOpenReset: () => void; onOpenSettings: () => void;
   onOpenSuperAdmin?: () => void; onOpenBanners?: () => void; onOpenAutoDj?: () => void;
-  onToggleQueueLock?: () => void; onOpenMasterHub?: () => void;
+  onToggleQueueLock?: () => void; onOpenMasterHub?: () => void; onSwitchToTv?: () => void;
 }
 
 export const HostHeader: FC<HostHeaderProps> = ({
   roomCode, zoneName, isOwner, isSuperAdmin, isQueueLocked, isAutoDjActive = false,
   userName, ownerEmail, currentTheme = 'dark', onToggleTheme, currentFontSize = 'normal', onToggleFontSize, onLogout,
   onOpenGuests, onOpenReset, onOpenSettings, onOpenSuperAdmin, onOpenBanners,
-  onOpenAutoDj, onToggleQueueLock, onOpenMasterHub,
+  onOpenAutoDj, onToggleQueueLock, onOpenMasterHub, onSwitchToTv,
 }) => {
   return (
     <header className="py-2 border-b border-zinc-800/80 mb-3 space-y-2">
@@ -69,6 +69,11 @@ export const HostHeader: FC<HostHeaderProps> = ({
       </div>
 
       <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1 w-full">
+        {onSwitchToTv && (
+          <button type="button" onClick={onSwitchToTv} className="p-2 rounded-xl bg-purple-600/20 border border-purple-500/50 text-purple-300 active:scale-95 transition-all flex items-center gap-1.5 shrink-0" title="Ver pantalla y código QR para invitados">
+            <Tv className="w-4 h-4 text-pink-400" /><span className="text-[11px] font-bold">Modo Android (QR)</span>
+          </button>
+        )}
         {onOpenAutoDj && (
           <button onClick={onOpenAutoDj} className={`p-2 rounded-xl border flex items-center gap-1.5 text-xs font-medium transition-all active:scale-95 shrink-0 ${isAutoDjActive ? 'bg-pink-600/20 border-pink-500/50 text-pink-300 shadow-md shadow-pink-950/40' : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-zinc-200'}`} title="Auto-DJ Música de fondo">
             <Disc3 className={`w-4 h-4 ${isAutoDjActive ? 'animate-spin text-pink-400' : ''}`} /><span className="text-[11px] font-semibold">Auto-DJ</span>

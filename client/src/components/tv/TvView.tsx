@@ -1,6 +1,7 @@
 import { useRef, useState, useCallback, useEffect, type FC } from 'react';
 import { AlertCircle, Sparkles } from 'lucide-react';
 import { useTvRealtime } from '../../hooks/useTvRealtime'; import { useTvAutoDj } from '../../hooks/useTvAutoDj';
+import { useMediaSession } from '../../hooks/useMediaSession'; import { useWakeLock } from '../../hooks/useWakeLock';
 import { TvPlayer, type TvPlayerRef } from './TvPlayer'; import { TvIdleScreen } from './TvIdleScreen';
 import { TvNowPlayingHUD } from './TvNowPlayingHUD'; import { TvNextQueueTicker } from './TvNextQueueTicker';
 import { TvSidebarOverlay } from './TvSidebarOverlay'; import { TvFloatingReactions } from './TvFloatingReactions';
@@ -28,14 +29,8 @@ export const TvView: FC<{ roomCode?: string; onUnlink?: () => void }> = ({ roomC
       case 'flash_identify': setIsFlashing(true); setTimeout(() => setIsFlashing(false), 4500); break;
       case 'volume':
         if (cmd.payload?.action === 'unlink_tv') { try { localStorage.removeItem('tv_paired_room'); } catch {} onUnlink?.(); }
-        else if (cmd.payload?.action === 'flash_identify') { setIsFlashing(true); setTimeout(() => setIsFlashing(false), 4500); }
-        else if (cmd.payload?.action === 'set_tv_theme' && cmd.payload.theme) {
-          const t = cmd.payload.theme as 'vintage' | 'modern'; setTvTheme(t);
-          try { localStorage.setItem(`tv_theme_${roomCode}`, t); } catch {}
-        } else if (cmd.payload?.action === 'set_promo_banners' && cmd.payload.banners) {
-          setBanners(cmd.payload.banners as PromoBanner[]);
-          try { localStorage.setItem(`tv_banners_${roomCode}`, JSON.stringify(cmd.payload.banners)); } catch {}
-        } else if (cmd.payload?.volume !== undefined) playerRef.current?.setVolume(cmd.payload.volume);
+        else if (cmd.payload?.action === 'set_tv_theme' && cmd.payload.theme) { const t = cmd.payload.theme as 'vintage' | 'modern'; setTvTheme(t); try { localStorage.setItem(`tv_theme_${roomCode}`, t); } catch {} }
+        else if (cmd.payload?.volume !== undefined) playerRef.current?.setVolume(cmd.payload.volume);
         break;
       case 'set_promo_banners':
         if (cmd.payload?.banners) { setBanners(cmd.payload.banners as PromoBanner[]); try { localStorage.setItem(`tv_banners_${roomCode}`, JSON.stringify(cmd.payload.banners)); } catch {} }
@@ -46,14 +41,15 @@ export const TvView: FC<{ roomCode?: string; onUnlink?: () => void }> = ({ roomC
   const { room, currentSong, nextSongs, isLoading, handleNextSong, refreshState } = useTvRealtime(roomCode, handleRemoteCommand);
   handleNextSongRef.current = handleNextSong;
   useTvAutoDj(room, currentSong, nextSongs, refreshState);
+  useWakeLock(Boolean(currentSong));
+  useMediaSession(currentSong, room?.name || 'Rockola', room?.is_playing !== false, {
+    onPlay: () => playerRef.current?.play(), onPause: () => playerRef.current?.pause(), onNext: () => handleNextSongRef.current(),
+  });
 
   const handleStartAutoDj = useCallback(async () => {
     if (!room || isStartingAutoDj) return;
     setIsStartingAutoDj(true);
-    try {
-      await enqueueAutoDjSong(room.id, room.auto_dj_genre);
-      await refreshState();
-    } catch (err) { console.error('[TvView] Error starting smart playlist:', err); }
+    try { await enqueueAutoDjSong(room.id, room.auto_dj_genre); await refreshState(); } catch (err) { console.error('Auto-DJ start error:', err); }
     finally { setIsStartingAutoDj(false); }
   }, [room, isStartingAutoDj, refreshState]);
   handleStartAutoDjRef.current = handleStartAutoDj;
@@ -68,7 +64,7 @@ export const TvView: FC<{ roomCode?: string; onUnlink?: () => void }> = ({ roomC
   }, [isLoading, currentSong, nextSongs.length]);
 
   const handlePlayerError = useCallback(() => {
-    setErrorNotice('Video con restricción en YouTube. Saltando...'); setTimeout(() => { setErrorNotice(null); handleNextSongRef.current(); }, 2000);
+    setErrorNotice('Video restringido en YouTube. Saltando...'); setTimeout(() => { setErrorNotice(null); handleNextSongRef.current(); }, 2000);
   }, []);
 
   const handleTimeUpdate = useCallback((curr: number, dur: number) => {

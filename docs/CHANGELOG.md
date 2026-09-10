@@ -4,6 +4,35 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.22.0] - 2026-09-10
+
+### 🚀 [ESPECIFICACIÓN / FEATURE]
+- **Modo Android Móvil (Celular como Reproductor Central + Consola DJ + Salida Bluetooth a Barra de Sonido):**
+  - **Doble Pestaña Superior Conmutable en Celular (`App.tsx`):**
+    - `[ 📺 Modo Android (QR) ]`: Convierte el celular en la pantalla reproductora central con video de YouTube y código QR de gran legibilidad para que los invitados escaneen al llegar a la fiesta.
+    - `[ 🎛️ Host DJ ]`: Consola DJ para gestionar la fila de pedidos, saltar canciones, cambiar volumen y configurar la sala.
+  - **Acceso Rápido desde la Cabecera del Anfitrión (`HostHeader.tsx`):** Botón `[ 📺 Modo Android (QR) ]` en la barra de herramientas para mostrar el código QR a un invitado con un solo toque.
+  - **Audio Continuo con Pantalla Apagada y Conexión Bluetooth:**
+    - **Media Session API (`useMediaSession.ts`):** Registra el título, autor y carátula del tema en la pantalla de bloqueo de Android/iOS y vincula los controles multimedia (Play, Pause, Next) con los botones físicos del parlante o barra de sonido Bluetooth.
+    - **Screen Wake Lock API (`useWakeLock.ts`):** Mantiene la pantalla del celular encendida y activa sobre la mesa durante la fiesta para escaneo continuo del QR sin apagados involuntarios.
+    - **Keep-Alive de Audio Web (`backgroundAudio.ts`):** Mantiene abierto el pipeline de audio del sistema operativo sobre Bluetooth para evitar que los navegadores móviles suspendan el sonido al bloquearse la pantalla.
+
+### 🔧 [AFINAMIENTO / REFINAMIENTO]
+- **Nuevos Módulos y Estricto Cumplimiento Clean-by-Design ($\le 120$ líneas por archivo):**
+  - `client/src/App.tsx`: 91 líneas.
+  - `client/src/components/host/HostHeader.tsx`: 96 líneas.
+  - `client/src/components/host/HostView.tsx`: 116 líneas.
+  - `client/src/components/tv/TvView.tsx`: 110 líneas.
+  - `client/src/components/tv/TvSidebarOverlay.tsx`: 37 líneas.
+  - `client/src/hooks/useMediaSession.ts`: 59 líneas.
+  - `client/src/hooks/useWakeLock.ts`: 30 líneas.
+  - `client/src/utils/backgroundAudio.ts`: 42 líneas.
+- **Validación Automatizada y Compilación:**
+  - Suite de 10 pruebas unitarias con Vitest pasando al 100% (10/10 OK).
+  - Compilación de producción Vite 8 exitosa con código de salida 0.
+
+---
+
 ## [1.21.0] - 2026-09-10
 
 ### 🚀 [ESPECIFICACIÓN / FEATURE]

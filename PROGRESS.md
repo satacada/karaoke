@@ -1,8 +1,8 @@
 # 📊 PLAN MAESTRO DEL PROYECTO: ROCKOLA DIGITAL LIVE (SISTEMA MULTI-TENANT EN TIEMPO REAL)
 
-**Versión del Plan:** 2.18.0 (Pausa y Reanudación Universal: Celular Anfitrión, Pantalla TV y Control Remoto Físico)  
+**Versión del Plan:** 2.19.0 (Modo Android Móvil: Celular Reproductor Bluetooth + Consola DJ + Audio en Segundo Plano)  
 **Fecha de Emisión:** Septiembre 2026  
-**Estado:** 🟢 Fase 2 y Fase 3 (Control de Reproducción y Pausa TV/Móvil - Completo y Verificado)  
+**Estado:** 🟢 Fase 2 y Fase 3 (Modo Android Celular con Salida Bluetooth y Persistencia - Completo y Verificado)  
 **Metodología:** Agile / BDD / Clean Architecture con Compuertas de Control Formales  
 **Alineación:** Estructura inspirada en `boot-ventas-saas` y `aplicacion para ofertas`  
 
@@ -180,6 +180,7 @@ La **Rockola Digital Live** es una plataforma SaaS multi-tenant distribuida para
 13. [x] **Búsqueda Inteligente por Género y Ritmos:** detección de épocas/géneros ("música de los 80", "rock 80s", "salsa", "reggaeton", "blues", etc.) con carrusel de chips rápidos en PWA de invitados y expansión multi-artista en paralelo para evitar mixes largos de YouTube (`genreDefinitions.js`, `searchService.js`, `GuestGenreChips.tsx`).
 14. [x] **Control Humano Obligatorio y Señal de Inicio ("Dar el Click"):** la TV nunca arranca el sonido por sorpresa; requiere un click o señal expresa del usuario (botón en pantalla TV o botón en celular anfitrión) para iniciar la reproducción inteligente (`useTvAutoDj.ts`, `TvIdleScreen.tsx`, `HostEmptyQueueCard.tsx`).
 15. [x] **Pausa y Reanudación Universal de Reproducción:** control total de pausa tanto para el anfitrión (botón en barra inferior móvil) como para el mozo o personal en la sala (click/toque en la pantalla TV o botón OK/Pausa del control remoto físico de Android TV), con cartel visual elegante de pausa (`TvPlayer.tsx`, `TvPauseOverlay.tsx`, `HostTransportBar.tsx`).
+16. [x] **Modo Android Móvil (Celular Puente con Salida Bluetooth):** soporte para fiestas sin TV donde el celular anfitrión es el reproductor central; incluye doble pestaña conmutable (`Modo Android (QR)` y `Host DJ`), código QR visible para escaneo de invitados, y audio continuo por Bluetooth con pantalla apagada mediante Media Session API, Screen Wake Lock y Web Audio keep-alive (`App.tsx`, `HostHeader.tsx`, `useMediaSession.ts`, `useWakeLock.ts`, `backgroundAudio.ts`).
 
 ---
 
