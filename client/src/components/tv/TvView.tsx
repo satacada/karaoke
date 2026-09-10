@@ -106,9 +106,11 @@ export const TvView: FC<{ roomCode?: string }> = ({ roomCode = 'FIESTA' }) => {
       )}
       <TvPlayer ref={playerRef} videoId={currentSong.video_id} onEnded={handleNextSong} onError={handlePlayerError} onTimeUpdate={handleTimeUpdate} onPlayingStateChange={handlePlayingStateChange} />
       <TvNextQueueTicker queue={nextSongs} />
-      <TvFloatingQr roomCode={roomCode} joinUrl={joinUrl} currentSongId={currentSong.id} />
+      <aside className="absolute top-6 right-6 z-40 flex flex-col gap-2.5 w-52 pointer-events-none">
+        <div className="pointer-events-auto"><TvFloatingQr roomCode={roomCode} joinUrl={joinUrl} currentSongId={currentSong.id} /></div>
+        <TvPromoTicker banners={banners} roomCode={roomCode} />
+      </aside>
       <TvNowPlayingHUD song={currentSong} currentTime={currentTime} duration={duration} />
-      <TvPromoTicker banners={banners} />
       <TvDedicationBanner currentSong={currentSong} />
       <TvFloatingReactions roomCode={roomCode} />
     </div>

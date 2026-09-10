@@ -47,9 +47,9 @@ export const TvFloatingQr: FC<TvFloatingQrProps> = ({ roomCode, joinUrl, current
   const totalUsers = new Set(Array.from(usersRef.current.values()).flatMap((s) => Array.from(s))).size;
 
   return (
-    <aside
+    <div
       aria-label="Código QR para pedir canciones en la Rockola"
-      className="absolute top-6 right-6 z-40 flex flex-col items-center bg-zinc-950/85 backdrop-blur-md border border-purple-500/40 shadow-2xl shadow-purple-950/50 rounded-2xl p-4 transition-all duration-300 w-52"
+      className="w-full flex flex-col items-center bg-zinc-950/85 backdrop-blur-md border border-purple-500/40 shadow-2xl shadow-purple-950/50 rounded-2xl p-4 transition-all duration-300"
     >
       <header className="flex items-center gap-1.5 text-xs font-semibold text-purple-300 uppercase tracking-widest mb-2">
         <Radio className="w-3.5 h-3.5 text-pink-400 animate-pulse" />
@@ -97,6 +97,6 @@ export const TvFloatingQr: FC<TvFloatingQrProps> = ({ roomCode, joinUrl, current
           </div>
         </div>
       </div>
-    </aside>
+    </div>
   );
 };
