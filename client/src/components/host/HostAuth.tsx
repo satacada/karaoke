@@ -27,7 +27,10 @@ export const HostAuth: FC<HostAuthProps> = ({ expectedPin, roomCode, onAuthentic
   const handleGoogleLogin = async () => {
     await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: { redirectTo: window.location.href },
+      options: {
+        redirectTo: `${window.location.origin}/?room=${roomCode}&mode=host`,
+        queryParams: { prompt: 'select_account' },
+      },
     });
   };
 
