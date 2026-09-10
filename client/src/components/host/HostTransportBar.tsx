@@ -21,7 +21,7 @@ export const HostTransportBar: FC<HostTransportBarProps> = ({
   const [showVolume, setShowVolume] = useState(false);
 
   return (
-    <footer className="fixed bottom-0 left-0 right-0 z-40 bg-zinc-950/95 backdrop-blur-lg border-t border-zinc-800 p-3 pb-6 max-w-lg mx-auto">
+    <footer className="fixed bottom-0 left-0 right-0 z-40 bg-zinc-950/95 backdrop-blur-lg border-t border-zinc-800 p-2.5 pb-6 max-w-lg mx-auto shadow-2xl">
       {showVolume && (
         <div className="flex items-center gap-3 bg-zinc-900 border border-zinc-700 p-3 rounded-2xl mb-2 shadow-2xl animate-fade-in">
           <button
@@ -81,10 +81,11 @@ export const HostTransportBar: FC<HostTransportBarProps> = ({
 
         <button
           onClick={onSkip}
-          className="p-2.5 rounded-xl bg-zinc-900 text-zinc-300 border border-zinc-800 active:scale-95 flex items-center gap-1"
-          aria-label="Siguiente canción"
+          className="px-3 py-2.5 rounded-xl bg-gradient-to-r from-rose-600 to-pink-600 hover:from-rose-500 hover:to-pink-500 text-white font-bold flex items-center gap-1.5 shadow-lg shadow-rose-950/40 active:scale-95 text-xs tracking-wide shrink-0 transition-transform"
+          aria-label="Saltar canción"
         >
-          <SkipForward className="w-5 h-5 text-pink-400" />
+          <SkipForward className="w-4 h-4 fill-white" />
+          <span>Saltar</span>
         </button>
       </div>
     </footer>

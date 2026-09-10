@@ -4,6 +4,25 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.11.0] - 2026-09-10
+
+### 🚀 [ESPECIFICACIÓN / FEATURE]
+- **Diseño Responsive Móvil de Consola Host & Botón Saltar Prominente:**
+  - **Botón Primario Saltar en Barra de Transporte (`HostTransportBar.tsx`):** Se transformó el antiguo ícono de salto pequeño en un botón de acción destacado con gradiente rosa/carmín (`bg-gradient-to-r from-rose-600 to-pink-600`), texto legible `[⏭️ Saltar]`, sombra de impacto y efecto háptico visual (`active:scale-95`).
+  - **Saltar en Tarjeta de Reproducción Actual (`HostNowPlayingCard.tsx`):** Botón `[Saltar]` resaltado con contraste vibrante en el header de la tarjeta y soporte en estado de reposo para activar la siguiente canción con un solo toque.
+  - **Cabecera Host Responsive en 2 Niveles (`HostHeader.tsx`):** Reorganización de los 8 controles en dos niveles estructurados para eliminar el desbordamiento horizontal en pantallas estrechas (360px a 400px), asegurando que el botón `Reiniciar` y el nuevo selector de tema nunca queden cortados.
+- **Tema Celeste / Azul Noche para Administrador y Clientes (`.theme-blue`):**
+  - Paleta profunda de azul marino/océano (`#070e1e` / `#0d1a38`) con bordes y acentos en celeste cielo (`#38bdf8`), tipografía de alto contraste blanco hielo (`#f0f9ff`) y slate (`#7dd3fc`), especialmente pensada para boliches y bares con iluminación tenue sin cansar la vista ni encandilar.
+  - Soporte completo y conmutador visual en `HostView.tsx`, `HostHeader.tsx`, `GuestView.tsx` y `GuestHeader.tsx`.
+- **Búsqueda por Voz para Canción Semilla de Auto-DJ (`HostAutoDjModal.tsx`):**
+  - Se integró el micrófono Web Speech API (`useSpeechToText`) en el campo "Canción Semilla" del modal de Auto-DJ. El anfitrión puede dictar por voz el artista o tema semilla (ej: *"Soda Stereo"*, *"Queen"*) con animación pulsante en tiempo real sin necesidad de tipear.
+
+### 🔧 [AFINAMIENTO / REFINAMIENTO]
+- **Cumplimiento Estricto Clean-by-Design ($\le 120$ líneas):** Todos los 7 componentes modificados (`HostHeader.tsx`, `HostTransportBar.tsx`, `HostNowPlayingCard.tsx`, `HostAutoDjModal.tsx`, `HostView.tsx`, `GuestHeader.tsx`, `GuestView.tsx`) respetan rigurosamente el estándar de 120 líneas.
+- **Compilación Limpia:** 0 errores TypeScript (`tsc -b`) y build de producción exitoso con Vite.
+
+---
+
 ## [1.10.0] - 2026-09-10
 
 ### 🚀 [ESPECIFICACIÓN / FEATURE]

@@ -168,3 +168,60 @@
 .theme-neon textarea::placeholder {
   color: #c084fc !important;
 }
+
+/* Celeste / Azul Noche (Dark Ocean Blue with Sky Accents - Not too bright) */
+.theme-blue {
+  background-color: #070e1e !important;
+  color: #e0f2fe !important;
+}
+.theme-blue header,
+.theme-blue main,
+.theme-blue footer {
+  color: #e0f2fe !important;
+}
+.theme-blue .bg-zinc-950,
+.theme-blue .bg-zinc-950\/95,
+.theme-blue .bg-zinc-950\/90,
+.theme-blue .bg-zinc-950\/80 {
+  background-color: #070e1e !important;
+}
+.theme-blue .bg-zinc-900,
+.theme-blue .bg-zinc-900\/90,
+.theme-blue .bg-zinc-900\/80,
+.theme-blue .bg-zinc-900\/70,
+.theme-blue .bg-zinc-900\/60,
+.theme-blue .bg-zinc-900\/40 {
+  background-color: #0d1a38 !important;
+}
+.theme-blue .bg-zinc-800,
+.theme-blue .bg-zinc-800\/80 {
+  background-color: #162952 !important;
+}
+.theme-blue .border-zinc-800,
+.theme-blue .border-zinc-800\/80,
+.theme-blue .border-zinc-800\/50,
+.theme-blue .border-zinc-700,
+.theme-blue .border-zinc-700\/50 {
+  border-color: rgba(56, 189, 248, 0.28) !important;
+}
+.theme-blue .text-white,
+.theme-blue .text-zinc-100,
+.theme-blue .text-zinc-200 {
+  color: #f0f9ff !important;
+}
+.theme-blue .text-zinc-400,
+.theme-blue .text-zinc-500 {
+  color: #7dd3fc !important;
+}
+.theme-blue input,
+.theme-blue textarea {
+  background-color: #0a152d !important;
+  color: #f0f9ff !important;
+  border-color: #0284c7 !important;
+}
+.theme-blue input::placeholder,
+.theme-blue textarea::placeholder {
+  color: #38bdf8 !important;
+  opacity: 0.65;
+}
+

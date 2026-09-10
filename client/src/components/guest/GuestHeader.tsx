@@ -1,4 +1,4 @@
-import type { FC } from 'react'; import { Search, Clock, ListMusic, UserCheck, Sun, Moon, Sparkles } from 'lucide-react';
+import type { FC } from 'react'; import { Search, Clock, ListMusic, UserCheck, Sun, Moon, Sparkles, Droplets } from 'lucide-react';
 
 interface GuestHeaderProps {
   roomCode: string;
@@ -9,7 +9,7 @@ interface GuestHeaderProps {
   isSingingNow: boolean;
   isWithinGracePeriod: boolean;
   remainingGraceMinutes: number;
-  currentTheme?: 'dark' | 'light' | 'neon';
+  currentTheme?: 'dark' | 'blue' | 'light' | 'neon';
   onToggleTheme?: () => void;
 }
 
@@ -51,8 +51,8 @@ export const GuestHeader: FC<GuestHeaderProps> = ({
               title="Cambiar tema de color"
               aria-label="Cambiar tema visual"
             >
-              {currentTheme === 'light' ? <Sun className="w-3.5 h-3.5 text-amber-500" /> : currentTheme === 'neon' ? <Sparkles className="w-3.5 h-3.5 text-pink-400 animate-spin" style={{ animationDuration: '6s' }} /> : <Moon className="w-3.5 h-3.5 text-indigo-400" />}
-              <span className="text-[10px] font-bold capitalize">{currentTheme}</span>
+              {currentTheme === 'blue' ? <Droplets className="w-3.5 h-3.5 text-sky-400" /> : currentTheme === 'light' ? <Sun className="w-3.5 h-3.5 text-amber-500" /> : currentTheme === 'neon' ? <Sparkles className="w-3.5 h-3.5 text-pink-400 animate-spin" style={{ animationDuration: '6s' }} /> : <Moon className="w-3.5 h-3.5 text-indigo-400" />}
+              <span className="text-[10px] font-bold capitalize">{currentTheme === 'blue' ? 'Azul' : currentTheme}</span>
             </button>
           )}
           {isSingingNow && (

@@ -19,18 +19,14 @@ const SUPER_ADMINS = (import.meta.env.VITE_SUPER_ADMIN_EMAILS || 'satacada@gmail
 export const HostView: FC<{ roomCode?: string }> = ({ roomCode = 'FIESTA' }) => {
   const [activeCode, setActiveCode] = useState(roomCode);
   const [isAuthenticated, setIsAuthenticated] = useState(() => sessionStorage.getItem(`host_auth_${roomCode}`) === 'true');
-  const [isOwner, setIsOwner] = useState(false);
-  const [ownerEmail, setOwnerEmail] = useState<string | null>(null);
-  const [userName, setUserName] = useState<string | null>(null);
-  const [ownerRooms, setOwnerRooms] = useState<KaraokeRoom[]>([]);
-  const [volume, setVolume] = useState(100);
-  const [isPlaying, setIsPlaying] = useState(true);
-  const [showResetModal, setShowResetModal] = useState(false); const [showGuestModal, setShowGuestModal] = useState(false);
-  const [showSettingsModal, setShowSettingsModal] = useState(false); const [showSuperAdminModal, setShowSuperAdminModal] = useState(false);
-  const [showBannersModal, setShowBannersModal] = useState(false); const [showMasterHubModal, setShowMasterHubModal] = useState(false);
-  const [showCreateRoomModal, setShowCreateRoomModal] = useState(false); const [roomToTransfer, setRoomToTransfer] = useState<KaraokeRoom | null>(null);
-  const [songToDelete, setSongToDelete] = useState<QueueItem | null>(null); const [isResetting, setIsResetting] = useState(false);
-  const [showAutoDjModal, setShowAutoDjModal] = useState(false);
+  const [isOwner, setIsOwner] = useState(false); const [ownerEmail, setOwnerEmail] = useState<string | null>(null);
+  const [userName, setUserName] = useState<string | null>(null); const [ownerRooms, setOwnerRooms] = useState<KaraokeRoom[]>([]);
+  const [volume, setVolume] = useState(100); const [isPlaying, setIsPlaying] = useState(true);
+  const [theme, setTheme] = useState<'dark' | 'blue' | 'neon' | 'light'>(() => (localStorage.getItem('host_theme') as 'dark' | 'blue' | 'neon' | 'light') || 'dark');
+  const [showResetModal, setShowResetModal] = useState(false); const [showGuestModal, setShowGuestModal] = useState(false); const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [showSuperAdminModal, setShowSuperAdminModal] = useState(false); const [showBannersModal, setShowBannersModal] = useState(false); const [showMasterHubModal, setShowMasterHubModal] = useState(false);
+  const [showCreateRoomModal, setShowCreateRoomModal] = useState(false); const [roomToTransfer, setRoomToTransfer] = useState<KaraokeRoom | null>(null); const [songToDelete, setSongToDelete] = useState<QueueItem | null>(null);
+  const [isResetting, setIsResetting] = useState(false); const [showAutoDjModal, setShowAutoDjModal] = useState(false);
   const draggedIndexRef = useRef<number | null>(null);
 
   const { room, currentSong, nextSongs, handleNextSong, refreshState } = useTvRealtime(activeCode);
@@ -95,17 +91,18 @@ export const HostView: FC<{ roomCode?: string }> = ({ roomCode = 'FIESTA' }) => 
     return <HostPendingApprovalView roomCode={activeCode} businessName={room.business_name || room.name} ownerEmail={ownerEmail || 'No asignado'} onLoggedOut={handleLogout} />;
   }
 
+  const handleToggleTheme = () => {
+    const next = theme === 'dark' ? 'blue' : theme === 'blue' ? 'neon' : theme === 'neon' ? 'light' : 'dark';
+    setTheme(next); try { localStorage.setItem('host_theme', next); } catch {}
+  };
+
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col max-w-lg mx-auto pb-28 pt-12 px-4 select-none">
-      {ownerRooms.length > 1 && (
-        <HostMultiRoomBar rooms={ownerRooms} currentRoomId={room?.id || ''} onSelectRoom={(r) => setActiveCode(r.room_code)} onOpenMasterHub={() => setShowMasterHubModal(true)} onOpenCreateRoom={() => setShowCreateRoomModal(true)} />
-      )}
-      <HostHeader roomCode={activeCode} zoneName={room?.zone_name} isOwner={isOwner} isSuperAdmin={isSuperAdmin} isQueueLocked={Boolean(room?.is_queue_locked)} isAutoDjActive={Boolean(room?.auto_dj_enabled)} userName={userName} ownerEmail={ownerEmail} onLogout={handleLogout} onToggleQueueLock={async () => { if (room) { await toggleQueueLock(room.id, !room.is_queue_locked); refreshState(); } }} onOpenGuests={() => setShowGuestModal(true)} onOpenReset={() => setShowResetModal(true)} onOpenSettings={() => setShowSettingsModal(true)} onOpenSuperAdmin={() => setShowSuperAdminModal(true)} onOpenBanners={() => setShowBannersModal(true)} onOpenAutoDj={() => setShowAutoDjModal(true)} onOpenMasterHub={() => setShowMasterHubModal(true)} />
+    <div className={`theme-${theme} min-h-screen bg-zinc-950 text-zinc-100 flex flex-col max-w-lg mx-auto pb-32 pt-2 px-3 sm:px-4 select-none transition-colors duration-200`}>
+      {ownerRooms.length > 1 && <HostMultiRoomBar rooms={ownerRooms} currentRoomId={room?.id || ''} onSelectRoom={(r) => setActiveCode(r.room_code)} onOpenMasterHub={() => setShowMasterHubModal(true)} onOpenCreateRoom={() => setShowCreateRoomModal(true)} />}
+      <HostHeader roomCode={activeCode} zoneName={room?.zone_name} isOwner={isOwner} isSuperAdmin={isSuperAdmin} isQueueLocked={Boolean(room?.is_queue_locked)} isAutoDjActive={Boolean(room?.auto_dj_enabled)} userName={userName} ownerEmail={ownerEmail} currentTheme={theme} onToggleTheme={handleToggleTheme} onLogout={handleLogout} onToggleQueueLock={async () => { if (room) { await toggleQueueLock(room.id, !room.is_queue_locked); refreshState(); } }} onOpenGuests={() => setShowGuestModal(true)} onOpenReset={() => setShowResetModal(true)} onOpenSettings={() => setShowSettingsModal(true)} onOpenSuperAdmin={() => setShowSuperAdminModal(true)} onOpenBanners={() => setShowBannersModal(true)} onOpenAutoDj={() => setShowAutoDjModal(true)} onOpenMasterHub={() => setShowMasterHubModal(true)} />
       <section className="mb-4"><HostNowPlayingCard currentSong={currentSong} currentTime={room?.current_time_seconds || 0} onSkip={handleNextSong} /></section>
       <section className="flex-1 flex flex-col gap-2">
-        <div className="flex items-center gap-1.5 text-xs text-zinc-400 font-bold uppercase tracking-wider mb-1">
-          <ListMusic className="w-4 h-4 text-purple-400" /><span>Cola ({nextSongs.length})</span>
-        </div>
+        <div className="flex items-center gap-1.5 text-xs text-zinc-400 font-bold uppercase tracking-wider mb-1"><ListMusic className="w-4 h-4 text-purple-400" /><span>Cola ({nextSongs.length})</span></div>
         {nextSongs.length === 0 ? (
           <HostEmptyQueueCard room={room} onOpenAutoDj={() => setShowAutoDjModal(true)} />
         ) : nextSongs.map((item, idx) => (

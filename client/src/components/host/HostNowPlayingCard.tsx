@@ -21,8 +21,15 @@ export const HostNowPlayingCard: FC<HostNowPlayingCardProps> = ({
 }) => {
   if (!currentSong) {
     return (
-      <div className="bg-zinc-900/60 border border-zinc-800/80 rounded-2xl p-4 text-center text-zinc-500 text-xs">
-        La TV está en pantalla de espera. No hay canción sonando.
+      <div className="bg-zinc-900/60 border border-zinc-800/80 rounded-2xl p-3.5 text-center text-zinc-400 text-xs flex items-center justify-between gap-2">
+        <span className="truncate">📺 TV en espera / Auto-DJ activo</span>
+        <button
+          onClick={onSkip}
+          className="px-2.5 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-semibold text-[11px] border border-zinc-700 flex items-center gap-1 shrink-0 active:scale-95 transition-all"
+        >
+          <FastForward className="w-3 h-3 text-pink-400" />
+          <span>Siguiente</span>
+        </button>
       </div>
     );
   }
@@ -39,9 +46,10 @@ export const HostNowPlayingCard: FC<HostNowPlayingCardProps> = ({
         </div>
         <button
           onClick={onSkip}
-          className="flex items-center gap-1 px-3 py-1 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-xs font-semibold text-zinc-200 border border-zinc-700 active:scale-95 transition-all"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold shadow-md shadow-rose-950/40 active:scale-95 transition-all"
+          aria-label="Saltar canción"
         >
-          <FastForward className="w-3.5 h-3.5 text-pink-400" />
+          <FastForward className="w-3.5 h-3.5 fill-white" />
           <span>Saltar</span>
         </button>
       </header>

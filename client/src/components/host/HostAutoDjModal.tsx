@@ -1,8 +1,9 @@
 import { useState, useEffect, type FC } from 'react';
-import { Disc3, X, Sparkles, Check, Music2, Radio } from 'lucide-react';
+import { Disc3, X, Sparkles, Check, Music2, Radio, Mic, MicOff } from 'lucide-react';
 import { AUTO_DJ_STATIONS, purgeAutoDjSongs } from '../../services/autoDjService';
 import { updateRoomSettings } from '../../services/karaokeApi';
 import { supabase } from '../../lib/supabaseClient';
+import { useSpeechToText } from '../../hooks/useSpeechToText';
 import type { KaraokeRoom } from '../../types';
 
 interface HostAutoDjModalProps {
@@ -13,11 +14,10 @@ interface HostAutoDjModalProps {
 }
 
 export const HostAutoDjModal: FC<HostAutoDjModalProps> = ({ isOpen, room, onClose, onUpdated }) => {
-  const [enabled, setEnabled] = useState(false);
-  const [selectedGenre, setSelectedGenre] = useState('rock_nacional');
-  const [seedText, setSeedText] = useState('');
-  const [mode, setMode] = useState<'station' | 'seed'>('station');
+  const [enabled, setEnabled] = useState(false); const [selectedGenre, setSelectedGenre] = useState('rock_nacional');
+  const [seedText, setSeedText] = useState(''); const [mode, setMode] = useState<'station' | 'seed'>('station');
   const [saving, setSaving] = useState(false);
+  const { isListening, speechError, toggleListening } = useSpeechToText((text) => setSeedText(text));
 
   useEffect(() => {
     if (room) {
@@ -82,7 +82,26 @@ export const HostAutoDjModal: FC<HostAutoDjModalProps> = ({ isOpen, room, onClos
         ) : (
           <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-3 mb-4 space-y-2">
             <label className="block text-[11px] font-bold text-zinc-300">Canción o Artista de Partida:</label>
-            <input type="text" placeholder="Ej: Soda Stereo, Queen, Gilda, Rock 80s..." value={seedText} onChange={(e) => setSeedText(e.target.value)} className="w-full bg-zinc-900 border border-zinc-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-pink-500" />
+            <div className="relative flex items-center">
+              <input
+                type="text"
+                placeholder={isListening ? '🎤 Escuchando... Di el artista o tema' : 'Ej: Soda Stereo, Queen, Gilda, Rock 80s...'}
+                value={seedText}
+                onChange={(e) => setSeedText(e.target.value)}
+                className={`w-full bg-zinc-900 border rounded-xl pl-3 pr-10 py-2 text-xs text-white focus:outline-none transition-colors ${isListening ? 'border-pink-500 ring-2 ring-pink-500/30' : 'border-zinc-700 focus:border-pink-500'}`}
+              />
+              <button
+                type="button"
+                onClick={toggleListening}
+                className={`absolute right-1.5 p-1.5 rounded-lg transition-all ${isListening ? 'bg-rose-600 text-white animate-pulse shadow-md' : 'bg-zinc-800 text-pink-400 hover:text-white'}`}
+                title={isListening ? 'Detener micrófono' : 'Hablar por micrófono'}
+                aria-label="Hablar por micrófono"
+              >
+                {isListening ? <MicOff className="w-3.5 h-3.5 animate-bounce" /> : <Mic className="w-3.5 h-3.5" />}
+              </button>
+            </div>
+            {isListening && <p className="text-[10px] text-pink-400 animate-pulse font-semibold">🎙️ Escuchando... Habla ahora</p>}
+            {speechError && <p className="text-[10px] text-amber-400">⚠️ {speechError}</p>}
             <p className="text-[10px] text-zinc-500">YouTube buscará temas oficiales similares sin repetir.</p>
           </div>
         )}
