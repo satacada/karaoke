@@ -388,15 +388,23 @@ export async function updateRoomSettings(
   roomId: string,
   updates: Partial<KaraokeRoom>
 ): Promise<boolean> {
+  const { auto_dj_enabled, auto_dj_genre, ...validUpdates } = updates as Record<string, unknown>;
+  if (Object.keys(validUpdates).length === 0) {
+    return true;
+  }
   const { error } = await supabase
     .from('karaoke_rooms')
     .update({
-      ...updates,
+      ...validUpdates,
       updated_at: new Date().toISOString(),
     })
     .eq('id', roomId);
 
-  return !error;
+  if (error) {
+    console.error('Error updating room settings in Supabase:', error);
+    return false;
+  }
+  return true;
 }
 
 export async function approveRoom(

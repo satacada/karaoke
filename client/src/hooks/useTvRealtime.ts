@@ -13,8 +13,10 @@ export function useTvRealtime(roomCode: string, onRemoteCommand?: (command: Remo
   const roomRef = useRef<KaraokeRoom | null>(null); roomRef.current = room;
   const onCommandRef = useRef(onRemoteCommand); onCommandRef.current = onRemoteCommand;
 
-  const refreshState = useCallback(async (currentRoomId: string) => {
-    const queue = await getQueueForRoom(currentRoomId);
+  const refreshState = useCallback(async (currentRoomId?: string) => {
+    const targetId = currentRoomId || roomRef.current?.id;
+    if (!targetId) return;
+    const queue = await getQueueForRoom(targetId);
     const playing = queue.find((q) => q.status === 'playing') || null;
     const queued = queue.filter((q) => q.status === 'queued');
     setCurrentSong(playing);

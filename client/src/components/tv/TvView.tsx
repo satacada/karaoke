@@ -53,11 +53,12 @@ export const TvView: FC<{ roomCode?: string; onUnlink?: () => void; onSwitchToHo
       setLocalAutoDjActive(roomCode, true, room.auto_dj_genre);
       supabase.channel(`tv-room-${room.id}`).send({ type: 'broadcast', event: 'set_auto_dj', payload: { enabled: true, genre: room.auto_dj_genre } }).catch(() => {});
       await updateRoomSettings(room.id, { is_playing: true });
-      await enqueueAutoDjSong(room.id, room.auto_dj_genre);
-      await refreshState();
+      if (currentSong) { await refreshState(); return; }
+      if (nextSongs.length === 0) await enqueueAutoDjSong(room.id, room.auto_dj_genre);
+      await handleNextSongRef.current();
     } catch (err) { console.error('Auto-DJ start error:', err); }
     finally { setIsStartingAutoDj(false); }
-  }, [room, roomCode, isStartingAutoDj, refreshState]);
+  }, [room, roomCode, isStartingAutoDj, currentSong, nextSongs.length, refreshState]);
   handleStartAutoDjRef.current = handleStartAutoDj;
 
   const handleStopAutoDj = useCallback(async () => {

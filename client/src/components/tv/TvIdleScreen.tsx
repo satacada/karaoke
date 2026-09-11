@@ -81,7 +81,7 @@ export const TvIdleScreen: FC<TvIdleScreenProps> = ({
                   </>
                 )}
               </div>
-              {onStartAutoDj && qrType === 'guest' && (
+              {onStartAutoDj && (
                 <div className="w-full mt-1">
                   <button type="button" onClick={onStartAutoDj} disabled={isStartingAutoDj} className="w-full py-2 px-4 rounded-xl bg-gradient-to-r from-purple-600 via-pink-600 to-amber-500 hover:from-purple-500 hover:to-pink-500 text-white font-bold text-xs uppercase tracking-wider shadow-lg flex items-center justify-center gap-2 border border-white/20 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer disabled:opacity-50">
                     <Play className="w-3.5 h-3.5 fill-white" /><span>{isStartingAutoDj ? 'Iniciando sonido...' : '▶ Iniciar Música Inteligente'}</span>

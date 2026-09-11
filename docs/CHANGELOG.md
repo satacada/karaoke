@@ -4,6 +4,26 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.38.0] - 2026-09-11
+
+### 🚀 [ESPECIFICACIÓN / FEATURE]
+- **Ocultamiento del QR Flotante Superior Derecho en Reposo (`TvSidebarOverlay.tsx`):**
+  - En la pantalla de espera (`TvIdleScreen`), se oculta completamente la barra lateral superior derecha (QR pequeño flotante y configuraciones). Dicho recuadro solo se monta y visualiza cuando la Rockola está tocando canciones en vivo (`currentSong !== null`), cumpliendo con la interfaz limpia solicitada.
+- **Acceso a 'Iniciar Música Inteligente' en Ambas Pestañas de la TV (`TvIdleScreen.tsx`):**
+  - Se habilitó el botón `▶ Iniciar Música Inteligente` tanto en la pestaña `📱 QR Pedidos (Clientes)` como en la de `🎧 QR Control (Administrador)`, garantizando que el usuario o anfitrión pueda reanudar o arrancar el sonido sin importar qué pestaña tenga activa en la TV.
+
+### 🐛 [CORRECCIÓN / FIX]
+- **Arranque Inmediato y Sin Bloqueos de Auto-DJ / Música Inteligente (`TvView.tsx`, `HostView.tsx`, `HostAutoDjModal.tsx`):**
+  - **Causa Raíz:** Al pulsar "DJ Automático, Iniciar" desde la consola del administrador o "Iniciar Música Inteligente" desde la TV, el sistema encolaba la pista pero no avanzaba el estado a `playing`, dejando la pantalla congelada en reposo. Además, `refreshState` fallaba al llamarse sin argumentos en tiempo de ejecución.
+  - **Solución:** 
+    1. En `useTvRealtime.ts`, `refreshState` ahora toma por defecto `roomRef.current?.id` si no se le suministra parámetro.
+    2. En `TvView.tsx` y `HostView.tsx`, `handleStartAutoDj` encadena inmediatamente `advanceNextSong(room.id)` para que la primera canción pase al instante a estado `playing` y la TV monte el reproductor de YouTube con sonido.
+    3. En `useTvRemoteHandler.ts`, el comando remoto `play` solo dispara `handleStartAutoDj` si la TV está en reposo (sin reproductor montado), evitando reinicios espurios.
+- **Saneamiento de Columnas en `updateRoomSettings` (`karaokeApi.ts`):**
+  - Se desestructuraron y filtraron `auto_dj_enabled` y `auto_dj_genre` antes de enviar la sentencia `.update()` a `karaoke_rooms` en Supabase, previniendo el error fatal `PGRST204` de columna inexistente.
+
+---
+
 ## [1.37.0] - 2026-09-11
 
 ### 🚀 [ESPECIFICACIÓN / FEATURE]

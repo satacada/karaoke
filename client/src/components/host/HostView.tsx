@@ -7,7 +7,7 @@ import { HostNowPlayingCard } from './HostNowPlayingCard'; import { HostQueueIte
 import { HostTransportBar } from './HostTransportBar'; import { HostMultiRoomBar } from './multiroom/HostMultiRoomBar';
 import { HostModals } from './HostModals'; import { HostPendingApprovalView } from './HostPendingApprovalView';
 import { HostEmptyQueueCard } from './HostEmptyQueueCard';
-import { sendRemoteCommand, reorderQueueItem, purgeGuestSongs, deleteQueueItem, resetRoomQueue, updateRoomBanners, toggleQueueLock, getRoomsForOwner, updatePlaybackTick, updateRoomSettings } from '../../services/karaokeApi';
+import { sendRemoteCommand, reorderQueueItem, purgeGuestSongs, deleteQueueItem, resetRoomQueue, updateRoomBanners, toggleQueueLock, getRoomsForOwner, updatePlaybackTick, updateRoomSettings, advanceNextSong } from '../../services/karaokeApi';
 import { enqueueAutoDjSong } from '../../services/autoDjService';
 import { getLocalRentalSession } from '../../services/rentalService';
 import type { QueueItem, KaraokeRoom, RoomRentalSession } from '../../types';
@@ -67,8 +67,10 @@ export const HostView: FC<{ roomCode?: string; onSwitchToTv?: () => void; onSwit
     if (!room || isStartingAutoDj) return;
     setIsStartingAutoDj(true);
     try {
-      await updateRoomSettings(room.id, { auto_dj_enabled: true, is_playing: true });
-      await enqueueAutoDjSong(room.id, room.auto_dj_genre);
+      supabase.channel(`tv-room-${room.id}`).send({ type: 'broadcast', event: 'set_auto_dj', payload: { enabled: true, genre: room.auto_dj_genre } }).catch(() => {});
+      await updateRoomSettings(room.id, { is_playing: true });
+      if (!currentSong && nextSongs.length === 0) await enqueueAutoDjSong(room.id, room.auto_dj_genre);
+      await advanceNextSong(room.id);
       sendRemoteCommand(room.id, 'play', { start_playback: true });
       refreshState();
     } catch (err) { console.error('Error starting Auto-DJ from host:', err); }

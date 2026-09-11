@@ -1,7 +1,7 @@
 import { useState, useEffect, type FC } from 'react';
 import { Disc3, X, Sparkles, Check, Music2, Radio, Mic, MicOff } from 'lucide-react';
-import { AUTO_DJ_STATIONS, purgeAutoDjSongs } from '../../services/autoDjService';
-import { updateRoomSettings } from '../../services/karaokeApi';
+import { AUTO_DJ_STATIONS, purgeAutoDjSongs, enqueueAutoDjSong } from '../../services/autoDjService';
+import { updateRoomSettings, advanceNextSong, sendRemoteCommand } from '../../services/karaokeApi';
 import { supabase } from '../../lib/supabaseClient';
 import { useSpeechToText } from '../../hooks/useSpeechToText';
 import type { KaraokeRoom } from '../../types';
@@ -24,13 +24,8 @@ export const HostAutoDjModal: FC<HostAutoDjModalProps> = ({ isOpen, room, onClos
       setEnabled(Boolean(room.auto_dj_enabled));
       const g = room.auto_dj_genre || 'rock_nacional';
       setSelectedGenre(g);
-      if (g.startsWith('seed:')) {
-        setMode('seed');
-        setSeedText(g.slice(5));
-      } else {
-        setMode('station');
-        setSeedText('');
-      }
+      if (g.startsWith('seed:')) { setMode('seed'); setSeedText(g.slice(5)); }
+      else { setMode('station'); setSeedText(''); }
     }
   }, [room, isOpen]);
 
@@ -42,6 +37,11 @@ export const HostAutoDjModal: FC<HostAutoDjModalProps> = ({ isOpen, room, onClos
     if (!enabled) await purgeAutoDjSongs(room.id);
     await updateRoomSettings(room.id, { auto_dj_enabled: enabled, auto_dj_genre: finalGenre });
     supabase.channel(`tv-room-${room.id}`).send({ type: 'broadcast', event: 'set_auto_dj', payload: { enabled, genre: finalGenre } }).catch(() => {});
+    if (enabled && !room.is_playing && !room.current_song_id) {
+      await enqueueAutoDjSong(room.id, finalGenre);
+      await advanceNextSong(room.id);
+      sendRemoteCommand(room.id, 'play', { start_playback: true });
+    }
     setSaving(false);
     onUpdated();
     onClose();
