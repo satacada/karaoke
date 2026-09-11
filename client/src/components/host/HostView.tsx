@@ -71,8 +71,7 @@ export const HostView: FC<{ roomCode?: string; onSwitchToTv?: () => void; onSwit
       await updateRoomSettings(room.id, { is_playing: true });
       if (!currentSong && nextSongs.length === 0) await enqueueAutoDjSong(room.id, room.auto_dj_genre);
       await advanceNextSong(room.id);
-      sendRemoteCommand(room.id, 'play', { start_playback: true });
-      refreshState();
+      await refreshState();
     } catch (err) { console.error('Error starting Auto-DJ from host:', err); }
     finally { setIsStartingAutoDj(false); }
   };
@@ -105,7 +104,7 @@ export const HostView: FC<{ roomCode?: string; onSwitchToTv?: () => void; onSwit
       <section className="flex-1 flex flex-col gap-2">
         <div className="flex items-center gap-1.5 text-xs text-zinc-400 font-bold uppercase tracking-wider mb-1"><ListMusic className="w-4 h-4 text-purple-400" /><span>Cola ({nextSongs.length})</span></div>
         {nextSongs.length === 0 ? (
-          <HostEmptyQueueCard room={room} onOpenAutoDj={() => setShowAutoDjModal(true)} onStartAutoDj={handleStartAutoDj} isStartingAutoDj={isStartingAutoDj} />
+          <HostEmptyQueueCard room={room} onOpenAutoDj={() => setShowAutoDjModal(true)} onStartAutoDj={!currentSong ? handleStartAutoDj : undefined} isStartingAutoDj={isStartingAutoDj} />
         ) : nextSongs.map((item, idx) => (
           <HostQueueItem key={item.id} item={item} index={idx} totalItems={nextSongs.length} onMoveToNext={async (id) => { if (room) { await reorderQueueItem(room.id, id, 1); refreshState(); } }} onMoveUp={async (id, pos) => { if (room) { await reorderQueueItem(room.id, id, pos - 1); refreshState(); } }} onMoveDown={async (id, pos) => { if (room) { await reorderQueueItem(room.id, id, pos + 1); refreshState(); } }} onDelete={setSongToDelete} onDragStart={(_, i) => { draggedIndexRef.current = i; }} onDragOver={(e) => e.preventDefault()} onDrop={(_, tIdx) => handleDrop(tIdx)} />
         ))}

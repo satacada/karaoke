@@ -19,7 +19,7 @@ export function useTvRemoteHandler(
 
   const handleRemoteCommand = useCallback((cmd: RemoteCommand) => {
     switch (cmd.command) {
-      case 'play': if (playerRef.current) { playerRef.current.play(); setIsPaused(false); } else { handleStartAutoDjRef.current(); } break;
+      case 'play': playerRef.current?.play(); setIsPaused(false); break;
       case 'pause': playerRef.current?.pause(); setIsPaused(true); break;
       case 'skip': handleNextSongRef.current(); break;
       case 'seek': if (cmd.payload?.seconds !== undefined) playerRef.current?.seekTo(cmd.payload.seconds); break;

@@ -1,7 +1,7 @@
 import { useState, useEffect, type FC } from 'react';
 import { Disc3, X, Sparkles, Check, Music2, Radio, Mic, MicOff } from 'lucide-react';
 import { AUTO_DJ_STATIONS, purgeAutoDjSongs, enqueueAutoDjSong } from '../../services/autoDjService';
-import { updateRoomSettings, advanceNextSong, sendRemoteCommand } from '../../services/karaokeApi';
+import { updateRoomSettings, advanceNextSong } from '../../services/karaokeApi';
 import { supabase } from '../../lib/supabaseClient';
 import { useSpeechToText } from '../../hooks/useSpeechToText';
 import type { KaraokeRoom } from '../../types';
@@ -40,7 +40,6 @@ export const HostAutoDjModal: FC<HostAutoDjModalProps> = ({ isOpen, room, onClos
     if (enabled && !room.is_playing && !room.current_song_id) {
       await enqueueAutoDjSong(room.id, finalGenre);
       await advanceNextSong(room.id);
-      sendRemoteCommand(room.id, 'play', { start_playback: true });
     }
     setSaving(false);
     onUpdated();

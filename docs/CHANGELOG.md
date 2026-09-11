@@ -4,6 +4,18 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.39.0] - 2026-09-11
+
+### 🐛 [CORRECCIÓN / FIX]
+- **Eliminación Definitiva de Condición de Carrera en Arranque de Música Inteligente (`HostView.tsx`, `useTvRemoteHandler.ts`, `HostAutoDjModal.tsx`):**
+  - **Causa Raíz Crítica:** Al pulsar "Iniciar Música Inteligente" en la consola del administrador, el móvil encolaba y avanzaba la canción a `playing` en Supabase. Pero además enviaba el comando remoto `play` a la TV. La TV recibía `play` milisegundos antes de montar el reproductor, cayendo en un fallback que ejecutaba un **segundo `advanceNextSong`**. Esta segunda invocación marcaba la canción que acababa de iniciar como `finished` (en < 200ms), detectaba la cola vacía y reseteaba `current_song_id` a `null`, devolviendo la TV y el celular a la pantalla de reposo sin reproducir sonido.
+  - **Solución Aplicada:**
+    1. En `useTvRemoteHandler.ts`, `case 'play'` ahora es puramente un despausador del reproductor (`playerRef.current?.play()`). Se eliminó el re-disparo espurio de Auto-DJ.
+    2. En `HostView.tsx` y `HostAutoDjModal.tsx`, se retiró el comando remoto redundante `play`. La actualización en base de datos (`advanceNextSong`) notifica por WebSockets a la TV, la cual monta el reproductor de YouTube y comienza a sonar de inmediato.
+    3. En `HostView.tsx`, se condicionó `onStartAutoDj={!currentSong ? handleStartAutoDj : undefined}` para que, mientras suene la música, la tarjeta de cola vacía indique que el Auto-DJ está activo sin botones redundantes.
+
+---
+
 ## [1.38.0] - 2026-09-11
 
 ### 🚀 [ESPECIFICACIÓN / FEATURE]
