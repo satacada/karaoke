@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import { Settings, Sliders } from 'lucide-react';
+import { Settings } from 'lucide-react';
 import { TvFloatingQr } from './TvFloatingQr';
 import { TvLiveReactionsZone } from './TvLiveReactionsZone';
 import { TvPromoTicker } from './TvPromoTicker';
@@ -20,17 +20,6 @@ export const TvSidebarOverlay: FC<TvSidebarOverlayProps> = ({
 }) => (
   <aside className="absolute top-[clamp(0.5rem,1.5vh,1rem)] right-[clamp(0.5rem,1.5vw,1rem)] z-40 flex flex-col items-end gap-1 w-[clamp(92px,9vw,135px)] pointer-events-none transition-all">
     <div className="flex items-center justify-end gap-1 pointer-events-auto">
-      {onSwitchToHost && (
-        <button
-          type="button"
-          onClick={onSwitchToHost}
-          title="Abrir consola Administrador en esta pantalla"
-          className="px-1.5 py-0.5 rounded-lg bg-purple-900/60 hover:bg-purple-700 text-purple-200 hover:text-white border border-purple-500/30 text-[9px] font-bold transition-colors flex items-center gap-0.5 cursor-pointer"
-        >
-          <Sliders className="w-2.5 h-2.5" />
-          <span>Admin</span>
-        </button>
-      )}
       <button
         type="button"
         onClick={onOpenSettings}

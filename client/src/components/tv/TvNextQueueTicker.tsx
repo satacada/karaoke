@@ -13,10 +13,10 @@ export const TvNextQueueTicker: FC<TvNextQueueTickerProps> = ({ queue }) => {
     return (
       <aside
         aria-label="Estado de la cola"
-        className="absolute top-[clamp(0.5rem,1.5vh,1rem)] left-[clamp(0.5rem,1.5vw,1rem)] z-30 flex items-center gap-1 px-2 py-1 rounded-xl bg-black/35 backdrop-blur-sm border border-white/10 text-zinc-300 text-[clamp(9px,0.7vw,11px)] font-semibold shadow-md transition-all"
+        className="absolute top-3 left-3 z-40 flex items-center gap-2 px-3 py-1.5 rounded-xl bg-zinc-950/90 backdrop-blur-md border border-white/20 text-zinc-200 text-xs font-semibold shadow-lg whitespace-nowrap"
       >
-        <ListMusic className="w-3 h-3 text-purple-400 drop-shadow-[0_1px_2px_#000]" />
-        <span className="tv-text-outline">Cola libre: ¡pide tu tema!</span>
+        <ListMusic className="w-3.5 h-3.5 text-purple-400 shrink-0" />
+        <span>Cola libre: ¡pide tu tema!</span>
       </aside>
     );
   }

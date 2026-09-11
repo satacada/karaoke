@@ -1,8 +1,8 @@
 # 📊 PLAN MAESTRO DEL PROYECTO: ROCKOLA DIGITAL LIVE (SISTEMA MULTI-TENANT EN TIEMPO REAL)
 
-**Versión del Plan:** 2.36.0 (Selector Dual QR en Reproducción, Zona Permanente de Reacciones, Ticker Opaco y Blindaje Anti-Caché)  
+**Versión del Plan:** 2.37.0 (Restauración Pantalla Principal Standby con QR Central para Administrador y Clientes)  
 **Fecha de Emisión:** Septiembre 2026  
-**Estado:** 🟢 Fase 2, Fase 3, Fase 4 y Fase 5 (Validación Integral y Protección Móvil)  
+**Estado:** 🟢 Fase 2, Fase 3, Fase 4 y Fase 5 (Pantalla de Espera Protegida y Lista para Validación)  
 **Metodología:** Agile / BDD / Clean Architecture con Compuertas de Control Formales  
 **Alineación:** Estructura inspirada en `boot-ventas-saas` y `aplicacion para ofertas`  
 

@@ -4,6 +4,22 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.37.0] - 2026-09-11
+
+### 🚀 [ESPECIFICACIÓN / FEATURE]
+- **Preservación Obligatoria de la Pantalla Principal Standby (`useTvAutoDj.ts`, Supabase):**
+  - **Causa Raíz Resuelta:** Al abrir la TV, si la sala tenía una canción previa o Auto-DJ activo en base de datos, el reproductor de video de YouTube se iniciaba de forma automática en 0.3 segundos, ocultando permanentemente la pantalla principal con el código QR central.
+  - **Solución:** Se configuró `useTvAutoDj` para **nunca auto-reproducir canciones si la pantalla está en espera (`!hasCurrentSong`)**. La TV ahora muestra de manera predeterminada y permanente la **pantalla principal de la Rockola con el gran código QR en el centro** (`TvIdleScreen`), lista para que el administrador o los clientes escaneen con su celular.
+  - Se saneó el estado de la sala `FIESTA` en la base de datos (`is_playing: false`, `current_song_id: null`).
+
+### 🔧 [AFINAMIENTO / REFINAMIENTO]
+- **Corrección de 'Cola Libre' en Ticker (`TvNextQueueTicker.tsx`):**
+  - Se añadió `whitespace-nowrap` y padding horizontal sólido para evitar que el mensaje "Cola libre: ¡pide tu tema!" se divida en columnas verticales angostas en el lateral superior izquierdo.
+- **Limpieza de Controles Superiores (`TvSidebarOverlay.tsx`):**
+  - Se retiró el botón "Admin" suelto de la esquina superior derecha del reproductor, manteniendo la interfaz despejada.
+
+---
+
 ## [1.36.0] - 2026-09-11
 
 ### 🚀 [ESPECIFICACIÓN / FEATURE]
