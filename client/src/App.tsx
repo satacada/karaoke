@@ -34,7 +34,10 @@ export const App: FC = () => {
     try {
       const p = new URLSearchParams(window.location.search);
       const isGuestRoute = window.location.pathname.startsWith('/join') || p.get('mode') === 'guest';
-      const hasAuth = sessionStorage.getItem(`host_auth_${roomCode || 'FIESTA'}`) === 'true';
+      const hasAuth =
+        sessionStorage.getItem(`host_auth_${roomCode || 'FIESTA'}`) === 'true' ||
+        localStorage.getItem(`host_auth_${roomCode || 'FIESTA'}`) === 'true' ||
+        localStorage.getItem('rockola_is_admin_device') === 'true';
       const isNative = Boolean((window as unknown as { Capacitor?: unknown }).Capacitor);
       return isGuestRoute && !hasAuth && !isNative;
     } catch { return false; }
@@ -80,13 +83,12 @@ export const App: FC = () => {
         </nav>
       )}
 
-      {!isGuestOnly && roomCode && (
-        <div className={currentMode === 'tv' ? 'block' : 'hidden'}>
-          <TvView roomCode={roomCode} onUnlink={handleTvUnlink} />
-        </div>
-      )}
-      {!isGuestOnly && !roomCode && currentMode === 'tv' && (
-        <TvActivationScreen onPaired={handleTvPaired} />
+      {currentMode === 'tv' && (
+        roomCode ? (
+          <TvView roomCode={roomCode} onUnlink={handleTvUnlink} onSwitchToHost={() => handleSelectMode('host')} />
+        ) : (
+          <TvActivationScreen onPaired={handleTvPaired} onSwitchToHost={() => handleSelectMode('host')} />
+        )
       )}
 
       {currentMode === 'host' && (

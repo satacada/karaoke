@@ -12,6 +12,7 @@ interface TvViewOverlaysProps {
   showUnlinkModal: boolean;
   setShowUnlinkModal: (show: boolean) => void;
   onUnlink?: () => void;
+  onSwitchToHost?: () => void;
 }
 
 export const TvViewOverlays: FC<TvViewOverlaysProps> = ({
@@ -23,6 +24,7 @@ export const TvViewOverlays: FC<TvViewOverlaysProps> = ({
   showUnlinkModal,
   setShowUnlinkModal,
   onUnlink,
+  onSwitchToHost,
 }) => {
   return (
     <>
@@ -38,6 +40,7 @@ export const TvViewOverlays: FC<TvViewOverlaysProps> = ({
         roomCode={roomCode}
         roomName={roomName}
         onClose={() => setShowUnlinkModal(false)}
+        onSwitchToHost={onSwitchToHost}
         onConfirmUnlink={() => {
           try { localStorage.removeItem('tv_paired_room'); } catch {}
           setShowUnlinkModal(false);

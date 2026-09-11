@@ -1,14 +1,15 @@
 import { useState, useEffect, type FC, type FormEvent } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
-import { Tv, Radio, ArrowRight, CheckCircle2, Sparkles } from 'lucide-react';
+import { Tv, Radio, ArrowRight, CheckCircle2, Sparkles, Sliders } from 'lucide-react';
 import { supabase } from '../../lib/supabaseClient';
 import { getPairUrl } from '../../utils/appUrl';
 
 interface TvActivationScreenProps {
   onPaired: (roomCode: string) => void;
+  onSwitchToHost?: () => void;
 }
 
-export const TvActivationScreen: FC<TvActivationScreenProps> = ({ onPaired }) => {
+export const TvActivationScreen: FC<TvActivationScreenProps> = ({ onPaired, onSwitchToHost }) => {
   const [code] = useState(() => `TV-${Math.floor(1000 + Math.random() * 9000)}`);
   const [manualCode, setManualCode] = useState('');
   const [isFlashing, setIsFlashing] = useState(false);
@@ -89,6 +90,19 @@ export const TvActivationScreen: FC<TvActivationScreenProps> = ({ onPaired }) =>
                 </button>
               </form>
             </div>
+
+            {onSwitchToHost && (
+              <div className="pt-2 border-t border-zinc-800/80">
+                <button
+                  type="button"
+                  onClick={onSwitchToHost}
+                  className="w-full py-2 px-3 rounded-xl bg-purple-950/40 hover:bg-purple-900/60 border border-purple-500/40 text-purple-200 text-xs font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer shadow-md"
+                >
+                  <Sliders className="w-3.5 h-3.5 text-purple-400" />
+                  <span>Abrir Consola Administrador en esta pantalla</span>
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}

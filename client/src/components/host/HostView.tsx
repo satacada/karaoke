@@ -16,7 +16,7 @@ const SUPER_ADMINS = (import.meta.env.VITE_SUPER_ADMIN_EMAILS || 'satacada@gmail
 
 export const HostView: FC<{ roomCode?: string; onSwitchToTv?: () => void; onSwitchToGuest?: () => void }> = ({ roomCode = 'FIESTA', onSwitchToTv, onSwitchToGuest }) => {
   const [activeCode, setActiveCode] = useState(roomCode);
-  const [isAuthenticated, setIsAuthenticated] = useState(() => sessionStorage.getItem(`host_auth_${roomCode}`) === 'true');
+  const [isAuthenticated, setIsAuthenticated] = useState(() => sessionStorage.getItem(`host_auth_${roomCode}`) === 'true' || localStorage.getItem(`host_auth_${roomCode}`) === 'true' || localStorage.getItem('rockola_is_admin_device') === 'true');
   const [isOwner, setIsOwner] = useState(false); const [ownerEmail, setOwnerEmail] = useState<string | null>(null);
   const [userName, setUserName] = useState<string | null>(null); const [ownerRooms, setOwnerRooms] = useState<KaraokeRoom[]>([]);
   const [volume, setVolume] = useState(100); const [isPlaying, setIsPlaying] = useState(true);
@@ -42,20 +42,20 @@ export const HostView: FC<{ roomCode?: string; onSwitchToTv?: () => void; onSwit
       if (data?.user?.email) {
         setIsOwner(true); setOwnerEmail(data.user.email);
         const name = data.user.user_metadata?.full_name || data.user.user_metadata?.name || data.user.email.split('@')[0];
-        setUserName(name); setIsAuthenticated(true); sessionStorage.setItem(`host_auth_${activeCode}`, 'true'); loadOwnerRooms(data.user.email);
+        setUserName(name); setIsAuthenticated(true); sessionStorage.setItem(`host_auth_${activeCode}`, 'true'); localStorage.setItem(`host_auth_${activeCode}`, 'true'); localStorage.setItem('rockola_is_admin_device', 'true'); loadOwnerRooms(data.user.email);
       } else { loadOwnerRooms('all'); }
     });
   }, [activeCode]);
 
   const handleAuth = (asOwner = false, email?: string) => {
-    sessionStorage.setItem(`host_auth_${activeCode}`, 'true');
+    sessionStorage.setItem(`host_auth_${activeCode}`, 'true'); localStorage.setItem(`host_auth_${activeCode}`, 'true'); localStorage.setItem('rockola_is_admin_device', 'true');
     if (asOwner) { setIsOwner(true); if (email) { setOwnerEmail(email); setUserName(email.split('@')[0]); loadOwnerRooms(email); } }
     else { loadOwnerRooms('all'); }
     setIsAuthenticated(true);
   };
 
   const handleLogout = async () => {
-    await supabase.auth.signOut(); sessionStorage.removeItem(`host_auth_${activeCode}`);
+    await supabase.auth.signOut(); sessionStorage.removeItem(`host_auth_${activeCode}`); localStorage.removeItem(`host_auth_${activeCode}`); localStorage.removeItem('rockola_is_admin_device');
     setIsAuthenticated(false); setIsOwner(false); setOwnerEmail(null); setUserName(null);
   };
 

@@ -24,7 +24,7 @@ import type { TvScale } from '../../types';
 
 const SCALE_MAP: Record<TvScale, number> = { compact: 0.85, normal: 1.0, large: 1.15, xl: 1.30 };
 
-export const TvView: FC<{ roomCode?: string; onUnlink?: () => void }> = ({ roomCode = 'FIESTA', onUnlink }) => {
+export const TvView: FC<{ roomCode?: string; onUnlink?: () => void; onSwitchToHost?: () => void }> = ({ roomCode = 'FIESTA', onUnlink, onSwitchToHost }) => {
   const playerRef = useRef<TvPlayerRef>(null);
   const lastSyncRef = useRef<number>(0);
   const handleNextSongRef = useRef<() => void>(() => {});
@@ -104,14 +104,14 @@ export const TvView: FC<{ roomCode?: string; onUnlink?: () => void }> = ({ roomC
       </div>
       <TvVoiceHUD isSupported={isSupported} isListening={isListening} lastCommand={lastCommand} onToggleVoice={startVoice} />
       {!currentSong ? (
-        <TvIdleScreen roomCode={roomCode} joinUrl={joinUrl} roomName={room?.name || 'Rockola Digital Live'} zoneName={room?.zone_name} status={room?.status} banners={banners} autoDjActive={Boolean(room?.auto_dj_enabled)} onStartAutoDj={handleStartAutoDj} isStartingAutoDj={isStartingAutoDj} />
+        <TvIdleScreen roomCode={roomCode} joinUrl={joinUrl} roomName={room?.name || 'Rockola Digital Live'} zoneName={room?.zone_name} status={room?.status} banners={banners} autoDjActive={Boolean(room?.auto_dj_enabled)} onStartAutoDj={handleStartAutoDj} isStartingAutoDj={isStartingAutoDj} onSwitchToHost={onSwitchToHost} />
       ) : (
         <>
           <TvThemeFrame theme={tvTheme}><TvPlayer ref={playerRef} videoId={currentSong.video_id} onEnded={handleNextSong} onError={handlePlayerError} onTimeUpdate={handleTimeUpdate} rentalSession={rentalSession} onPlayingStateChange={(pl) => { setIsPaused(!pl); if (room) updatePlaybackTick(room.id, pl, currentTime).catch(() => {}); }} /></TvThemeFrame>
           <div className="absolute bottom-0 left-0 right-0 z-30 pointer-events-none" style={{ transform: `scale(${scaleFactor})`, transformOrigin: 'bottom center' }}><TvNowPlayingHUD song={currentSong} currentTime={currentTime} duration={duration} isPaused={isPaused} onTogglePlayPause={() => playerRef.current?.togglePlayPause()} /></div>
         </>
       )}
-      <div className="absolute top-0 right-0 z-40 pointer-events-none" style={{ transform: `scale(${scaleFactor})`, transformOrigin: 'top right' }}><TvViewOverlays roomCode={roomCode} roomName={room?.zone_name || room?.name} joinUrl={joinUrl} currentSong={currentSong} banners={banners} showUnlinkModal={showUnlinkModal} setShowUnlinkModal={setShowUnlinkModal} onUnlink={onUnlink} /></div>
+      <div className="absolute top-0 right-0 z-40 pointer-events-none" style={{ transform: `scale(${scaleFactor})`, transformOrigin: 'top right' }}><TvViewOverlays roomCode={roomCode} roomName={room?.zone_name || room?.name} joinUrl={joinUrl} currentSong={currentSong} banners={banners} showUnlinkModal={showUnlinkModal} setShowUnlinkModal={setShowUnlinkModal} onUnlink={onUnlink} onSwitchToHost={onSwitchToHost} /></div>
       <TvFloatingReactions roomCode={roomCode} />
     </div>
   );

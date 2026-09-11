@@ -4,6 +4,22 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.35.0] - 2026-09-11
+
+### 🚀 [ESPECIFICACIÓN / FEATURE]
+- **Selector Dual de Códigos QR en Pantalla Central TV (`TvIdleScreen.tsx`, `TvActivationScreen.tsx`, `TvUnlinkModal.tsx`):**
+  - **QR para Clientes vs QR para Administrador:** En la pantalla central de espera se incorporaron pestañas conmutables para proyectar el código de clientes (`/join?room=...`) o el código de control del anfitrión (`/host?room=...`).
+  - **Lanzamiento Directo de Consola en Pantalla:** Se añadió en la pantalla de espera, en la pantalla de activación y en el modal de configuración de TV el botón directo **"Abrir Consola Administrador en esta pantalla"**, permitiendo operar como DJ directamente en la pantalla de la TV o computadora sin requerir otro dispositivo.
+- **Modo Administrador con Pestaña de Pruebas de Cliente (`App.tsx`, `HostView.tsx`):**
+  - Al identificarse como Administrador, la credencial se resguarda en `localStorage`. Si el administrador escanea el QR de pedidos o presiona "Pedir Música", la app activa la pestaña `Cliente` (`GuestView`), pero **mantiene visibles y habilitadas las pestañas superiores de Administrador y el botón Admin**, permitiendo alternar y probar pedidos libremente.
+
+### 🐛 [CORRECCIÓN / FIX]
+- **Silencio Absoluto en Celulares de Administrador y Clientes (`App.tsx`):**
+  - Se desmontó completamente el nodo `TvView` del DOM cuando la aplicación está en modo `Administrador` o `Cliente`.
+  - El celular del dueño y los teléfonos de los invitados **no tocan ningún tema ni emiten sonido alguno**; el audio y video de YouTube se reproducen exclusiva y únicamente en la pantalla central de la TV (`currentMode === 'tv'`).
+
+---
+
 ## [1.34.0] - 2026-09-11
 
 ### 🐛 [CORRECCIÓN / FIX]

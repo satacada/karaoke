@@ -1,8 +1,8 @@
 # 📊 PLAN MAESTRO DEL PROYECTO: ROCKOLA DIGITAL LIVE (SISTEMA MULTI-TENANT EN TIEMPO REAL)
 
-**Versión del Plan:** 2.34.0 (Enrutamiento QR Infalible, Firma Única en TV, Reacciones Flotantes y Video 16:9)  
+**Versión del Plan:** 2.35.0 (Selector Dual QR TV, Acceso Administrador en Pantalla, Pestaña Cliente de Prueba y Silencio Móvil)  
 **Fecha de Emisión:** Septiembre 2026  
-**Estado:** 🟢 Fase 2, Fase 3, Fase 4 y Fase 5 (Validación Web en Vivo Lista)  
+**Estado:** 🟢 Fase 2, Fase 3, Fase 4 y Fase 5 (Validación Flujo Completo TV + Admin + Cliente)  
 **Metodología:** Agile / BDD / Clean Architecture con Compuertas de Control Formales  
 **Alineación:** Estructura inspirada en `boot-ventas-saas` y `aplicacion para ofertas`  
 
