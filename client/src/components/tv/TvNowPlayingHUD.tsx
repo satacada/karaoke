@@ -27,7 +27,7 @@ export const TvNowPlayingHUD: FC<TvNowPlayingHUDProps> = ({
   const progressPercent = Math.min(100, Math.max(0, (currentTime / effectiveDuration) * 100));
 
   return (
-    <div className="absolute bottom-0 left-0 right-0 z-30 bg-gradient-to-t from-zinc-950 via-zinc-950/70 to-transparent px-[clamp(0.75rem,2.5vw,2rem)] py-[clamp(0.35rem,1vh,0.75rem)] pt-[clamp(1.5rem,3.5vh,2.5rem)]">
+    <div className="absolute bottom-0 left-0 right-0 z-30 bg-gradient-to-t from-zinc-950 via-zinc-950/80 to-transparent px-[clamp(0.75rem,2.5vw,2rem)] pt-[clamp(1.5rem,3.5vh,2.5rem)] pb-3 sm:pb-5">
       <div className="max-w-6xl mx-auto flex flex-col gap-1.5">
         <div className="flex flex-wrap items-center justify-between gap-2.5">
           <div className="flex items-center gap-2.5 min-w-0 flex-1">
@@ -87,9 +87,9 @@ export const TvNowPlayingHUD: FC<TvNowPlayingHUDProps> = ({
           />
         </div>
 
-        <div className="flex items-center justify-between text-[clamp(8px,0.65vw,10px)] text-zinc-400/80 font-mono select-none px-0.5 leading-none">
-          <span className="truncate opacity-75">Rockola Digital Live</span>
-          <span className="tracking-widest uppercase font-semibold text-zinc-400/90 tv-text-outline-sm">powered : David Taboada</span>
+        <div className="flex items-center justify-between text-[clamp(8px,0.65vw,10px)] font-mono select-none px-0.5 pt-0.5">
+          <span className="truncate text-zinc-400">Rockola Digital Live</span>
+          <span className="tracking-widest uppercase font-bold text-zinc-300 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">powered : David Taboada</span>
         </div>
       </div>
     </div>

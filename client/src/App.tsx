@@ -16,7 +16,8 @@ export function getInitialMode(isTv: boolean): 'tv' | 'host' | 'guest' {
     if (path.startsWith('/tv') || qMode === 'tv' || p.get('device') === 'tv') return 'tv';
     if (isTv) return 'tv';
     const s = sessionStorage.getItem('rockola_app_mode') as 'tv' | 'host' | 'guest' | null;
-    return s || 'host';
+    if (s && s !== 'tv') return s;
+    return 'host';
   } catch { return isTv ? 'tv' : 'host'; }
 }
 

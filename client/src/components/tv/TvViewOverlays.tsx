@@ -34,6 +34,7 @@ export const TvViewOverlays: FC<TvViewOverlaysProps> = ({
         currentSong={currentSong}
         banners={banners}
         onOpenSettings={() => setShowUnlinkModal(true)}
+        onSwitchToHost={onSwitchToHost}
       />
       <TvUnlinkModal
         isOpen={showUnlinkModal}

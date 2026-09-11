@@ -4,6 +4,28 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.36.0] - 2026-09-11
+
+### 🚀 [ESPECIFICACIÓN / FEATURE]
+- **Selector Dual QR Interactivo durante Reproducción (`TvFloatingQr.tsx`, `TvSidebarOverlay.tsx`, `TvViewOverlays.tsx`):**
+  - Se implementó en el QR flotante de reproducción las pestañas interactivas `[📱 Pedidos]` y `[🎧 Admin]`, permitiendo en cualquier momento ver y escanear el QR de Administrador (`/host?room=...`) sin detener la música.
+  - Se agregó en la barra lateral el botón directo `[🎧 Admin]` y en el QR de Admin el botón `"Abrir en TV"` para conmutar inmediatamente a la Consola de Administrador en la misma pantalla.
+- **Zona Permanente de Reacciones en Vivo Bajo el Código QR (`TvLiveReactionsZone.tsx`):**
+  - Se integró un indicador visual con los 4 emojis de fiesta (`👏 🔥 ❤️ 🍻`) ubicado directamente debajo del código QR de clientes en la TV.
+  - Reacciona en tiempo real con animación de pulso y nombre del invitado cuando los clientes envían aplausos, fuego o corazones desde su celular.
+
+### 🔧 [AFINAMIENTO / REFINAMIENTO]
+- **Blindaje Total de Detección de Dispositivos y Caché Web (`deviceDetector.ts`, `App.tsx`, `index.html`):**
+  - **Meta-tags no-cache y Unregister de SW:** Se añadieron directivas HTTP `no-cache`, `no-store` y script de desregistro automático de Service Workers antiguos para evitar que los celulares ejecuten versiones obsoletas en caché.
+  - **Saneamiento de almacenamiento heredado:** Se limpian claves viejas como `rockola_hide_mode_nav` y se previene que dispositivos móviles queden atascados en `tv` por `sessionStorage`.
+  - **Regla Estricta de Móvil:** Dispositivos táctiles o con User-Agent móvil nunca se clasifican como TV, garantizando que el escaneo de QR abra siempre la vista correspondiente (`Cliente` o `Administrador`).
+- **Eliminación de Superposición en Lista de Espera (`TvNextQueueTicker.tsx`):**
+  - Se le asignó fondo oscuro sólido con glassmorphism opaco (`bg-zinc-950/90`), mayor ancho (`19rem`) y espaciado limpio, impidiendo que el título del video de YouTube se transparente por detrás y garantizando que los nombres de canciones se lean con total nitidez.
+- **Firma Oficial Despejada y con Espacio Inferior (`TvNowPlayingHUD.tsx`):**
+  - Se amplió el padding inferior a `pb-3 sm:pb-5`, logrando que `powered : David Taboada` y `Rockola Digital Live` tengan espacio visual suficiente y no se corten en bordes de pantallas panorámicas.
+
+---
+
 ## [1.35.0] - 2026-09-11
 
 ### 🚀 [ESPECIFICACIÓN / FEATURE]

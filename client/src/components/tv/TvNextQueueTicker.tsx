@@ -24,38 +24,38 @@ export const TvNextQueueTicker: FC<TvNextQueueTickerProps> = ({ queue }) => {
   return (
     <aside
       aria-label="Próximas canciones en cola"
-      className="absolute top-[clamp(0.5rem,1.5vh,1rem)] left-[clamp(0.5rem,1.5vw,1rem)] z-30 flex flex-col gap-0.5 max-w-[clamp(10rem,16vw,14rem)] w-full"
+      className="absolute top-3 left-3 z-40 flex flex-col gap-1 w-[clamp(14rem,23vw,19rem)] bg-zinc-950/90 backdrop-blur-md border border-white/20 rounded-xl p-2 shadow-2xl"
     >
-      <header className="flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-black/35 backdrop-blur-sm border border-white/10 text-[clamp(8px,0.65vw,10px)] font-bold text-zinc-200 uppercase tracking-wide w-fit shadow-xs">
-        <ListMusic className="w-2.5 h-2.5 text-pink-400" />
-        <span className="tv-text-outline">A continuación ({queue.length})</span>
+      <header className="flex items-center gap-1 text-[clamp(8px,0.65vw,10px)] font-bold text-zinc-200 uppercase tracking-wide">
+        <ListMusic className="w-3 h-3 text-pink-400 shrink-0" />
+        <span>A continuación ({queue.length})</span>
       </header>
 
-      <ul className="flex flex-col gap-0.5 list-none p-0 m-0">
+      <ul className="flex flex-col gap-1 list-none p-0 m-0">
         {upcoming.map((item, index) => (
           <li
             key={item.id}
-            className="flex items-center justify-between gap-1 px-1.5 py-0.5 rounded-md bg-black/35 backdrop-blur-sm border border-white/10 text-white shadow-xs transition-all"
+            className="flex items-center justify-between gap-1.5 px-2 py-1 rounded-lg bg-zinc-900/80 border border-zinc-800 text-white shadow-xs"
           >
-            <div className="flex items-center gap-1 min-w-0">
-              <span className="flex items-center justify-center w-3.5 h-3.5 rounded-full bg-purple-600/70 text-white text-[8px] font-bold font-mono shrink-0">
+            <div className="flex items-center gap-1.5 min-w-0 flex-1">
+              <span className="flex items-center justify-center w-4 h-4 rounded-full bg-purple-600 text-white text-[9px] font-black font-mono shrink-0">
                 {index + 1}
               </span>
-              <div className="min-w-0">
-                <p className="text-[clamp(9px,0.7vw,11px)] font-semibold truncate leading-tight text-white tv-text-outline">
+              <div className="min-w-0 flex-1">
+                <p className="text-[clamp(10px,0.75vw,12px)] font-bold text-white truncate leading-tight">
                   {item.title}
                 </p>
-                <div className="flex items-center gap-1 text-[clamp(9px,0.65vw,11px)]">
+                <div className="flex items-center gap-1 text-[clamp(8px,0.6vw,10px)] text-pink-300">
                   <User className="w-2.5 h-2.5 text-pink-400 shrink-0" />
-                  <span className="truncate text-pink-300 font-medium tv-text-outline-sm">
+                  <span className="truncate font-medium">
                     {item.requested_by.includes('Auto-DJ') ? 'Auto-DJ' : item.requested_by}
                   </span>
                 </div>
               </div>
             </div>
 
-            <div className="flex items-center gap-1 text-[clamp(9px,0.65vw,11px)] font-mono font-medium text-zinc-300 shrink-0 tv-text-outline-sm">
-              <ArrowRight className="w-3 h-3 text-purple-400 shrink-0" />
+            <div className="flex items-center gap-1 text-[clamp(8px,0.6vw,10px)] font-mono font-medium text-zinc-400 shrink-0">
+              <ArrowRight className="w-2.5 h-2.5 text-purple-400 shrink-0" />
               <span>{item.duration_text || '3:00'}</span>
             </div>
           </li>

@@ -18,8 +18,6 @@ export function isTvDevice(): boolean {
     const deviceParam = params.get('device')?.toLowerCase();
     if (deviceParam === 'tv') return true;
     if (deviceParam === 'mobile') return false;
-    if (params.get('mode')?.toLowerCase() === 'tv') return true;
-    if (window.location.pathname.toLowerCase().startsWith('/tv')) return true;
 
     // 3. User-Agent
     const ua = (navigator.userAgent || navigator.vendor || '').toLowerCase();
@@ -31,20 +29,27 @@ export function isTvDevice(): boolean {
     ];
     if (tvPatterns.some((pattern) => ua.includes(pattern))) return true;
 
-    // 4. Si el User-Agent es claramente un celular / móvil -> NUNCA es TV
-    const isMobile = /mobile|iphone|ipod|ipad|android.*mobile|windows phone|blackberry|iemobile/i.test(ua);
-    if (isMobile) return false;
+    // 4. Si el User-Agent o pantalla táctil es de celular / móvil -> NUNCA es TV
+    const isMobileUa = /mobile|iphone|ipod|ipad|android.*mobile|windows phone|blackberry|iemobile/i.test(ua);
+    const hasTouch = 'ontouchstart' in window || (navigator.maxTouchPoints || 0) > 0;
+    const isSmallScreen = Math.min(window.innerWidth, window.innerHeight) < 640;
 
-    // 5. Regla oficial Android TV: "Android" sin "Mobile"
+    if (isMobileUa || (hasTouch && isSmallScreen)) return false;
+
+    // 5. Android TV oficial: "Android" sin "Mobile" y pantalla amplia sin touch
     const isAndroid = ua.includes('android');
-    if (isAndroid && !isMobile) return true;
+    if (isAndroid && !isMobileUa && !hasTouch) return true;
 
-    // 6. Pantalla Panorámica de TV (Landscape 16:9 sin multitouch)
+    // 6. Pantalla Panorámica de TV (Landscape 16:9 sin multitouch de escritorio/tv)
     const isLandscape = window.innerWidth > window.innerHeight;
     const aspectRatio = window.innerWidth / Math.max(1, window.innerHeight);
-    const hasTouch = 'ontouchstart' in window || (navigator.maxTouchPoints || 0) > 0;
 
     if (isLandscape && aspectRatio >= 1.5 && window.innerWidth >= 960 && !hasTouch) {
+      return true;
+    }
+
+    // 7. Ruta explícita /tv o ?mode=tv en dispositivos no móviles
+    if (!hasTouch && (params.get('mode')?.toLowerCase() === 'tv' || window.location.pathname.toLowerCase().startsWith('/tv'))) {
       return true;
     }
 
