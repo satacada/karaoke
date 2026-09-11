@@ -14,6 +14,7 @@ import { TvThemeFrame } from './TvThemeFrame';
 import { TvRentalBadge } from './TvRentalBadge';
 import { TvVoiceHUD } from './TvVoiceHUD';
 import { TvViewOverlays } from './TvViewOverlays';
+import { TvFloatingReactions } from './TvFloatingReactions';
 import { updatePlaybackTick, updateRoomSettings } from '../../services/karaokeApi';
 import { enqueueAutoDjSong, purgeAutoDjSongs } from '../../services/autoDjService';
 import { setLocalAutoDjActive } from '../../services/autoDjStateService';
@@ -111,7 +112,7 @@ export const TvView: FC<{ roomCode?: string; onUnlink?: () => void }> = ({ roomC
         </>
       )}
       <div className="absolute top-0 right-0 z-40 pointer-events-none" style={{ transform: `scale(${scaleFactor})`, transformOrigin: 'top right' }}><TvViewOverlays roomCode={roomCode} roomName={room?.zone_name || room?.name} joinUrl={joinUrl} currentSong={currentSong} banners={banners} showUnlinkModal={showUnlinkModal} setShowUnlinkModal={setShowUnlinkModal} onUnlink={onUnlink} /></div>
-      <div className="absolute bottom-1.5 left-4 z-30 pointer-events-none select-none text-[clamp(8px,0.65vw,10px)] font-mono text-zinc-400/80 tracking-widest uppercase tv-text-outline-sm">powered : David Taboada</div>
+      <TvFloatingReactions roomCode={roomCode} />
     </div>
   );
 };

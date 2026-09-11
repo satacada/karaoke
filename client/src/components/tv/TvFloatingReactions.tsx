@@ -1,4 +1,4 @@
-﻿import { useState, useEffect, type FC } from 'react';
+import { useState, useEffect, type FC } from 'react';
 import { supabase } from '../../lib/supabaseClient';
 import type { LiveReaction } from '../../types';
 
@@ -40,19 +40,17 @@ export const TvFloatingReactions: FC<{ roomCode: string }> = ({ roomCode }) => {
   if (items.length === 0) return null;
 
   return (
-    <div className="fixed bottom-12 right-6 z-40 w-40 h-[70vh] pointer-events-none overflow-hidden select-none">
+    <div className="absolute inset-y-0 right-3 sm:right-6 z-40 w-44 pointer-events-none overflow-hidden select-none">
       {items.map((item) => (
         <div
           key={item.id}
-          style={{
-            transform: `translateX(${item.xOffset}px)`,
-          }}
-          className="absolute bottom-0 right-8 flex flex-col items-center animate-float-reaction"
+          style={{ right: `${20 + item.xOffset}px` }}
+          className="absolute bottom-20 flex flex-col items-center animate-float-reaction"
         >
-          <span className="text-3xl drop-shadow-[0_4px_12px_rgba(0,0,0,0.8)] filter transition-transform">
+          <span className="text-3xl sm:text-4xl drop-shadow-[0_4px_14px_rgba(0,0,0,0.9)] filter select-none">
             {item.emoji}
           </span>
-          <span className="text-[9px] font-bold text-white/80 bg-black/60 px-1.5 py-0.2 rounded-full border border-white/10 backdrop-blur-sm -mt-1">
+          <span className="text-[10px] font-bold text-white/90 bg-black/75 px-2 py-0.5 rounded-full border border-white/20 backdrop-blur-md -mt-1 shadow-lg truncate max-w-[120px]">
             {item.guestName}
           </span>
         </div>

@@ -5,15 +5,9 @@ import { TvIdlePromoCard } from './TvIdlePromoCard';
 import type { PromoBanner } from '../../types';
 
 interface TvIdleScreenProps {
-  roomCode: string;
-  joinUrl: string;
-  roomName?: string;
-  zoneName?: string;
-  status?: 'active' | 'paused' | 'closed';
-  banners?: PromoBanner[];
-  autoDjActive?: boolean;
-  onStartAutoDj?: () => void;
-  isStartingAutoDj?: boolean;
+  roomCode: string; joinUrl: string; roomName?: string; zoneName?: string;
+  status?: 'active' | 'paused' | 'closed'; banners?: PromoBanner[];
+  autoDjActive?: boolean; onStartAutoDj?: () => void; isStartingAutoDj?: boolean;
 }
 
 export const TvIdleScreen: FC<TvIdleScreenProps> = ({

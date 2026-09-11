@@ -1,6 +1,5 @@
 import { type FC } from 'react';
 import { TvSidebarOverlay } from './TvSidebarOverlay';
-import { TvFloatingReactions } from './TvFloatingReactions';
 import { TvUnlinkModal } from './TvUnlinkModal';
 import type { QueueItem, PromoBanner } from '../../types';
 
@@ -34,7 +33,6 @@ export const TvViewOverlays: FC<TvViewOverlaysProps> = ({
         banners={banners}
         onOpenSettings={() => setShowUnlinkModal(true)}
       />
-      <TvFloatingReactions roomCode={roomCode} />
       <TvUnlinkModal
         isOpen={showUnlinkModal}
         roomCode={roomCode}

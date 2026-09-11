@@ -6,9 +6,23 @@ import { GuestView } from './components/guest/GuestView';
 import { isTvDevice } from './utils/deviceDetector';
 import { Sliders, Music, QrCode } from 'lucide-react';
 
+export function getInitialMode(isTv: boolean): 'tv' | 'host' | 'guest' {
+  try {
+    const p = new URLSearchParams(window.location.search);
+    const path = window.location.pathname.toLowerCase();
+    const qMode = p.get('mode')?.toLowerCase();
+    if (path.startsWith('/join') || path.startsWith('/guest') || qMode === 'guest') return 'guest';
+    if (path.startsWith('/host') || p.has('pair') || qMode === 'host') return 'host';
+    if (path.startsWith('/tv') || qMode === 'tv' || p.get('device') === 'tv') return 'tv';
+    if (isTv) return 'tv';
+    const s = sessionStorage.getItem('rockola_app_mode') as 'tv' | 'host' | 'guest' | null;
+    return s || 'host';
+  } catch { return isTv ? 'tv' : 'host'; }
+}
+
 export const App: FC = () => {
   const isTv = useMemo(() => isTvDevice(), []);
-  const [currentMode, setCurrentMode] = useState<'tv' | 'host' | 'guest'>(() => (isTv ? 'tv' : 'host'));
+  const [currentMode, setCurrentMode] = useState<'tv' | 'host' | 'guest'>(() => getInitialMode(isTv));
   const [roomCode, setRoomCode] = useState<string | null>(() => {
     try {
       const p = new URLSearchParams(window.location.search);
@@ -27,23 +41,13 @@ export const App: FC = () => {
   }, [roomCode]);
 
   useEffect(() => {
-    if (isTv) { setCurrentMode('tv'); return; }
-    const params = new URLSearchParams(window.location.search);
-    const path = window.location.pathname;
-    const queryRoom = params.get('room');
-    if (queryRoom) {
-      const r = queryRoom.toUpperCase(); setRoomCode(r);
+    const p = new URLSearchParams(window.location.search);
+    const qRoom = p.get('room');
+    if (qRoom) {
+      const r = qRoom.toUpperCase(); setRoomCode(r);
       try { localStorage.setItem('tv_paired_room', r); } catch {}
     }
-    const queryMode = params.get('mode');
-    if (queryMode === 'host' || path.startsWith('/host')) setCurrentMode('host');
-    else if (queryMode === 'guest' || path.startsWith('/join') || path.startsWith('/guest')) setCurrentMode('guest');
-    else {
-      const saved = sessionStorage.getItem('rockola_app_mode') as 'tv' | 'host' | 'guest' | null;
-      if (saved) setCurrentMode(saved);
-      else setCurrentMode('host');
-    }
-  }, [isTv]);
+  }, []);
 
   const handleSelectMode = (mode: 'tv' | 'host' | 'guest') => {
     setCurrentMode(mode);
@@ -76,13 +80,14 @@ export const App: FC = () => {
         </nav>
       )}
 
-      {roomCode ? (
+      {!isGuestOnly && roomCode && (
         <div className={currentMode === 'tv' ? 'block' : 'hidden'}>
           <TvView roomCode={roomCode} onUnlink={handleTvUnlink} />
         </div>
-      ) : currentMode === 'tv' ? (
+      )}
+      {!isGuestOnly && !roomCode && currentMode === 'tv' && (
         <TvActivationScreen onPaired={handleTvPaired} />
-      ) : null}
+      )}
 
       {currentMode === 'host' && (
         <HostView roomCode={roomCode || 'FIESTA'} onSwitchToTv={() => handleSelectMode('tv')} onSwitchToGuest={() => handleSelectMode('guest')} />

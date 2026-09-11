@@ -8,9 +8,7 @@ export function isTvDevice(): boolean {
   if (typeof window === 'undefined') return false;
 
   try {
-    // 1. Preferencia guardada o anulación manual
-    const savedHide = localStorage.getItem('rockola_hide_mode_nav');
-    if (savedHide === 'true') return true;
+    // 1. Anulación manual explícita
     const force = localStorage.getItem('rockola_force_device')?.toLowerCase();
     if (force === 'tv') return true;
     if (force === 'mobile') return false;
@@ -21,6 +19,7 @@ export function isTvDevice(): boolean {
     if (deviceParam === 'tv') return true;
     if (deviceParam === 'mobile') return false;
     if (params.get('mode')?.toLowerCase() === 'tv') return true;
+    if (window.location.pathname.toLowerCase().startsWith('/tv')) return true;
 
     // 3. User-Agent
     const ua = (navigator.userAgent || navigator.vendor || '').toLowerCase();
@@ -32,18 +31,20 @@ export function isTvDevice(): boolean {
     ];
     if (tvPatterns.some((pattern) => ua.includes(pattern))) return true;
 
-    // 4. Regla oficial Android: "Android" sin "Mobile"
+    // 4. Si el User-Agent es claramente un celular / móvil -> NUNCA es TV
+    const isMobile = /mobile|iphone|ipod|ipad|android.*mobile|windows phone|blackberry|iemobile/i.test(ua);
+    if (isMobile) return false;
+
+    // 5. Regla oficial Android TV: "Android" sin "Mobile"
     const isAndroid = ua.includes('android');
-    const isMobile = ua.includes('mobile');
     if (isAndroid && !isMobile) return true;
 
-    // 5. Capacitor o Navegador en Pantalla Panorámica de TV (Landscape 16:9 sin multitouch)
+    // 6. Pantalla Panorámica de TV (Landscape 16:9 sin multitouch)
     const isLandscape = window.innerWidth > window.innerHeight;
     const aspectRatio = window.innerWidth / Math.max(1, window.innerHeight);
-    const hasMultiTouch = 'ontouchstart' in window && (navigator.maxTouchPoints || 0) > 1;
+    const hasTouch = 'ontouchstart' in window || (navigator.maxTouchPoints || 0) > 0;
 
-    // Si es pantalla amplia apaisada (formato TV 16:9, >= 850px) y no tiene multitáctil de celular
-    if (isLandscape && aspectRatio >= 1.5 && window.innerWidth >= 850 && !hasMultiTouch) {
+    if (isLandscape && aspectRatio >= 1.5 && window.innerWidth >= 960 && !hasTouch) {
       return true;
     }
 

@@ -4,6 +4,23 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.34.0] - 2026-09-11
+
+### 🐛 [CORRECCIÓN / FIX]
+- **Enrutamiento Inmediato y Corrección de Detección de Dispositivos (`deviceDetector.ts`, `App.tsx`):**
+  - **Causa Raíz Resuelta:** Se eliminó la verificación de `rockola_hide_mode_nav` en `deviceDetector.ts`, la cual marcaba permanentemente un celular como TV si el usuario había cerrado la barra de modos. Además, se añadió filtro estricto de User-Agent móvil para nunca clasificar teléfonos como TV.
+  - **Prioridad Absoluta de URL (`getInitialMode`):** Las rutas explícitas `/join` y parámetros `?mode=guest` fuerzan de inmediato la vista de Cliente (`GuestView`). Las rutas `/host` y `?pair=` abren directamente la consola de Administrador (`HostView`). La detección de TV solo opera si no existe una ruta explícita en la URL.
+  - **Aislamiento Seguro de Invitados (`App.tsx`):** Si `isGuestOnly` es verdadero, `TvView` ni `TvActivationScreen` se montan en el DOM, impidiendo cualquier salto accidental a la pantalla de TV en celulares de clientes.
+- **Eliminación de Marca de Agua Duplicada en TV (`TvView.tsx`):**
+  - Eliminado el contenedor redundante en la esquina inferior izquierda de `TvView.tsx`. La firma oficial `powered : David Taboada` ahora se proyecta exactamente una vez en la esquina inferior derecha (tanto en el HUD de reproducción como en la pantalla de espera).
+- **Restauración de Reacciones en Vivo Bajo el Código QR (`TvFloatingReactions.tsx`, `TvView.tsx`, `TvViewOverlays.tsx`):**
+  - Desacoplado `<TvFloatingReactions>` del contenedor de overlays con `transform: scale` que alteraba las coordenadas de posición fija y enviaba las reacciones fuera de la pantalla.
+  - Reubicado en la raíz de `TvView.tsx` en el lateral derecho (`absolute inset-y-0 right-3 sm:right-6 w-44`), flotando suavemente desde `bottom-20` hacia arriba justo por debajo del código QR de pedidos sin conflictos de transformación CSS.
+- **Verificación de Proyección de Video 16:9 Completa:**
+  - Verificado que en el tema `modern` predeterminado de `TvPlayer`, el iframe de YouTube ocupa el 100% de la superficie panorámica sin márgenes negativos, marcos decorativos ni recortes de bordes, coincidiendo con la relación de aspecto 16:9 oficial de YouTube.
+
+---
+
 ## [1.33.0] - 2026-09-10
 
 ### 🚀 [ESPECIFICACIÓN / FEATURE]
