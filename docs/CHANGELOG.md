@@ -4,6 +4,25 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.40.0] - 2026-09-12
+
+### 🐛 [CORRECCIÓN / FIX]
+- **Resolución Universal de Búsqueda API desde Celulares y APK (`karaokeApi.ts`):**
+  - **Causa Raíz:** `searchVideos` ejecutaba `fetch('/api/search?q=...')` con una ruta relativa. Al ejecutarse desde la aplicación APK en un teléfono celular (donde el origen es `capacitor://localhost` o red local), la petición fallaba inmediatamente con error de red o 404, retornando un arreglo vacío `[]`.
+  - **Solución:** Se integró `getPublicBaseUrl()` de `../utils/appUrl.ts` para que todas las llamadas a `/api/search` resuelvan contra la URL pública backend (`https://karaoke-tc-c9fb.vercel.app/api/search?...`), garantizando operatividad total desde APK, PWA y red 4G/5G.
+- **Catálogo de Emergencia Garantizado (Cero Fallos) para Auto-DJ (`autoDjStations.ts`, `autoDjService.ts`):**
+  - Se implementó `EMERGENCY_FALLBACKS` y la función `getFallbackTrack(genre)`. Si YouTube API o la búsqueda retornan 0 resultados o sufren latencia, el Auto-DJ selecciona inmediatamente una pista verificada y curada del género (Soda Stereo, Los Palmeras, Queen, Rodrigo, Norah Jones, etc.). Con esto, `fetchNextAutoDjTrack` y `enqueueAutoDjSong` **nunca devuelven nulo o falso**.
+- **Protección contra Reseteo de Sala por Avance en Cola Vacía (`HostView.tsx`, `TvView.tsx`):**
+  - Si el encolado tardaba o fallaba, `handleStartAutoDj` ejecutaba incondicionalmente `await advanceNextSong(room.id)`. El procedimiento almacenado `fn_advance_next_song` al no encontrar temas en `queued` ejecutaba el bloque `ELSE` reseteando `current_song_id: null` e `is_playing: false`.
+  - Se blindó `handleStartAutoDj` en `HostView.tsx` y `TvView.tsx` para que `advanceNextSong` **únicamente** se ejecute si `enqueueAutoDjSong` confirmó la inserción o si la cola ya tenía canciones.
+- **Activación de Estado Local y Continuidad de Música Inteligente (`HostView.tsx`, `useTvAutoDj.ts`):**
+  - En `HostView.tsx`, `handleStartAutoDj` ahora invoca `setLocalAutoDjActive(activeCode, true, targetGenre)`, sincronizando el estado local del anfitrión.
+  - En `useTvAutoDj.ts`, se eliminó la restricción `if (!hasCurrentSong) return;` que bloqueaba la auto-reanudación cuando la sala quedaba temporalmente en reposo con Auto-DJ activado.
+- **Validación Automatizada E2E con Google Chrome:**
+  - Ejecución de pruebas automatizadas con Puppeteer simulando resolución de celular (390x844), marcación de PIN numérico 1234, click en `▶ INICIAR MÚSICA INTELIGENTE`, encolado en tiempo real y verificación de transición a `is_playing: true` en Supabase con 0 errores de consola.
+
+---
+
 ## [1.39.0] - 2026-09-11
 
 ### 🐛 [CORRECCIÓN / FIX]

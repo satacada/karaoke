@@ -1,10 +1,10 @@
 import { searchVideos, addSongToQueue } from './karaokeApi';
 import { supabase } from '../lib/supabaseClient';
 import type { SearchResultItem } from '../types';
-import { parseAutoDjGenre, AUTO_DJ_STATIONS, type AutoDjStation } from './autoDjStations';
+import { parseAutoDjGenre, AUTO_DJ_STATIONS, getFallbackTrack, type AutoDjStation } from './autoDjStations';
 import { extractArtistName, isArtistRecent, recordRecentArtist, getNextDiverseSeed } from './artistDiversityService';
 
-export { parseAutoDjGenre, AUTO_DJ_STATIONS, type AutoDjStation };
+export { parseAutoDjGenre, AUTO_DJ_STATIONS, getFallbackTrack, type AutoDjStation };
 
 const RECENT_KEY = 'karaoke_autodj_recent_ids';
 
@@ -23,11 +23,11 @@ function recordRecentId(videoId: string) {
   } catch {}
 }
 
-export async function fetchNextAutoDjTrack(genre?: string): Promise<SearchResultItem | null> {
+export async function fetchNextAutoDjTrack(genre?: string): Promise<SearchResultItem> {
   const { isSeed, query } = parseAutoDjGenre(genre);
   try {
     const results = await searchVideos(query, isSeed ? 'all' : 'official');
-    if (!results || results.length === 0) return null;
+    if (!results || results.length === 0) return getFallbackTrack(genre);
     const recent = getRecentIds();
     const candidates = results.filter((v) => {
       const valid = v.durationSeconds >= 140 && v.durationSeconds <= 390 && !recent.includes(v.videoId);
@@ -36,16 +36,17 @@ export async function fetchNextAutoDjTrack(genre?: string): Promise<SearchResult
     const pool = candidates.length > 0
       ? candidates
       : results.filter((v) => v.durationSeconds >= 120 && v.durationSeconds <= 420 && !recent.includes(v.videoId));
-    if (pool.length === 0) return results[0] || null;
+    if (pool.length === 0) return results[0] || getFallbackTrack(genre);
     const chosen = pool[Math.floor(Math.random() * Math.min(pool.length, 5))];
     if (chosen) {
       recordRecentId(chosen.videoId);
       recordRecentArtist(extractArtistName(chosen.title, chosen.author));
+      return chosen;
     }
-    return chosen;
+    return getFallbackTrack(genre);
   } catch (err) {
     console.error('Error fetching Auto-DJ track:', err);
-    return null;
+    return getFallbackTrack(genre);
   }
 }
 
@@ -75,8 +76,7 @@ export async function getSmartGenreForRoom(roomId: string, explicitGenre?: strin
 
 export async function enqueueAutoDjSong(roomId: string, explicitGenre?: string): Promise<boolean> {
   const genre = await getSmartGenreForRoom(roomId, explicitGenre);
-  const track = await fetchNextAutoDjTrack(genre);
-  if (!track) return false;
+  const track = (await fetchNextAutoDjTrack(genre)) || getFallbackTrack(genre);
   const { isSeed, displayName } = parseAutoDjGenre(genre);
   const queued = await addSongToQueue({
     roomId,

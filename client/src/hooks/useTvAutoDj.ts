@@ -24,7 +24,6 @@ export function useTvAutoDj(
   useEffect(() => {
     if (!roomId || !isAutoDjEnabled) return;
     if (status === 'closed' || status === 'paused') return;
-    if (!hasCurrentSong) return;
     if (nextCount > 0) return;
     if (isQueueingRef.current) return;
 

@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabaseClient';
 import { encodeSongThumbnail } from '../utils/songMeta';
+import { getPublicBaseUrl } from '../utils/appUrl';
 import type {
   KaraokeRoom,
   QueueItem,
@@ -268,7 +269,8 @@ export async function searchVideos(
   filter: SearchFilterType = 'all'
 ): Promise<SearchResultItem[]> {
   try {
-    const res = await fetch(`/api/search?q=${encodeURIComponent(query)}&filter=${filter}`);
+    const baseUrl = getPublicBaseUrl();
+    const res = await fetch(`${baseUrl}/api/search?q=${encodeURIComponent(query)}&filter=${filter}`);
     if (!res.ok) return [];
     const json = await res.json();
     return (json.results || []) as SearchResultItem[];

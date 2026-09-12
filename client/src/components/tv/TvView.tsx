@@ -15,7 +15,7 @@ import { TvRentalBadge } from './TvRentalBadge';
 import { TvVoiceHUD } from './TvVoiceHUD';
 import { TvViewOverlays } from './TvViewOverlays';
 import { TvFloatingReactions } from './TvFloatingReactions';
-import { updatePlaybackTick, updateRoomSettings } from '../../services/karaokeApi';
+import { updatePlaybackTick } from '../../services/karaokeApi';
 import { enqueueAutoDjSong, purgeAutoDjSongs } from '../../services/autoDjService';
 import { setLocalAutoDjActive } from '../../services/autoDjStateService';
 import { getJoinUrl } from '../../utils/appUrl';
@@ -52,10 +52,10 @@ export const TvView: FC<{ roomCode?: string; onUnlink?: () => void; onSwitchToHo
     try {
       setLocalAutoDjActive(roomCode, true, room.auto_dj_genre);
       supabase.channel(`tv-room-${room.id}`).send({ type: 'broadcast', event: 'set_auto_dj', payload: { enabled: true, genre: room.auto_dj_genre } }).catch(() => {});
-      await updateRoomSettings(room.id, { is_playing: true });
       if (currentSong) { await refreshState(); return; }
-      if (nextSongs.length === 0) await enqueueAutoDjSong(room.id, room.auto_dj_genre);
-      await handleNextSongRef.current();
+      const targetGenre = room.auto_dj_genre || 'rock_nacional';
+      if (nextSongs.length === 0) { const ok = await enqueueAutoDjSong(room.id, targetGenre); if (ok) await handleNextSongRef.current(); }
+      else { await handleNextSongRef.current(); }
     } catch (err) { console.error('Auto-DJ start error:', err); }
     finally { setIsStartingAutoDj(false); }
   }, [room, roomCode, isStartingAutoDj, currentSong, nextSongs.length, refreshState]);

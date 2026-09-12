@@ -8,8 +8,7 @@ import { HostTransportBar } from './HostTransportBar'; import { HostMultiRoomBar
 import { HostModals } from './HostModals'; import { HostPendingApprovalView } from './HostPendingApprovalView';
 import { HostEmptyQueueCard } from './HostEmptyQueueCard';
 import { sendRemoteCommand, reorderQueueItem, purgeGuestSongs, deleteQueueItem, resetRoomQueue, updateRoomBanners, toggleQueueLock, getRoomsForOwner, updatePlaybackTick, updateRoomSettings, advanceNextSong } from '../../services/karaokeApi';
-import { enqueueAutoDjSong } from '../../services/autoDjService';
-import { getLocalRentalSession } from '../../services/rentalService';
+import { enqueueAutoDjSong } from '../../services/autoDjService'; import { setLocalAutoDjActive } from '../../services/autoDjStateService'; import { getLocalRentalSession } from '../../services/rentalService';
 import type { QueueItem, KaraokeRoom, RoomRentalSession } from '../../types';
 
 const SUPER_ADMINS = (import.meta.env.VITE_SUPER_ADMIN_EMAILS || 'satacada@gmail.com,david@gmail.com,admin@karaoke.com').toLowerCase().split(',').map((s: string) => s.trim());
@@ -67,10 +66,12 @@ export const HostView: FC<{ roomCode?: string; onSwitchToTv?: () => void; onSwit
     if (!room || isStartingAutoDj) return;
     setIsStartingAutoDj(true);
     try {
-      supabase.channel(`tv-room-${room.id}`).send({ type: 'broadcast', event: 'set_auto_dj', payload: { enabled: true, genre: room.auto_dj_genre } }).catch(() => {});
+      const targetGenre = room.auto_dj_genre || 'rock_nacional';
+      setLocalAutoDjActive(activeCode, true, targetGenre);
+      supabase.channel(`tv-room-${room.id}`).send({ type: 'broadcast', event: 'set_auto_dj', payload: { enabled: true, genre: targetGenre } }).catch(() => {});
       await updateRoomSettings(room.id, { is_playing: true });
-      if (!currentSong && nextSongs.length === 0) await enqueueAutoDjSong(room.id, room.auto_dj_genre);
-      await advanceNextSong(room.id);
+      if (!currentSong && nextSongs.length === 0) { const ok = await enqueueAutoDjSong(room.id, targetGenre); if (ok) await advanceNextSong(room.id); }
+      else if (!currentSong && nextSongs.length > 0) { await advanceNextSong(room.id); }
       await refreshState();
     } catch (err) { console.error('Error starting Auto-DJ from host:', err); }
     finally { setIsStartingAutoDj(false); }
