@@ -1,8 +1,8 @@
 # 📊 PLAN MAESTRO DEL PROYECTO: ROCKOLA DIGITAL LIVE (SISTEMA MULTI-TENANT EN TIEMPO REAL)
 
-**Versión del Plan:** 2.40.0 (Resolución Universal Búsqueda Celular/APK y Cero Fallos Auto-DJ)  
+**Versión del Plan:** 2.41.0 (Pantalla de Reposo TV con QR Exclusivo de Administrador y QR Flotante de Clientes de Alta Visibilidad)  
 **Fecha de Emisión:** Septiembre 2026  
-**Estado:** 🟢 Fase 2, Fase 3, Fase 4 y Fase 5 (Auto-DJ Resiliente con Fallback y Base URL Universal)  
+**Estado:** 🟢 Fase 2, Fase 3, Fase 4 y Fase 5 (QR de TV 100% Escaneable y Reposo Exclusivo Admin)  
 **Metodología:** Agile / BDD / Clean Architecture con Compuertas de Control Formales  
 **Alineación:** Estructura inspirada en `boot-ventas-saas` y `aplicacion para ofertas`  
 
@@ -190,6 +190,9 @@ La **Rockola Digital Live** es una plataforma SaaS multi-tenant distribuida para
 14. [x] **Control Humano Obligatorio y Señal de Inicio ("Dar el Click"):** la TV nunca arranca el sonido por sorpresa; requiere un click o señal expresa del usuario (botón en pantalla TV o botón en celular anfitrión) para iniciar la reproducción inteligente (`useTvAutoDj.ts`, `TvIdleScreen.tsx`, `HostEmptyQueueCard.tsx`).
 15. [x] **Pausa y Reanudación Universal de Reproducción:** control total de pausa tanto para el anfitrión (botón en barra inferior móvil) como para el mozo o personal en la sala (click/toque en la pantalla TV o botón OK/Pausa del control remoto físico de Android TV), con cartel visual elegante de pausa (`TvPlayer.tsx`, `TvPauseOverlay.tsx`, `HostTransportBar.tsx`).
 16. [x] **Modo Android Móvil (Celular Puente con Salida Bluetooth):** soporte para fiestas sin TV donde el celular anfitrión es el reproductor central; incluye doble pestaña conmutable (`Modo Android (QR)` y `Host DJ`), código QR visible para escaneo de invitados, y audio continuo por Bluetooth con pantalla apagada mediante Media Session API, Screen Wake Lock y Web Audio keep-alive (`App.tsx`, `HostHeader.tsx`, `useMediaSession.ts`, `useWakeLock.ts`, `backgroundAudio.ts`).
+17. [x] **Pantalla de Reposo TV con QR Exclusivo de Administrador y QR Flotante de Clientes Ampliado:**
+    - Al abrir `/tv?room=FIESTA` (o primera instalación de la APK), la TV en reposo (`TvIdleScreen.tsx`) proyecta **única y exclusivamente el Código QR del Administrador/DJ** en tamaño de 250px x 250px con corrección de error 'M', eliminando pestañas intermedias de clientes en reposo para guiar directamente al anfitrión a enlazar su consola o activar el Auto-DJ.
+    - Durante la reproducción en vivo (`TvFloatingQr.tsx` y `TvSidebarOverlay.tsx`), el contenedor flotante y el QR para pedidos de invitados se ampliaron a 170-190px (dentro de lateral de 220px), garantizando escaneabilidad instantánea desde cualquier celular en pantallas de 23 pulgadas o superiores a distancia.
 
 ---
 

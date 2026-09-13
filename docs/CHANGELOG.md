@@ -4,6 +4,21 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.41.0] - 2026-09-12
+
+### 🚀 [ESPECIFICACIÓN / FEATURE]
+- **Pantalla de Reposo Exclusiva para Administrador (`TvIdleScreen.tsx`):**
+  - Se eliminaron las pestañas confusas en reposo. Al abrir el enlace de la TV (`/tv?room=FIESTA`) en la primera instalación o antes de iniciar la música, la pantalla proyecta **única y exclusivamente el código QR de Administrador / Dueño** (`getHostUrl(roomCode)`).
+  - El código QR en reposo se amplió a un tamaño masivo de 250px x 250px con corrección de error nivel `M` (bloques grandes y nítidos) sobre marco blanco puro de alto contraste, acompañado de instrucciones paso a paso para que el administrador tome el control desde su celular y elija iniciar el Auto-DJ o agregar temas.
+
+### 🔧 [AFINAMIENTO / REFINAMIENTO]
+- **QR de Pedidos de Clientes Visible y Perfectamente Escaneable en TV de 23"+ (`TvFloatingQr.tsx`, `TvSidebarOverlay.tsx`):**
+  - **Causa del Problema:** Durante la reproducción activa, el código QR flotante medía apenas entre 64px y 96px, resultando indetectable para cámaras de celulares a distancia en televisores de 23 pulgadas.
+  - **Solución:** Se incrementó el ancho del lateral flotante a `w-[clamp(170px,15vw,220px)]` y el recuadro del código QR a `w-[clamp(145px,13.5vw,190px)] h-[clamp(145px,13.5vw,190px)]` (casi el cuádruple de superficie), con recuadro blanco sólido, texto de alta visibilidad ("📱 ESCANEA Y PIDE TEMA", "Sala: FIESTA", "Usa tus datos 4G/5G") y nivel de corrección `M`.
+  - Verificado con Google Chrome en resolución 1080p (`1920x1080`): el QR de clientes mide 170px reales, garantizando escaneo instantáneo desde cualquier ángulo del salón.
+
+---
+
 ## [1.40.0] - 2026-09-12
 
 ### 🐛 [CORRECCIÓN / FIX]

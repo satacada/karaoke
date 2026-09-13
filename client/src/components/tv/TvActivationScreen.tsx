@@ -63,7 +63,7 @@ export const TvActivationScreen: FC<TvActivationScreenProps> = ({ onPaired, onSw
       ) : (
         <div className="max-w-4xl w-full grid grid-cols-1 md:grid-cols-2 gap-8 items-center bg-zinc-900/90 backdrop-blur-md border border-zinc-800 rounded-3xl p-8 shadow-2xl">
           <div className="flex flex-col items-center justify-center bg-white p-6 rounded-2xl shadow-xl space-y-3">
-            <QRCodeSVG value={pairUrl} size={220} level="H" includeMargin className="rounded-lg" />
+            <QRCodeSVG value={pairUrl} size={240} level="M" includeMargin className="rounded-lg" />
             <div className="text-center">
               <span className="text-[11px] font-bold text-zinc-500 uppercase tracking-wider block">Código de enlace rápido</span>
               <span className="text-3xl font-black font-mono tracking-widest text-zinc-950 bg-zinc-100 px-4 py-1 rounded-xl border border-zinc-300 block">{code}</span>

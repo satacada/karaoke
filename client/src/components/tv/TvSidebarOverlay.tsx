@@ -20,7 +20,7 @@ export const TvSidebarOverlay: FC<TvSidebarOverlayProps> = ({
 }) => {
   if (!currentSong) return null;
   return (
-    <aside className="absolute top-[clamp(0.5rem,1.5vh,1rem)] right-[clamp(0.5rem,1.5vw,1rem)] z-40 flex flex-col items-end gap-1 w-[clamp(92px,9vw,135px)] pointer-events-none transition-all">
+    <aside className="absolute top-[clamp(0.5rem,1.5vh,1rem)] right-[clamp(0.5rem,1.5vw,1rem)] z-40 flex flex-col items-end gap-1 w-[clamp(170px,15vw,220px)] pointer-events-none transition-all">
       <div className="flex items-center justify-end gap-1 pointer-events-auto">
         <button
           type="button"
