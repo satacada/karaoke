@@ -23,7 +23,7 @@ export const GENRE_SEEDS = [
   {
     matcher: /rock(\s+and\s+roll|\s+roll)?/i,
     subMatchers: [
-      { matcher: /nacional|argentino/i, artists: ['Soda Stereo', 'Charly Garcia', 'Fito Paez', 'Los Redondos', 'Andres Calamaro', 'Spinetta'] },
+      { matcher: /nacional|argentino/i, artists: ['Soda Stereo', 'Charly Garcia', 'Fito Paez', 'Los Redondos', 'Indio Solari', 'Andres Calamaro', 'Spinetta', 'Los Piojos', 'Enanitos Verdes', 'Divididos'] },
       { matcher: /clasico|classic/i, artists: ['Queen', 'AC/DC', 'Led Zeppelin', 'The Rolling Stones', 'Guns N Roses', 'Aerosmith'] },
       { matcher: /roll/i, artists: ['Elvis Presley', 'Chuck Berry', 'Little Richard', 'The Beatles', 'Jerry Lee Lewis'] },
     ],
@@ -43,7 +43,7 @@ export const GENRE_SEEDS = [
   },
   {
     matcher: /cumbia|cuarteto/i,
-    defaultArtists: ['Los Palmeras', 'Damas Gratis', 'Gilda', 'Rafaga', 'Rodrigo', 'La Mona Jimenez', 'La Konga']
+    defaultArtists: ['Los Palmeras', 'Damas Gratis', 'Gilda', 'Rafaga', 'Amar Azul', 'Rodrigo', 'La Mona Jimenez', 'La Konga']
   },
   {
     matcher: /balada|bolero|romant/i,

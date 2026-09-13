@@ -23,15 +23,30 @@ function recordRecentId(videoId: string) {
   } catch {}
 }
 
-export async function fetchNextAutoDjTrack(genre?: string): Promise<SearchResultItem> {
-  const { isSeed, query } = parseAutoDjGenre(genre);
+export async function getRecentQueueArtists(roomId: string): Promise<string[]> {
+  try {
+    const { data: past } = await supabase
+      .from('karaoke_queue')
+      .select('title, author')
+      .eq('room_id', roomId)
+      .in('status', ['finished', 'playing', 'queued'])
+      .order('requested_at', { ascending: false })
+      .limit(8);
+    if (!past) return [];
+    return past.map((p) => extractArtistName(p.title, p.author)).filter(Boolean);
+  } catch { return []; }
+}
+
+export async function fetchNextAutoDjTrack(genre?: string, recentArtists: string[] = []): Promise<SearchResultItem> {
+  const { isSeed, query } = parseAutoDjGenre(genre, recentArtists);
   try {
     const results = await searchVideos(query, isSeed ? 'all' : 'official');
     if (!results || results.length === 0) return getFallbackTrack(genre);
     const recent = getRecentIds();
     const candidates = results.filter((v) => {
-      const valid = v.durationSeconds >= 140 && v.durationSeconds <= 390 && !recent.includes(v.videoId);
-      return valid && !isArtistRecent(extractArtistName(v.title, v.author));
+      const validDuration = v.durationSeconds >= 140 && v.durationSeconds <= 390 && !recent.includes(v.videoId);
+      const artist = extractArtistName(v.title, v.author);
+      return validDuration && !isArtistRecent(artist, recentArtists, 4);
     });
     const pool = candidates.length > 0
       ? candidates
@@ -40,7 +55,8 @@ export async function fetchNextAutoDjTrack(genre?: string): Promise<SearchResult
     const chosen = pool[Math.floor(Math.random() * Math.min(pool.length, 5))];
     if (chosen) {
       recordRecentId(chosen.videoId);
-      recordRecentArtist(extractArtistName(chosen.title, chosen.author));
+      const chosenArtist = extractArtistName(chosen.title, chosen.author);
+      recordRecentArtist(chosenArtist);
       return chosen;
     }
     return getFallbackTrack(genre);
@@ -50,39 +66,35 @@ export async function fetchNextAutoDjTrack(genre?: string): Promise<SearchResult
   }
 }
 
-export async function getSmartGenreForRoom(roomId: string, explicitGenre?: string): Promise<string> {
+export async function getSmartGenreForRoom(_roomId: string, explicitGenre?: string, recentArtists: string[] = []): Promise<string> {
   if (explicitGenre) {
     if (explicitGenre.startsWith('seed:')) {
-      return `seed:${getNextDiverseSeed(explicitGenre.slice(5).trim())}`;
+      const seedName = explicitGenre.slice(5).trim();
+      const nextArtist = getNextDiverseSeed(seedName, recentArtists);
+      return `seed:${nextArtist}`;
     }
     return explicitGenre;
   }
-  try {
-    const { data: past } = await supabase
-      .from('karaoke_queue')
-      .select('title, author')
-      .eq('room_id', roomId)
-      .in('status', ['finished', 'playing'])
-      .order('requested_at', { ascending: false })
-      .limit(3);
-    if (past && past.length > 0) {
-      const author = past[0].author && past[0].author !== 'Desconocido' ? past[0].author : past[0].title;
-      if (author) return `seed:${getNextDiverseSeed(author)}`;
-    }
-  } catch {}
-  const stations = ['hits_80_90', 'rock_nacional', 'cumbia_fiesta'];
+  if (recentArtists.length > 0) {
+    const lastArtist = recentArtists[0];
+    const nextArtist = getNextDiverseSeed(lastArtist, recentArtists);
+    if (nextArtist && nextArtist !== lastArtist) return `seed:${nextArtist}`;
+  }
+  const stations = ['rock_nacional', 'hits_80_90', 'cumbia_fiesta', 'cuarteto_cordobes'];
   return stations[Math.floor(Math.random() * stations.length)];
 }
 
 export async function enqueueAutoDjSong(roomId: string, explicitGenre?: string): Promise<boolean> {
-  const genre = await getSmartGenreForRoom(roomId, explicitGenre);
-  const track = (await fetchNextAutoDjTrack(genre)) || getFallbackTrack(genre);
-  const { isSeed, displayName } = parseAutoDjGenre(genre);
+  const recentArtists = await getRecentQueueArtists(roomId);
+  const genre = await getSmartGenreForRoom(roomId, explicitGenre, recentArtists);
+  const track = (await fetchNextAutoDjTrack(genre, recentArtists)) || getFallbackTrack(genre);
+  const { isSeed, displayName } = parseAutoDjGenre(genre, recentArtists);
+  const cleanAuthor = extractArtistName(track.title, track.author) || track.author;
   const queued = await addSongToQueue({
     roomId,
     videoId: track.videoId,
     title: track.title,
-    author: track.author,
+    author: cleanAuthor,
     thumbnailUrl: track.thumbnailUrl,
     durationSeconds: track.durationSeconds,
     durationText: track.durationText,

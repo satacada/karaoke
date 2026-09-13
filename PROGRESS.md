@@ -1,8 +1,8 @@
 # 📊 PLAN MAESTRO DEL PROYECTO: ROCKOLA DIGITAL LIVE (SISTEMA MULTI-TENANT EN TIEMPO REAL)
 
-**Versión del Plan:** 2.41.0 (Pantalla de Reposo TV con QR Exclusivo de Administrador y QR Flotante de Clientes de Alta Visibilidad)  
+**Versión del Plan:** 2.42.0 (Auto-DJ con Rotación Multi-Artista y Constelaciones para Canción Semilla)  
 **Fecha de Emisión:** Septiembre 2026  
-**Estado:** 🟢 Fase 2, Fase 3, Fase 4 y Fase 5 (QR de TV 100% Escaneable y Reposo Exclusivo Admin)  
+**Estado:** 🟢 Fase 2, Fase 3, Fase 4 y Fase 5 (Auto-DJ con Diversidad 100% Garantizada)  
 **Metodología:** Agile / BDD / Clean Architecture con Compuertas de Control Formales  
 **Alineación:** Estructura inspirada en `boot-ventas-saas` y `aplicacion para ofertas`  
 
@@ -193,6 +193,11 @@ La **Rockola Digital Live** es una plataforma SaaS multi-tenant distribuida para
 17. [x] **Pantalla de Reposo TV con QR Exclusivo de Administrador y QR Flotante de Clientes Ampliado:**
     - Al abrir `/tv?room=FIESTA` (o primera instalación de la APK), la TV en reposo (`TvIdleScreen.tsx`) proyecta **única y exclusivamente el Código QR del Administrador/DJ** en tamaño de 250px x 250px con corrección de error 'M', eliminando pestañas intermedias de clientes en reposo para guiar directamente al anfitrión a enlazar su consola o activar el Auto-DJ.
     - Durante la reproducción en vivo (`TvFloatingQr.tsx` y `TvSidebarOverlay.tsx`), el contenedor flotante y el QR para pedidos de invitados se ampliaron a 170-190px (dentro de lateral de 220px), garantizando escaneabilidad instantánea desde cualquier celular en pantallas de 23 pulgadas o superiores a distancia.
+18. [x] **Auto-DJ con Rotación Multi-Artista y Constelaciones Musicales:**
+    - Afinamiento del motor de recomendación con catálogos de 15 a 25 artistas insignia por estación (`autoDjStations.ts`) para rotación continua sin repetición consecutiva.
+    - Detección de constelaciones musicales para semilla (`artistDiversityService.ts`): intercala canciones del artista semilla con artistas afines del mismo universo musical.
+    - Extracción robusta de artistas (`extractArtistName`): prioridad de canal oficial y soporte para títulos de recitales en vivo invertidos (evita falsos positivos como 'Ji Ji Ji').
+    - Historial real de artistas en base de datos (`getRecentQueueArtists`): consulta en tiempo real los últimos 8 temas en Supabase para impedir duplicados entre turnos.
 
 ---
 

@@ -4,6 +4,19 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.42.0] - 2026-09-12
+
+### 🔧 [AFINAMIENTO / REFINAMIENTO]
+- **Auto-DJ con Rotación Multi-Artista y Constelaciones Musicales para Semilla (`autoDjStations.ts`, `autoDjService.ts`, `artistDiversityService.ts`):**
+  - **Causa Raíz:** En recitales en vivo de YouTube (ej: Estadio Único de La Plata de Indio Solari), los videos titulan primero el tema (*"Ji Ji Ji - Estadio Único..."*). El extractor tomaba el título como artista ("Ji Ji Ji"), burlando el filtro anti-repetición y encolando 5 temas seguidos del mismo artista. Además, las estaciones ejecutaban una búsqueda estática repetitiva.
+  - **Catálogo Curado por Estación (Round-Robin sin repetición):** Cada una de las 6 estaciones ahora cuenta con un pool de 15 a 25 artistas legendarios (ej: Rock Nacional: Soda, Charly, Fito, Redondos, Indio, Calamaro, Babasónicos, Spinetta, Enanitos Verdes, La Renga, Los Piojos, Divididos, Virus, Fabulosos Cadillacs, etc.). El Auto-DJ rota dinámicamente seleccionando artistas no sonados recientemente.
+  - **Constelaciones Musicales para "Canción Semilla":** Al ingresar un artista/canción semilla (ej: Queen o Soda Stereo), el sistema detecta su constelación de estilo musical e intercala éxitos del artista semilla con artistas afines del mismo universo sonoro (ej: Queen ➔ Bon Jovi ➔ Guns N' Roses ➔ Aerosmith ➔ The Police ➔ Queen).
+  - **Detección Bidireccional de Artista y Prioridad de Canal Oficial:** Se prioriza el nombre del canal (`author`) removiendo sufijos (`Oficial`, `VEVO`, `Canal`, `- Topic`), reconociendo de inmediato canales como `Indio Solari Oficial` o `QueenVEVO` aun con títulos invertidos.
+  - **Historial Real de Artistas en Base de Datos:** `getRecentQueueArtists(roomId)` lee los últimos 8 temas directamente de `karaoke_queue` en Supabase para garantizar diversidad inmune a recargas del navegador.
+  - **Pruebas Automatizadas:** 20/20 tests unitarios pasando en Vitest (`artistDiversity.test.ts`), incluyendo simulación de 15 temas de Rock Nacional sin repetir artista y 10 temas de semilla Queen.
+
+---
+
 ## [1.41.0] - 2026-09-12
 
 ### 🚀 [ESPECIFICACIÓN / FEATURE]

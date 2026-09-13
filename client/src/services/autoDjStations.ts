@@ -1,28 +1,57 @@
+import { normalizeArtist } from './artistDiversityService';
+
 export interface AutoDjStation {
   id: string;
   name: string;
   icon: string;
-  query: string;
   description: string;
+  artists: string[];
 }
 
 export const AUTO_DJ_STATIONS: AutoDjStation[] = [
-  { id: 'rock_nacional', name: 'Rock Nacional', icon: '🎸', query: 'Rock Argentino Clasicos exitos oficiales', description: 'Soda, Charly, Redondos, Calamaro, Fito' },
-  { id: 'cumbia_fiesta', name: 'Cumbia & Fiesta', icon: '🌴', query: 'Cumbia fiesta clasicos exitos oficiales', description: 'Palmeras, Damas Gratis, Ráfaga, Gilda' },
-  { id: 'hits_80_90', name: 'Hits 80s y 90s', icon: '⚡', query: '80s 90s pop rock greatest hits official music video', description: 'Queen, Michael Jackson, Bon Jovi, Madonna' },
-  { id: 'chill_lounge', name: 'Chill & Lounge', icon: '🍹', query: 'chill acoustic pop session lounge bar', description: 'Acústicos relajados y sesiones de bar' },
-  { id: 'cuarteto_cordobes', name: 'Cuarteto & Fiesta', icon: '🎺', query: 'cuarteto cordobes grandes exitos fiesta', description: 'Rodrigo, La Mona, Walter Olmos, La Konga' },
-  { id: 'karaoke_hits', name: 'Karaoke Éxitos', icon: '🎤', query: 'karaoke con letra grandes exitos espanol', description: 'Pistas listas para cantar en pantalla' },
+  {
+    id: 'rock_nacional', name: 'Rock Nacional', icon: '🎸', description: 'Soda, Charly, Redondos, Fito, Piojos, Calamaro',
+    artists: ['Soda Stereo', 'Charly Garcia', 'Fito Paez', 'Los Redondos', 'Indio Solari', 'Andres Calamaro', 'Los Rodriguez', 'Babasonicos', 'Spinetta', 'Enanitos Verdes', 'La Renga', 'Los Piojos', 'Divididos', 'Virus', 'Las Pastillas del Abuelo', 'Los Fabulosos Cadillacs', 'Autenticos Decadentes', 'Guasones', 'Ratones Paranoicos', 'Attaque 77'],
+  },
+  {
+    id: 'cumbia_fiesta', name: 'Cumbia & Fiesta', icon: '🌴', description: 'Palmeras, Gilda, Damas Gratis, Ráfaga, Amar Azul',
+    artists: ['Los Palmeras', 'Gilda', 'Rafaga', 'Amar Azul', 'La Nueva Luna', 'Los Angeles Azules', 'Damas Gratis', 'Leo Mattioli', 'Sombras', 'Antonio Rios', 'Pibes Chorros', 'La Repandilla', 'El Polaco', 'Nestor en Bloque', 'Karicia'],
+  },
+  {
+    id: 'hits_80_90', name: 'Hits 80s y 90s', icon: '⚡', description: 'Queen, Michael Jackson, Bon Jovi, Madonna, Guns',
+    artists: ['Queen', 'Michael Jackson', 'Bon Jovi', 'Madonna', 'Guns N Roses', 'a-ha', 'The Police', 'Cyndi Lauper', 'Whitney Houston', 'George Michael', 'Aerosmith', 'AC/DC', 'Wham', 'Duran Duran', 'Phil Collins', 'Roxette'],
+  },
+  {
+    id: 'chill_lounge', name: 'Chill & Lounge', icon: '🍹', description: 'Norah Jones, Jack Johnson, Amy Winehouse, John Mayer',
+    artists: ['Norah Jones', 'Jack Johnson', 'Amy Winehouse', 'John Mayer', 'Sade', 'Katie Melua', 'Michael Buble', 'Corinne Bailey Rae', 'Jason Mraz', 'Leon Bridges'],
+  },
+  {
+    id: 'cuarteto_cordobes', name: 'Cuarteto & Fiesta', icon: '🎺', description: 'Rodrigo, La Mona, La Konga, Walter Olmos, Ulises',
+    artists: ['Rodrigo', 'La Mona Jimenez', 'La Konga', 'Walter Olmos', 'Ulises Bueno', 'Q Lokura', 'Luck Ra', 'Jean Carlos', 'Trulala', 'Banda XXI'],
+  },
+  {
+    id: 'karaoke_hits', name: 'Karaoke Éxitos', icon: '🎤', description: 'Pimpinela, Luis Miguel, Cristian Castro, Montaner',
+    artists: ['Pimpinela', 'Luis Miguel', 'Cristian Castro', 'Ricardo Montaner', 'Marco Antonio Solis', 'Camilo Sesto', 'Chayanne', 'Juan Gabriel', 'Rocio Durcal', 'Jose Jose'],
+  },
 ];
 
-export function parseAutoDjGenre(genre?: string): { isSeed: boolean; displayName: string; query: string } {
-  if (!genre) return { isSeed: false, displayName: AUTO_DJ_STATIONS[0].name, query: AUTO_DJ_STATIONS[0].query };
+export function getStationArtistQuery(stationId: string, recentArtists: string[] = []): string {
+  const station = AUTO_DJ_STATIONS.find((s) => s.id === stationId) || AUTO_DJ_STATIONS[0];
+  const normRecent = recentArtists.map((a) => normalizeArtist(a));
+  const available = station.artists.filter((a) => !normRecent.slice(0, 5).some((r) => r === normalizeArtist(a) || r.includes(normalizeArtist(a))));
+  const pool = available.length > 0 ? available : station.artists.filter((a) => !normRecent.slice(0, 2).some((r) => r === normalizeArtist(a)));
+  const chosen = pool[Math.floor(Math.random() * pool.length)] || station.artists[0];
+  return `${chosen} exitos oficial video`;
+}
+
+export function parseAutoDjGenre(genre?: string, recentArtists: string[] = []): { isSeed: boolean; displayName: string; query: string } {
+  if (!genre) return { isSeed: false, displayName: AUTO_DJ_STATIONS[0].name, query: getStationArtistQuery('rock_nacional', recentArtists) };
   if (genre.startsWith('seed:')) {
     const seed = genre.slice(5).trim();
     return { isSeed: true, displayName: seed || 'Semilla Musical', query: `${seed} musica oficial video` };
   }
   const found = AUTO_DJ_STATIONS.find((s) => s.id === genre);
-  if (found) return { isSeed: false, displayName: found.name, query: found.query };
+  if (found) return { isSeed: false, displayName: found.name, query: getStationArtistQuery(found.id, recentArtists) };
   return { isSeed: false, displayName: genre, query: `${genre} exitos oficial` };
 }
 
