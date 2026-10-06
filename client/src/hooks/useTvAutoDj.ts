@@ -27,7 +27,7 @@ export function useTvAutoDj(
   useEffect(() => {
     if (!roomId || !isAutoDjEnabled) return;
     if (status === 'closed' || status === 'paused') return;
-    if (nextCount > 0) return;
+    if (nextCount >= 2) return;
     if (isQueueingRef.current) return;
 
     const now = Date.now();

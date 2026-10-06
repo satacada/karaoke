@@ -19,6 +19,14 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
     2. `getFallbackTrack` ahora filtra contra los artistas recientes (`recentArtists`), prohibiendo repetir el mismo artista.
     3. `useTvAutoDj` ahora cuenta con fallback local (`isLocalAutoDjActive` y `getLocalAutoDjGenre`) para que la TV continúe reproduciendo y alimentando la cola aun si la conexión a base de datos tiene latencia.
 
+### 🚀 [ESPECIFICACIÓN / FEATURE]
+- **Visibilidad Inmediata del Siguiente Tema de Auto-DJ (`useTvAutoDj.ts`, `HostView.tsx`, `HostQueueItem.tsx`):**
+  - **Requerimiento:** Como el Auto-DJ sigue tocando de fondo, se debe ver con claridad qué tema o temas vienen a continuación.
+  - **Implementación:**
+    1. Se actualizó el buffer de `useTvAutoDj` a `nextCount < 2`: mientras haya menos de 2 temas en cola, el sistema precarga de inmediato el siguiente tema.
+    2. Al iniciar o cambiar de estación, `HostView` encola simultáneamente el tema actual y el siguiente tema de fondo.
+    3. Tanto en la TV (widget superior "A continuación") como en la consola del administrador (`HostQueueItem`), el tema siguiente aparece rotulado con la insignia `📻 Auto-DJ Ambiente`, indicando título, artista, duración y posición exacta.
+
 ---
 
 ## [1.44.0] - 2026-10-06

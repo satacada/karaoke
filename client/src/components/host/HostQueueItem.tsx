@@ -63,8 +63,17 @@ export const HostQueueItem: FC<HostQueueItemProps> = ({
           </div>
           {dedication && <p className="text-[10px] text-pink-300/90 italic truncate">💌 &quot;{dedication}&quot;</p>}
           <div className="flex items-center gap-1 text-[11px] text-zinc-400 mt-0.5">
-            <User className="w-3 h-3 text-pink-400 shrink-0" />
-            <span className="truncate text-pink-300 font-medium">{item.requested_by}</span>
+            {item.requested_by.includes('Auto-DJ') ? (
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.2 rounded-md bg-purple-950/80 border border-purple-500/30 text-[10px] font-bold text-purple-300">
+                <span>📻</span>
+                <span>Auto-DJ Ambiente</span>
+              </span>
+            ) : (
+              <>
+                <User className="w-3 h-3 text-pink-400 shrink-0" />
+                <span className="truncate text-pink-300 font-medium">{item.requested_by}</span>
+              </>
+            )}
             <span className="text-zinc-600">•</span>
             <span className="font-mono text-zinc-500">{item.duration_text || '3:00'}</span>
           </div>

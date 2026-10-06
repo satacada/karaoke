@@ -68,6 +68,8 @@ export const HostView: FC<{ roomCode?: string; onSwitchToTv?: () => void; onSwit
         const ok = await enqueueAutoDjSong(room.id, targetGenre);
         if (ok) {
           await advanceNextSong(room.id); handleCommand('play');
+          // Encolar de inmediato el tema que sigue para que sea visible en la cola
+          await enqueueAutoDjSong(room.id, targetGenre);
           setSystemNotice({ text: '¡Música iniciada exitosamente en la TV! 🎶', type: 'success' });
           logInfo(activeCode, 'host', 'start_autodj_success', 'Canción encolada y avanzada a playing');
         } else { setSystemNotice({ text: 'Reintentando con catálogo garantizado...', type: 'info' }); }
@@ -79,6 +81,8 @@ export const HostView: FC<{ roomCode?: string; onSwitchToTv?: () => void; onSwit
         const ok = await enqueueAutoDjSong(room.id, targetGenre);
         if (ok) {
           await advanceNextSong(room.id); handleCommand('play');
+          // Encolar de inmediato el tema que sigue del nuevo género
+          await enqueueAutoDjSong(room.id, targetGenre);
           setSystemNotice({ text: '¡Estación cambiada! Reproduciendo nuevo género 🎶', type: 'success' });
         }
       }
