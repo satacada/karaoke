@@ -4,6 +4,22 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.46.0] - 2026-10-06
+
+### 🚀 [ESPECIFICACIÓN / FEATURE]
+- **Selección Instantánea 1-Tap de Estaciones Auto-DJ (`HostAutoDjModal.tsx`):**
+  - **Eliminación del Botón Redundante:** Se suprimió el botón "Guardar Estación". Ahora, al tocar cualquier estación (ej. "Cumbia & Fiesta"), la selección es inmediata a 1 solo toque.
+  - **Activación y Buffer Automático:** Al elegir estación se activa la música continua por defecto, se envía la orden de reproducción a la TV y se precargan de inmediato los siguientes 2 temas del género en la cola.
+  - **Interruptor de Música Continua Notorio:** Cuenta con un distintivo visual prominente (`● ACTIVA` en verde esmeralda vs `○ PAUSADA`) y reacciona al instante al tocarlo.
+  - **Cumplimiento Clean-by-Design:** Componente optimizado a 115 líneas ($\le 120$ líneas).
+
+### 🐛 [CORRECCIÓN / FIX]
+- **Preservación de Cola de Auto-DJ ante Pedidos de Clientes (`karaokeApi.ts`, `useTvAutoDj.ts`):**
+  - **Causa Raíz de Paros:** Previamente, cuando un invitado realizaba un pedido, el sistema eliminaba por completo los temas de Auto-DJ encolados. Al terminar los temas de invitados, la cola quedaba en cero y la TV entraba en reposo si había latencia en la búsqueda.
+  - **Solución Definitiva:** Los pedidos de invitados se insertan por delante de los temas de Auto-DJ sin eliminarlos. Durante los pedidos de clientes, Auto-DJ suspende la generación. Cuando los invitados terminan sus canciones, el reproductor retoma de inmediato los temas de Auto-DJ ya armados en la cola sin silencios.
+
+---
+
 ## [1.45.0] - 2026-10-06
 
 ### 🐛 [CORRECCIÓN / FIX]

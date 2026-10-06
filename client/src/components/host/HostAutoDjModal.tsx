@@ -1,10 +1,12 @@
 import { useState, useEffect, type FC } from 'react';
-import { Disc3, X, Sparkles, Check, Music2, Radio, Mic, MicOff } from 'lucide-react';
+import { Disc3, X, Sparkles, Radio, Music2, Mic, MicOff } from 'lucide-react';
 import { AUTO_DJ_STATIONS, purgeAutoDjSongs, enqueueAutoDjSong } from '../../services/autoDjService';
 import { updateRoomSettings, advanceNextSong, sendRemoteCommand } from '../../services/karaokeApi';
-import { supabase } from '../../lib/supabaseClient'; import { getRoomChannelName } from '../../utils/channelUtils';
-import { setLocalAutoDjActive } from '../../services/autoDjStateService';
-import { logInfo } from '../../services/loggerService'; import { useSpeechToText } from '../../hooks/useSpeechToText';
+import { supabase } from '../../lib/supabaseClient';
+import { getRoomChannelName } from '../../utils/channelUtils';
+import { setLocalAutoDjActive, isLocalAutoDjActive, getLocalAutoDjGenre } from '../../services/autoDjStateService';
+import { logInfo } from '../../services/loggerService';
+import { useSpeechToText } from '../../hooks/useSpeechToText';
 import type { KaraokeRoom } from '../../types';
 
 interface HostAutoDjModalProps {
@@ -12,15 +14,18 @@ interface HostAutoDjModalProps {
 }
 
 export const HostAutoDjModal: FC<HostAutoDjModalProps> = ({ isOpen, room, onClose, onUpdated }) => {
-  const [enabled, setEnabled] = useState(false); const [selectedGenre, setSelectedGenre] = useState('rock_nacional');
-  const [seedText, setSeedText] = useState(''); const [mode, setMode] = useState<'station' | 'seed'>('station');
+  const [enabled, setEnabled] = useState(true);
+  const [selectedGenre, setSelectedGenre] = useState('cumbia_fiesta');
+  const [seedText, setSeedText] = useState('');
+  const [mode, setMode] = useState<'station' | 'seed'>('station');
   const [saving, setSaving] = useState(false);
   const { isListening, speechError, toggleListening } = useSpeechToText((text) => setSeedText(text));
 
   useEffect(() => {
     if (room) {
-      setEnabled(Boolean(room.auto_dj_enabled));
-      const g = room.auto_dj_genre || 'rock_nacional';
+      const isAct = Boolean(room.auto_dj_enabled) || isLocalAutoDjActive(room.room_code);
+      setEnabled(isAct);
+      const g = getLocalAutoDjGenre(room.room_code) || room.auto_dj_genre || 'cumbia_fiesta';
       setSelectedGenre(g);
       if (g.startsWith('seed:')) { setMode('seed'); setSeedText(g.slice(5)); }
       else { setMode('station'); setSeedText(''); }
@@ -29,28 +34,31 @@ export const HostAutoDjModal: FC<HostAutoDjModalProps> = ({ isOpen, room, onClos
 
   if (!isOpen || !room) return null;
 
-  const handleSave = async () => {
+  const applyStation = async (genreToApply: string, isNowEnabled: boolean) => {
     setSaving(true);
-    const finalGenre = mode === 'seed' && seedText.trim() ? `seed:${seedText.trim()}` : selectedGenre;
-    setLocalAutoDjActive(room.room_code, enabled, finalGenre);
-    logInfo(room.room_code, 'host', 'autodj_settings_save', `Guardando configuración Auto-DJ: ${finalGenre}`, { enabled });
-    if (!enabled) await purgeAutoDjSongs(room.id);
-    await updateRoomSettings(room.id, { auto_dj_enabled: enabled, auto_dj_genre: finalGenre });
-    const ch = getRoomChannelName(room.id);
-    supabase.channel(ch).send({ type: 'broadcast', event: 'set_auto_dj', payload: { enabled, genre: finalGenre } }).catch(() => {});
-    if (enabled) {
-      const ok = await enqueueAutoDjSong(room.id, finalGenre);
+    setLocalAutoDjActive(room.room_code, isNowEnabled, genreToApply);
+    logInfo(room.room_code, 'host', 'autodj_settings_save', `Auto-DJ: ${genreToApply}`, { enabled: isNowEnabled });
+    if (!isNowEnabled) await purgeAutoDjSongs(room.id);
+    await updateRoomSettings(room.id, { auto_dj_enabled: isNowEnabled, auto_dj_genre: genreToApply });
+    supabase.channel(getRoomChannelName(room.id)).send({ type: 'broadcast', event: 'set_auto_dj', payload: { enabled: isNowEnabled, genre: genreToApply } }).catch(() => {});
+    if (isNowEnabled) {
+      const ok = await enqueueAutoDjSong(room.id, genreToApply);
       if (ok) {
         await advanceNextSong(room.id);
         await sendRemoteCommand(room.id, 'play');
-        // Pre-encolar los siguientes temas para que la cola tenga buffer y no se pare
-        await enqueueAutoDjSong(room.id, finalGenre);
-        await enqueueAutoDjSong(room.id, finalGenre);
+        await enqueueAutoDjSong(room.id, genreToApply);
+        await enqueueAutoDjSong(room.id, genreToApply);
       }
     }
     setSaving(false);
     onUpdated();
     onClose();
+  };
+
+  const handleToggleContinuous = () => {
+    const nextVal = !enabled;
+    setEnabled(nextVal);
+    applyStation(selectedGenre, nextVal);
   };
 
   return (
@@ -59,14 +67,25 @@ export const HostAutoDjModal: FC<HostAutoDjModalProps> = ({ isOpen, room, onClos
         <div className="flex items-center justify-between pb-3 border-b border-zinc-800 mb-3">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-xl bg-pink-600/20 text-pink-400 flex items-center justify-center"><Disc3 className="w-4 h-4 animate-spin" /></div>
-            <div><h3 className="text-sm font-bold text-white flex items-center gap-1.5">Auto-DJ Ambiente <Sparkles className="w-3.5 h-3.5 text-amber-400" /></h3><p className="text-[10px] text-zinc-400">Música de fondo automática cuando no hay pedidos</p></div>
+            <div>
+              <h3 className="text-sm font-bold text-white flex items-center gap-1.5">Auto-DJ Ambiente <Sparkles className="w-3.5 h-3.5 text-amber-400" /></h3>
+              <p className="text-[10px] text-zinc-400">1-Tap: Toca una estación y suena de inmediato</p>
+            </div>
           </div>
           <button type="button" onClick={onClose} className="p-1.5 rounded-lg text-zinc-400 hover:text-white"><X className="w-4 h-4" /></button>
         </div>
 
-        <div className="flex items-center justify-between p-3 bg-zinc-950/80 border border-zinc-800 rounded-2xl mb-3">
-          <div><p className="text-xs font-bold text-white">Activar Música Continua</p><p className="text-[10px] text-zinc-400">Nunca deja la TV en silencio</p></div>
-          <button type="button" onClick={() => setEnabled(!enabled)} className={`w-12 h-6 rounded-full transition-colors relative ${enabled ? 'bg-pink-600' : 'bg-zinc-800'}`}>
+        <div className={`flex items-center justify-between p-3 rounded-2xl mb-3 border transition-colors ${enabled ? 'bg-purple-950/40 border-pink-500/50' : 'bg-zinc-950/80 border-zinc-800'}`}>
+          <div>
+            <p className="text-xs font-bold text-white flex items-center gap-1.5">
+              Música Continua
+              <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold ${enabled ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-zinc-800 text-zinc-400'}`}>
+                {enabled ? '● ACTIVA' : '○ PAUSADA'}
+              </span>
+            </p>
+            <p className="text-[10px] text-zinc-400">La TV nunca queda en silencio mientras no haya pedidos</p>
+          </div>
+          <button type="button" onClick={handleToggleContinuous} disabled={saving} className={`w-12 h-6 rounded-full transition-colors relative cursor-pointer ${enabled ? 'bg-pink-600' : 'bg-zinc-800'}`}>
             <div className={`w-4 h-4 rounded-full bg-white transition-transform absolute top-1 ${enabled ? 'left-7' : 'left-1'}`} />
           </button>
         </div>
@@ -77,21 +96,23 @@ export const HostAutoDjModal: FC<HostAutoDjModalProps> = ({ isOpen, room, onClos
         </div>
 
         {mode === 'station' ? (
-          <div className="grid grid-cols-2 gap-2 overflow-y-auto max-h-48 pr-1 mb-4">
+          <div className="grid grid-cols-2 gap-2 overflow-y-auto max-h-56 pr-1 mb-2">
             {AUTO_DJ_STATIONS.map((st) => (
               <button
                 key={st.id}
                 type="button"
-                onClick={() => { setSelectedGenre(st.id); setEnabled(true); }}
-                className={`p-2.5 rounded-2xl border text-left flex flex-col gap-1 transition-all ${selectedGenre === st.id ? 'bg-purple-600/20 border-purple-500 text-white shadow-lg shadow-purple-950/40' : 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:border-zinc-700'}`}
+                disabled={saving}
+                onClick={() => { setSelectedGenre(st.id); setEnabled(true); applyStation(st.id, true); }}
+                className={`p-3 rounded-2xl border text-left flex flex-col gap-1 transition-all cursor-pointer active:scale-95 ${selectedGenre === st.id && enabled ? 'bg-purple-600/30 border-purple-400 text-white shadow-lg ring-1 ring-purple-400' : 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200'}`}
               >
                 <div className="flex items-center gap-1.5 text-xs font-bold text-white"><span>{st.icon}</span><span className="truncate">{st.name}</span></div>
                 <p className="text-[10px] text-zinc-400 line-clamp-1">{st.description}</p>
+                {selectedGenre === st.id && enabled && <span className="text-[9px] font-bold text-pink-400 mt-0.5">● Tocando ahora</span>}
               </button>
             ))}
           </div>
         ) : (
-          <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-3 mb-4 space-y-2">
+          <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-3 mb-2 space-y-2">
             <label className="block text-[11px] font-bold text-zinc-300">Canción o Artista de Partida:</label>
             <div className="relative flex items-center">
               <input
@@ -101,27 +122,17 @@ export const HostAutoDjModal: FC<HostAutoDjModalProps> = ({ isOpen, room, onClos
                 onChange={(e) => setSeedText(e.target.value)}
                 className={`w-full bg-zinc-900 border rounded-xl pl-3 pr-10 py-2 text-xs text-white focus:outline-none transition-colors ${isListening ? 'border-pink-500 ring-2 ring-pink-500/30' : 'border-zinc-700 focus:border-pink-500'}`}
               />
-              <button
-                type="button"
-                onClick={toggleListening}
-                className={`absolute right-1.5 p-1.5 rounded-lg transition-all ${isListening ? 'bg-rose-600 text-white animate-pulse shadow-md' : 'bg-zinc-800 text-pink-400 hover:text-white'}`}
-                title={isListening ? 'Detener micrófono' : 'Hablar por micrófono'}
-                aria-label="Hablar por micrófono"
-              >
+              <button type="button" onClick={toggleListening} className={`absolute right-1.5 p-1.5 rounded-lg transition-all ${isListening ? 'bg-rose-600 text-white animate-pulse shadow-md' : 'bg-zinc-800 text-pink-400 hover:text-white'}`}>
                 {isListening ? <MicOff className="w-3.5 h-3.5 animate-bounce" /> : <Mic className="w-3.5 h-3.5" />}
               </button>
             </div>
-            {isListening && <p className="text-[10px] text-pink-400 animate-pulse font-semibold">🎙️ Escuchando... Habla ahora</p>}
             {speechError && <p className="text-[10px] text-amber-400">⚠️ {speechError}</p>}
-            <p className="text-[10px] text-zinc-500">YouTube buscará temas oficiales similares sin repetir.</p>
+            <button type="button" onClick={() => applyStation(seedText.trim() ? `seed:${seedText.trim()}` : selectedGenre, true)} disabled={saving || !seedText.trim()} className="w-full mt-2 py-2 rounded-xl text-xs font-bold bg-pink-600 text-white hover:bg-pink-500 disabled:opacity-50">Iniciar desde Semilla</button>
           </div>
         )}
 
-        <div className="pt-2 border-t border-zinc-800 flex gap-2">
-          <button type="button" onClick={onClose} className="flex-1 py-2.5 rounded-xl text-xs font-semibold bg-zinc-800 text-zinc-300 hover:bg-zinc-700">Cancelar</button>
-          <button type="button" onClick={handleSave} disabled={saving} className="flex-1 py-2.5 rounded-xl text-xs font-bold bg-gradient-to-r from-purple-600 to-pink-600 hover:opacity-90 text-white flex items-center justify-center gap-1.5 disabled:opacity-50">
-            {saving ? 'Guardando...' : <><Check className="w-4 h-4" /> Guardar Estación</>}
-          </button>
+        <div className="pt-2 border-t border-zinc-800 flex justify-end">
+          <button type="button" onClick={onClose} className="px-5 py-2 rounded-xl text-xs font-semibold bg-zinc-800 text-zinc-300 hover:bg-zinc-700">Cerrar</button>
         </div>
       </div>
     </div>
