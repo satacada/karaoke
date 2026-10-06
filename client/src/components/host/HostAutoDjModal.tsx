@@ -3,6 +3,7 @@ import { Disc3, X, Sparkles, Check, Music2, Radio, Mic, MicOff } from 'lucide-re
 import { AUTO_DJ_STATIONS, purgeAutoDjSongs, enqueueAutoDjSong } from '../../services/autoDjService';
 import { updateRoomSettings, advanceNextSong, sendRemoteCommand } from '../../services/karaokeApi';
 import { supabase } from '../../lib/supabaseClient'; import { getRoomChannelName } from '../../utils/channelUtils';
+import { setLocalAutoDjActive } from '../../services/autoDjStateService';
 import { logInfo } from '../../services/loggerService'; import { useSpeechToText } from '../../hooks/useSpeechToText';
 import type { KaraokeRoom } from '../../types';
 
@@ -31,6 +32,7 @@ export const HostAutoDjModal: FC<HostAutoDjModalProps> = ({ isOpen, room, onClos
   const handleSave = async () => {
     setSaving(true);
     const finalGenre = mode === 'seed' && seedText.trim() ? `seed:${seedText.trim()}` : selectedGenre;
+    setLocalAutoDjActive(room.room_code, enabled, finalGenre);
     logInfo(room.room_code, 'host', 'autodj_settings_save', `Guardando configuración Auto-DJ: ${finalGenre}`, { enabled });
     if (!enabled) await purgeAutoDjSongs(room.id);
     await updateRoomSettings(room.id, { auto_dj_enabled: enabled, auto_dj_genre: finalGenre });
@@ -41,6 +43,9 @@ export const HostAutoDjModal: FC<HostAutoDjModalProps> = ({ isOpen, room, onClos
       if (ok) {
         await advanceNextSong(room.id);
         await sendRemoteCommand(room.id, 'play');
+        // Pre-encolar los siguientes temas para que la cola tenga buffer y no se pare
+        await enqueueAutoDjSong(room.id, finalGenre);
+        await enqueueAutoDjSong(room.id, finalGenre);
       }
     }
     setSaving(false);
@@ -74,7 +79,12 @@ export const HostAutoDjModal: FC<HostAutoDjModalProps> = ({ isOpen, room, onClos
         {mode === 'station' ? (
           <div className="grid grid-cols-2 gap-2 overflow-y-auto max-h-48 pr-1 mb-4">
             {AUTO_DJ_STATIONS.map((st) => (
-              <button key={st.id} type="button" onClick={() => setSelectedGenre(st.id)} className={`p-2.5 rounded-2xl border text-left flex flex-col gap-1 transition-all ${selectedGenre === st.id ? 'bg-purple-600/20 border-purple-500 text-white shadow-lg shadow-purple-950/40' : 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:border-zinc-700'}`}>
+              <button
+                key={st.id}
+                type="button"
+                onClick={() => { setSelectedGenre(st.id); setEnabled(true); }}
+                className={`p-2.5 rounded-2xl border text-left flex flex-col gap-1 transition-all ${selectedGenre === st.id ? 'bg-purple-600/20 border-purple-500 text-white shadow-lg shadow-purple-950/40' : 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:border-zinc-700'}`}
+              >
                 <div className="flex items-center gap-1.5 text-xs font-bold text-white"><span>{st.icon}</span><span className="truncate">{st.name}</span></div>
                 <p className="text-[10px] text-zinc-400 line-clamp-1">{st.description}</p>
               </button>
