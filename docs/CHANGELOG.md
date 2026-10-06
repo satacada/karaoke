@@ -4,6 +4,19 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.44.0] - 2026-10-06
+
+### 🚀 [ESPECIFICACIÓN / FEATURE]
+- **Cold Start y Purga Completa de Vestigios para Pruebas Limpias (`cleanStart.ts`, `main.tsx`):**
+  - **Requerimiento:** Al abrir la aplicación para pruebas (o al simular el primer arranque en frío del TV Box), se debe poder borrar todo vestigio residual (`localStorage`, `sessionStorage`, tokens o habitaciones recordadas) para que la prueba se realice desde cero.
+  - **Implementación:**
+    1. Se creó el módulo `client/src/utils/cleanStart.ts` que intercepta los parámetros `?reset=1`, `?clean=1` o `?cold=1`.
+    2. Ejecuta un vaciado total de `localStorage.clear()` y `sessionStorage.clear()`.
+    3. Limpia limpiamente el parámetro de la barra de direcciones mediante `window.history.replaceState` sin forzar recargas ni dejar rastro.
+    4. Se conectó en `client/src/main.tsx` antes del montaje del árbol de React para garantizar que el arranque sea un inicio virgen.
+
+---
+
 ## [1.43.0] - 2026-10-06
 
 ### 🐛 [CORRECCIÓN / FIX]
