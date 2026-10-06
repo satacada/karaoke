@@ -40,7 +40,7 @@ export const TvView: FC<{ roomCode?: string; onUnlink?: () => void; onSwitchToHo
 
   const { room, currentSong, nextSongs, isLoading, handleNextSong, refreshState } = useTvRealtime(roomCode, handleRemoteCommand);
   handleNextSongRef.current = handleNextSong;
-  useTvAutoDj(room, currentSong, nextSongs, refreshState, handleNextSong);
+  useTvAutoDj(room, currentSong, nextSongs, refreshState, handleNextSong, roomCode);
   useWakeLock(Boolean(currentSong));
   useMediaSession(currentSong, room?.name || 'Rockola', room?.is_playing !== false, {
     onPlay: () => { playerRef.current?.play(); setIsPaused(false); }, onPause: () => { playerRef.current?.pause(); setIsPaused(true); }, onNext: () => handleNextSongRef.current(),

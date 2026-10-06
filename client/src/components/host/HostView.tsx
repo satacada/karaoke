@@ -74,6 +74,13 @@ export const HostView: FC<{ roomCode?: string; onSwitchToTv?: () => void; onSwit
       } else if (!currentSong && nextSongs.length > 0) {
         await advanceNextSong(room.id); handleCommand('play');
         setSystemNotice({ text: 'Avanzando a siguiente canción...', type: 'success' });
+      } else if (currentSong) {
+        // Si ya hay una canción sonando y el host elige otra estación, cambiar inmediatamente
+        const ok = await enqueueAutoDjSong(room.id, targetGenre);
+        if (ok) {
+          await advanceNextSong(room.id); handleCommand('play');
+          setSystemNotice({ text: '¡Estación cambiada! Reproduciendo nuevo género 🎶', type: 'success' });
+        }
       }
       await refreshState();
     } catch (err) {

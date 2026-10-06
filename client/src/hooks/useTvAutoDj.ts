@@ -2,21 +2,24 @@ import { useEffect, useRef } from 'react';
 import { enqueueAutoDjSong } from '../services/autoDjService';
 import type { KaraokeRoom, QueueItem } from '../types';
 
+import { isLocalAutoDjActive, getLocalAutoDjGenre } from '../services/autoDjStateService';
+
 export function useTvAutoDj(
   room: KaraokeRoom | null,
   currentSong: QueueItem | null,
   nextSongs: QueueItem[],
   refreshState: () => Promise<void>,
-  onAdvanceIfIdle?: () => void
+  onAdvanceIfIdle?: () => void,
+  roomCode: string = 'FIESTA'
 ) {
   const isQueueingRef = useRef(false);
   const lastQueuedAtRef = useRef(0);
   const refreshRef = useRef(refreshState); refreshRef.current = refreshState;
   const advanceRef = useRef(onAdvanceIfIdle); advanceRef.current = onAdvanceIfIdle;
 
-  const isAutoDjEnabled = Boolean(room?.auto_dj_enabled);
+  const isAutoDjEnabled = Boolean(room?.auto_dj_enabled) || isLocalAutoDjActive(roomCode);
   const roomId = room?.id;
-  const genre = room?.auto_dj_genre;
+  const genre = room?.auto_dj_genre || getLocalAutoDjGenre(roomCode) || 'rock_nacional';
   const status = room?.status;
   const hasCurrentSong = Boolean(currentSong);
   const nextCount = nextSongs.length;

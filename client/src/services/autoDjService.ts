@@ -42,7 +42,7 @@ export async function fetchNextAutoDjTrack(genre?: string, recentArtists: string
   const { isSeed, query } = parseAutoDjGenre(genre, recentArtists);
   try {
     const results = await searchVideos(query, isSeed ? 'all' : 'official');
-    if (!results || results.length === 0) return getFallbackTrack(genre);
+    if (!results || results.length === 0) return getFallbackTrack(genre, recentArtists);
     const recent = getRecentIds();
     const candidates = results.filter((v) => {
       const validDuration = v.durationSeconds >= 140 && v.durationSeconds <= 390 && !recent.includes(v.videoId);
@@ -52,7 +52,7 @@ export async function fetchNextAutoDjTrack(genre?: string, recentArtists: string
     const pool = candidates.length > 0
       ? candidates
       : results.filter((v) => v.durationSeconds >= 120 && v.durationSeconds <= 420 && !recent.includes(v.videoId));
-    if (pool.length === 0) return results[0] || getFallbackTrack(genre);
+    if (pool.length === 0) return results[0] || getFallbackTrack(genre, recentArtists);
     const chosen = pool[Math.floor(Math.random() * Math.min(pool.length, 5))];
     if (chosen) {
       recordRecentId(chosen.videoId);
@@ -60,10 +60,10 @@ export async function fetchNextAutoDjTrack(genre?: string, recentArtists: string
       recordRecentArtist(chosenArtist);
       return chosen;
     }
-    return getFallbackTrack(genre);
+    return getFallbackTrack(genre, recentArtists);
   } catch (err) {
     console.error('Error fetching Auto-DJ track:', err);
-    return getFallbackTrack(genre);
+    return getFallbackTrack(genre, recentArtists);
   }
 }
 
@@ -89,7 +89,7 @@ export async function enqueueAutoDjSong(roomId: string, explicitGenre?: string):
   logInfo('AUTO_DJ', 'system', 'autodj_request', `Solicitud de Auto-DJ: ${explicitGenre || 'auto'}`);
   const recentArtists = await getRecentQueueArtists(roomId);
   const genre = await getSmartGenreForRoom(roomId, explicitGenre, recentArtists);
-  const track = (await fetchNextAutoDjTrack(genre, recentArtists)) || getFallbackTrack(genre);
+  const track = (await fetchNextAutoDjTrack(genre, recentArtists)) || getFallbackTrack(genre, recentArtists);
   logInfo('AUTO_DJ', 'system', 'autodj_track_selected', `Tema: ${track.title} (${track.videoId})`);
   const { isSeed, displayName } = parseAutoDjGenre(genre, recentArtists);
   const cleanAuthor = extractArtistName(track.title, track.author) || track.author;

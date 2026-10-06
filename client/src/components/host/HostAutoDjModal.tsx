@@ -36,7 +36,7 @@ export const HostAutoDjModal: FC<HostAutoDjModalProps> = ({ isOpen, room, onClos
     await updateRoomSettings(room.id, { auto_dj_enabled: enabled, auto_dj_genre: finalGenre });
     const ch = getRoomChannelName(room.id);
     supabase.channel(ch).send({ type: 'broadcast', event: 'set_auto_dj', payload: { enabled, genre: finalGenre } }).catch(() => {});
-    if (enabled && !room.is_playing && !room.current_song_id) {
+    if (enabled) {
       const ok = await enqueueAutoDjSong(room.id, finalGenre);
       if (ok) {
         await advanceNextSong(room.id);

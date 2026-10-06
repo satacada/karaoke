@@ -4,6 +4,23 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.45.0] - 2026-10-06
+
+### 🐛 [CORRECCIÓN / FIX]
+- **Cambio Inmediato de Estación desde el Administrador (`HostView.tsx`, `HostAutoDjModal.tsx`):**
+  - **Problema:** Si había una canción de fondo reproduciéndose y el anfitrión pulsaba otra estación (ej. "Cumbia & Fiesta"), el sistema no cambiaba el tema al instante; esperaba a que finalizara la canción actual.
+  - **Solución:** Ahora, al pulsar un género desde la tarjeta de cola vacía o guardar desde el modal de Auto-DJ, el sistema encola de inmediato un tema del nuevo género, ejecuta `advanceNextSong` y despacha `play` para que la TV cambie al instante de ritmo musical.
+
+### 🚀 [ESPECIFICACIÓN / FEATURE]
+- **Variedad Real Multi-Artista y Continuidad Garantizada (`autoDjStations.ts`, `autoDjService.ts`, `useTvAutoDj.ts`):**
+  - **Requerimiento:** No repetir el mismo artista dentro de una estación; la música debe ser variada y continua sin atascarse.
+  - **Implementación:**
+    1. Se amplió el pool de artistas y canciones de respaldo por cada estación con 4-5 artistas diferentes (ej. Cumbia: Los Palmeras, Gilda, Ráfaga, Amar Azul; Rock: Soda, Charly, Cadillacs, Decadentes; 80s: Queen, Michael Jackson, Bon Jovi, a-ha).
+    2. `getFallbackTrack` ahora filtra contra los artistas recientes (`recentArtists`), prohibiendo repetir el mismo artista.
+    3. `useTvAutoDj` ahora cuenta con fallback local (`isLocalAutoDjActive` y `getLocalAutoDjGenre`) para que la TV continúe reproduciendo y alimentando la cola aun si la conexión a base de datos tiene latencia.
+
+---
+
 ## [1.44.0] - 2026-10-06
 
 ### 🚀 [ESPECIFICACIÓN / FEATURE]
