@@ -1,6 +1,7 @@
 import { useState, useCallback, type MutableRefObject } from 'react';
 import type { RemoteCommand, PromoBanner, RoomRentalSession, TvTheme, TvScale } from '../types';
 import { getLocalRentalSession } from '../services/rentalService';
+import { logInfo, logWarn } from '../services/loggerService';
 import type { TvPlayerRef } from '../components/tv/TvPlayer';
 
 export function useTvRemoteHandler(
@@ -18,28 +19,67 @@ export function useTvRemoteHandler(
   const [tvScale, setTvScale] = useState<TvScale>(() => (localStorage.getItem(`tv_scale_${roomCode}`) as TvScale) || 'normal');
 
   const handleRemoteCommand = useCallback((cmd: RemoteCommand) => {
+    logInfo(roomCode, 'tv', 'command_received', `Comando remoto recibido: ${cmd.command}`, { payload: cmd.payload });
     switch (cmd.command) {
-      case 'play': playerRef.current?.play(); setIsPaused(false); break;
-      case 'pause': playerRef.current?.pause(); setIsPaused(true); break;
-      case 'skip': handleNextSongRef.current(); break;
-      case 'seek': if (cmd.payload?.seconds !== undefined) playerRef.current?.seekTo(cmd.payload.seconds); break;
-      case 'unlink_tv': try { localStorage.removeItem('tv_paired_room'); } catch {} onUnlink?.(); break;
-      case 'flash_identify': setIsFlashing(true); setTimeout(() => setIsFlashing(false), 4500); break;
+      case 'play':
+        if (playerRef.current) {
+          playerRef.current.play();
+          setIsPaused(false);
+          logInfo(roomCode, 'tv', 'command_play_resumed', 'Reproductor reanudado');
+        } else {
+          logInfo(roomCode, 'tv', 'command_play_start_autodj', 'TV en reposo: disparando arranque de Auto-DJ');
+          handleStartAutoDjRef.current();
+        }
+        break;
+      case 'pause':
+        if (playerRef.current) playerRef.current.pause();
+        setIsPaused(true);
+        logInfo(roomCode, 'tv', 'command_pause_executed', 'Reproducción pausada');
+        break;
+      case 'skip':
+        logInfo(roomCode, 'tv', 'command_skip_executed', 'Saltando a la siguiente canción');
+        handleNextSongRef.current();
+        break;
+      case 'seek':
+        if (cmd.payload?.seconds !== undefined) playerRef.current?.seekTo(cmd.payload.seconds);
+        break;
+      case 'unlink_tv':
+        try { localStorage.removeItem('tv_paired_room'); } catch {}
+        onUnlink?.();
+        break;
+      case 'flash_identify':
+        setIsFlashing(true);
+        setTimeout(() => setIsFlashing(false), 4500);
+        break;
       case 'set_rental_time':
         if (cmd.payload?.rental_session) setRentalSession((cmd.payload.rental_session as RoomRentalSession).enabled ? (cmd.payload.rental_session as RoomRentalSession) : null);
         break;
       case 'volume':
-        if (cmd.payload?.action === 'unlink_tv') { try { localStorage.removeItem('tv_paired_room'); } catch {} onUnlink?.(); }
-        else if (cmd.payload?.action === 'set_tv_theme' && cmd.payload.theme) {
-          const t = cmd.payload.theme as TvTheme; setTvTheme(t); try { localStorage.setItem(`tv_theme_${roomCode}`, t); } catch {}
+        if (cmd.payload?.action === 'unlink_tv') {
+          try { localStorage.removeItem('tv_paired_room'); } catch {}
+          onUnlink?.();
+        } else if (cmd.payload?.action === 'set_tv_theme' && cmd.payload.theme) {
+          const t = cmd.payload.theme as TvTheme;
+          setTvTheme(t);
+          try { localStorage.setItem(`tv_theme_${roomCode}`, t); } catch {}
         } else if (cmd.payload?.action === 'set_tv_scale' && cmd.payload.scale) {
-          const s = cmd.payload.scale as TvScale; setTvScale(s); try { localStorage.setItem(`tv_scale_${roomCode}`, s); } catch {}
+          const s = cmd.payload.scale as TvScale;
+          setTvScale(s);
+          try { localStorage.setItem(`tv_scale_${roomCode}`, s); } catch {}
         } else if (cmd.payload?.action === 'set_rental_time' && cmd.payload.rental_session) {
           setRentalSession((cmd.payload.rental_session as RoomRentalSession).enabled ? (cmd.payload.rental_session as RoomRentalSession) : null);
-        } else if (cmd.payload?.volume !== undefined) playerRef.current?.setVolume(cmd.payload.volume);
+        } else if (cmd.payload?.volume !== undefined) {
+          playerRef.current?.setVolume(cmd.payload.volume);
+        }
         break;
       case 'set_promo_banners':
-        if (cmd.payload?.banners) { setBanners(cmd.payload.banners as PromoBanner[]); try { localStorage.setItem(`tv_banners_${roomCode}`, JSON.stringify(cmd.payload.banners)); } catch {} }
+        if (cmd.payload?.banners) {
+          setBanners(cmd.payload.banners as PromoBanner[]);
+          try { localStorage.setItem(`tv_banners_${roomCode}`, JSON.stringify(cmd.payload.banners)); } catch {}
+        }
+        break;
+      default:
+        logWarn(roomCode, 'tv', 'command_unknown', `Comando desconocido: ${cmd.command}`);
         break;
     }
   }, [roomCode, playerRef, handleNextSongRef, handleStartAutoDjRef, onUnlink]);

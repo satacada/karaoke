@@ -3,6 +3,8 @@ import { supabase } from '../lib/supabaseClient';
 import type { KaraokeRoom, QueueItem, RemoteCommand } from '../types';
 import { getRoomByCode, getQueueForRoom, advanceNextSong, markCommandExecuted } from '../services/karaokeApi';
 import { isLocalAutoDjActive, setLocalAutoDjActive, getLocalAutoDjGenre } from '../services/autoDjStateService';
+import { getRoomChannelName } from '../utils/channelUtils';
+import { logInfo } from '../services/loggerService';
 
 export function useTvRealtime(roomCode: string, onRemoteCommand?: (command: RemoteCommand) => void) {
   const [room, setRoom] = useState<KaraokeRoom | null>(null);
@@ -48,6 +50,7 @@ export function useTvRealtime(roomCode: string, onRemoteCommand?: (command: Remo
       setRoom(loaded);
       await refreshState(loaded.id);
       setIsLoading(false);
+      logInfo(roomCode, 'tv', 'room_loaded', `Sala ${roomCode} conectada exitosamente`, { roomId: loaded.id });
     }
     init();
     return () => { isMounted = false; };
@@ -56,9 +59,9 @@ export function useTvRealtime(roomCode: string, onRemoteCommand?: (command: Remo
   const roomId = room?.id;
   useEffect(() => {
     if (!roomId) return;
-    const uid = Math.random().toString(36).slice(2, 7);
+    const channelName = getRoomChannelName(roomId);
     const channel = supabase
-      .channel(`tv-rt-${roomId}-${uid}`)
+      .channel(channelName)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'karaoke_queue', filter: `room_id=eq.${roomId}` }, () => refreshState(roomId))
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'karaoke_commands', filter: `room_id=eq.${roomId}` }, async (payload) => {
         const command = payload.new as RemoteCommand;
@@ -94,7 +97,11 @@ export function useTvRealtime(roomCode: string, onRemoteCommand?: (command: Remo
         }
         setRoom((prev) => (!prev || JSON.stringify(prev) !== JSON.stringify(updated)) ? updated : prev);
       })
-      .subscribe();
+      .subscribe((status) => {
+        if (status === 'SUBSCRIBED') {
+          logInfo(roomCode, 'tv', 'channel_subscribed', `Suscripción WSS activa en canal ${channelName}`);
+        }
+      });
 
     const pollTimer = setInterval(() => { if (!document.hidden) refreshState(roomId); }, 3500);
     const onVis = () => { if (!document.hidden) refreshState(roomId); };

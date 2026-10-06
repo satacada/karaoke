@@ -1,16 +1,13 @@
 import { useState, useEffect, type FC } from 'react';
 import { Disc3, X, Sparkles, Check, Music2, Radio, Mic, MicOff } from 'lucide-react';
 import { AUTO_DJ_STATIONS, purgeAutoDjSongs, enqueueAutoDjSong } from '../../services/autoDjService';
-import { updateRoomSettings, advanceNextSong } from '../../services/karaokeApi';
-import { supabase } from '../../lib/supabaseClient';
-import { useSpeechToText } from '../../hooks/useSpeechToText';
+import { updateRoomSettings, advanceNextSong, sendRemoteCommand } from '../../services/karaokeApi';
+import { supabase } from '../../lib/supabaseClient'; import { getRoomChannelName } from '../../utils/channelUtils';
+import { logInfo } from '../../services/loggerService'; import { useSpeechToText } from '../../hooks/useSpeechToText';
 import type { KaraokeRoom } from '../../types';
 
 interface HostAutoDjModalProps {
-  isOpen: boolean;
-  room: KaraokeRoom | null;
-  onClose: () => void;
-  onUpdated: () => void;
+  isOpen: boolean; room: KaraokeRoom | null; onClose: () => void; onUpdated: () => void;
 }
 
 export const HostAutoDjModal: FC<HostAutoDjModalProps> = ({ isOpen, room, onClose, onUpdated }) => {
@@ -34,12 +31,17 @@ export const HostAutoDjModal: FC<HostAutoDjModalProps> = ({ isOpen, room, onClos
   const handleSave = async () => {
     setSaving(true);
     const finalGenre = mode === 'seed' && seedText.trim() ? `seed:${seedText.trim()}` : selectedGenre;
+    logInfo(room.room_code, 'host', 'autodj_settings_save', `Guardando configuración Auto-DJ: ${finalGenre}`, { enabled });
     if (!enabled) await purgeAutoDjSongs(room.id);
     await updateRoomSettings(room.id, { auto_dj_enabled: enabled, auto_dj_genre: finalGenre });
-    supabase.channel(`tv-room-${room.id}`).send({ type: 'broadcast', event: 'set_auto_dj', payload: { enabled, genre: finalGenre } }).catch(() => {});
+    const ch = getRoomChannelName(room.id);
+    supabase.channel(ch).send({ type: 'broadcast', event: 'set_auto_dj', payload: { enabled, genre: finalGenre } }).catch(() => {});
     if (enabled && !room.is_playing && !room.current_song_id) {
-      await enqueueAutoDjSong(room.id, finalGenre);
-      await advanceNextSong(room.id);
+      const ok = await enqueueAutoDjSong(room.id, finalGenre);
+      if (ok) {
+        await advanceNextSong(room.id);
+        await sendRemoteCommand(room.id, 'play');
+      }
     }
     setSaving(false);
     onUpdated();

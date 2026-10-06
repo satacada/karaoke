@@ -4,6 +4,36 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.43.0] - 2026-10-06
+
+### 🐛 [CORRECCIÓN / FIX]
+- **Arranque Remoto de Música en TV en Reposo y Canal Unificado (`useTvRemoteHandler.ts`, `useTvRealtime.ts`, `channelUtils.ts`):**
+  - **Causa Raíz:** Cuando la TV estaba en la pantalla de espera (`TvIdleScreen`), el reproductor de YouTube no estaba montado (`playerRef.current` nulo). Al recibir la orden `play` por WebSocket desde el celular del host, el comando era ignorado en silencio. Además, `HostView` y `useTvRealtime` se suscribían con nombres de canal dispares (`tv-room-${id}` vs `tv-rt-${id}-${uid}`), impidiendo la recepción confiable de eventos broadcast.
+  - **Solución:**
+    1. Si `useTvRemoteHandler` recibe `play` mientras la TV está en reposo, dispara automáticamente `handleStartAutoDjRef.current()` para encolar el tema garantizado y arrancar.
+    2. Se implementó `getRoomChannelName(roomId)` en `client/src/utils/channelUtils.ts` para que todos los nodos transmitan y reciban en el mismo canal (`room-channel-${roomId}`).
+    3. `HostView` ahora despacha una inserción explícita en `karaoke_commands` con el comando `play` además de la actualización en base de datos.
+
+### 🚀 [ESPECIFICACIÓN / FEATURE]
+- **Manejo de Cola Vacía con Visto Bueno Expreso del Usuario (`HostEmptyQueueCard.tsx`, `HostView.tsx`, `HostAutoDjModal.tsx`):**
+  - **Requerimiento del Usuario:** Cuando la cola de canciones esté vacía, el sistema debe informar claramente al usuario para que dé su visto bueno eligiendo la estación o estilo de música, garantizando siempre feedback visual y cero clicks sordos o silenciosos.
+  - **Solución Implementada:**
+    1. En la consola del host (`HostEmptyQueueCard`), se incorporó un aviso destacado *"Cola de reproducción vacía: No hay temas solicitados"* acompañado de un panel de botones rápidos para dar visto bueno en 1 toque (Rock Nacional, Hits 80/90, Cumbia Fiesta, Cuarteto) y el botón de acceso al catálogo completo.
+    2. Si el anfitrión presiona Play en la barra de transporte con cola vacía, se abre el modal informativo para que elija la estación y confirme su visto bueno.
+    3. Se implementó un banner interactivo de telemetría y estado (`systemNotice`) que muestra feedback inmediato de carga (*"Conectando con la TV y cargando música..."*), éxito (*"¡Música iniciada exitosamente en la TV! 🎶"*) o advertencia de reintento.
+
+### 🚀 [ESPECIFICACIÓN / FEATURE]
+- **Sistema de Telemetría y Caja Negra en Supabase (`karaoke_system_logs`, `loggerService.ts`):**
+  - Se creó la migración `supabase/migrations/09_system_telemetry_logs.sql` con la tabla `karaoke_system_logs` (RLS habilitado con lectura y escritura pública para nodos anon y authenticated).
+  - Se implementó `client/src/services/loggerService.ts`: cada nodo (TV, Celular Host, PWA Invitados) reporta sus eventos (`room_loaded`, `command_received`, `autodj_track_selected`, `yt_ready`, `yt_error`, etc.) a Supabase en tiempo real sin bloquear la interfaz.
+  - Esto permite auditar las pruebas directamente en Supabase, inspeccionando el estado exacto sin importar si la app corre en Vercel, en 4G o en local.
+
+### 🔧 [AFINAMIENTO / REFINAMIENTO]
+- **Detección y Desbloqueo Accesible de Autoplay en TV (`TvPlayer.tsx`, `TvAutoplayBlockedPrompt.tsx`):**
+  - Si el navegador de la TV bloquea la reproducción con sonido por políticas de autoplay (`AudioContext NotAllowedError`), el sistema detecta que el reproductor no llegó a estado activo en 2.5s y despliega un overlay visual de gran tamaño: *"🔊 Activar Sonido de la TV - Toca aquí o pulsa OK en el mando"*, permitiendo el desbloqueo instantáneo con un toque.
+
+---
+
 ## [1.42.0] - 2026-09-12
 
 ### 🔧 [AFINAMIENTO / REFINAMIENTO]

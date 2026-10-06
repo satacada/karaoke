@@ -91,3 +91,18 @@ export interface TvPlayerState {
   isPlaying: boolean; currentTime: number; duration: number; volume: number;
   currentSong: QueueItem | null; nextSongs: QueueItem[];
 }
+
+export type LogLevel = 'info' | 'warn' | 'error';
+export type LogNode = 'tv' | 'host' | 'guest' | 'api' | 'db';
+
+export interface SystemLog {
+  id?: string;
+  room_code: string;
+  node_type: LogNode;
+  level: LogLevel;
+  event: string;
+  message: string;
+  details?: Record<string, unknown>;
+  created_at?: string;
+}
+

@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabaseClient';
 import type { SearchResultItem } from '../types';
 import { parseAutoDjGenre, AUTO_DJ_STATIONS, getFallbackTrack, type AutoDjStation } from './autoDjStations';
 import { extractArtistName, isArtistRecent, recordRecentArtist, getNextDiverseSeed } from './artistDiversityService';
+import { logInfo, logError } from './loggerService';
 
 export { parseAutoDjGenre, AUTO_DJ_STATIONS, getFallbackTrack, type AutoDjStation };
 
@@ -85,9 +86,11 @@ export async function getSmartGenreForRoom(_roomId: string, explicitGenre?: stri
 }
 
 export async function enqueueAutoDjSong(roomId: string, explicitGenre?: string): Promise<boolean> {
+  logInfo('AUTO_DJ', 'system', 'autodj_request', `Solicitud de Auto-DJ: ${explicitGenre || 'auto'}`);
   const recentArtists = await getRecentQueueArtists(roomId);
   const genre = await getSmartGenreForRoom(roomId, explicitGenre, recentArtists);
   const track = (await fetchNextAutoDjTrack(genre, recentArtists)) || getFallbackTrack(genre);
+  logInfo('AUTO_DJ', 'system', 'autodj_track_selected', `Tema: ${track.title} (${track.videoId})`);
   const { isSeed, displayName } = parseAutoDjGenre(genre, recentArtists);
   const cleanAuthor = extractArtistName(track.title, track.author) || track.author;
   const queued = await addSongToQueue({
@@ -101,6 +104,8 @@ export async function enqueueAutoDjSong(roomId: string, explicitGenre?: string):
     requestedBy: 'Auto-DJ (Rockola)',
     dedication: isSeed ? `Estilo de: ${displayName}` : `Playlist: ${displayName}`,
   });
+  if (queued) logInfo('AUTO_DJ', 'system', 'autodj_queued_ok', `Tema ${track.title} encolado`);
+  else logError('AUTO_DJ', 'system', 'autodj_queued_err', `Error al encolar ${track.title}`);
   return Boolean(queued);
 }
 

@@ -1,8 +1,8 @@
 # 📊 PLAN MAESTRO DEL PROYECTO: ROCKOLA DIGITAL LIVE (SISTEMA MULTI-TENANT EN TIEMPO REAL)
 
-**Versión del Plan:** 2.42.0 (Auto-DJ con Rotación Multi-Artista y Constelaciones para Canción Semilla)  
-**Fecha de Emisión:** Septiembre 2026  
-**Estado:** 🟢 Fase 2, Fase 3, Fase 4 y Fase 5 (Auto-DJ con Diversidad 100% Garantizada)  
+**Versión del Plan:** 2.43.0 (Telemetría en Nube, Gestión de Cola Vacía con Visto Bueno y Desbloqueo de Autoplay)  
+**Fecha de Emisión:** Octubre 2026  
+**Estado:** 🟢 Fase 2, Fase 3, Fase 4 y Fase 5 (Observabilidad en Nube y Control Asistido)  
 **Metodología:** Agile / BDD / Clean Architecture con Compuertas de Control Formales  
 **Alineación:** Estructura inspirada en `boot-ventas-saas` y `aplicacion para ofertas`  
 
@@ -193,11 +193,9 @@ La **Rockola Digital Live** es una plataforma SaaS multi-tenant distribuida para
 17. [x] **Pantalla de Reposo TV con QR Exclusivo de Administrador y QR Flotante de Clientes Ampliado:**
     - Al abrir `/tv?room=FIESTA` (o primera instalación de la APK), la TV en reposo (`TvIdleScreen.tsx`) proyecta **única y exclusivamente el Código QR del Administrador/DJ** en tamaño de 250px x 250px con corrección de error 'M', eliminando pestañas intermedias de clientes en reposo para guiar directamente al anfitrión a enlazar su consola o activar el Auto-DJ.
     - Durante la reproducción en vivo (`TvFloatingQr.tsx` y `TvSidebarOverlay.tsx`), el contenedor flotante y el QR para pedidos de invitados se ampliaron a 170-190px (dentro de lateral de 220px), garantizando escaneabilidad instantánea desde cualquier celular en pantallas de 23 pulgadas o superiores a distancia.
-18. [x] **Auto-DJ con Rotación Multi-Artista y Constelaciones Musicales:**
-    - Afinamiento del motor de recomendación con catálogos de 15 a 25 artistas insignia por estación (`autoDjStations.ts`) para rotación continua sin repetición consecutiva.
-    - Detección de constelaciones musicales para semilla (`artistDiversityService.ts`): intercala canciones del artista semilla con artistas afines del mismo universo musical.
-    - Extracción robusta de artistas (`extractArtistName`): prioridad de canal oficial y soporte para títulos de recitales en vivo invertidos (evita falsos positivos como 'Ji Ji Ji').
-    - Historial real de artistas en base de datos (`getRecentQueueArtists`): consulta en tiempo real los últimos 8 temas en Supabase para impedir duplicados entre turnos.
+19. [x] **Manejo de Cola Vacía con Visto Bueno Expreso del Usuario:** cuando la cola está vacía, el sistema informa claramente al usuario para que dé su visto bueno eligiendo la estación de música deseada con retroalimentación visual continua (`HostEmptyQueueCard.tsx`, `HostQueueSection.tsx`, `HostView.tsx`, `HostAutoDjModal.tsx`).
+20. [x] **Sistema de Telemetría y Caja Negra en Supabase (`karaoke_system_logs`, `loggerService.ts`):** registro en base de datos de eventos y errores de la TV, celular anfitrión y clientes para auditoría en tiempo real sin importar la red.
+21. [x] **Detección y Desbloqueo Accesible de Autoplay en TV (`TvPlayer.tsx`, `TvAutoplayBlockedPrompt.tsx`):** detección de bloqueo de reproducción con sonido por políticas de audio del navegador y overlay táctil/control remoto para desbloqueo instantáneo en un toque.
 
 ---
 
