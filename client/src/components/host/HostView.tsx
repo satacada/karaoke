@@ -68,7 +68,8 @@ export const HostView: FC<{ roomCode?: string; onSwitchToTv?: () => void; onSwit
         const ok = await enqueueAutoDjSong(room.id, targetGenre);
         if (ok) {
           await advanceNextSong(room.id); handleCommand('play');
-          // Encolar de inmediato el tema que sigue para que sea visible en la cola
+          // Encolar de inmediato 2 temas más para armar la lista buffer de 3 temas
+          await enqueueAutoDjSong(room.id, targetGenre);
           await enqueueAutoDjSong(room.id, targetGenre);
           setSystemNotice({ text: '¡Música iniciada exitosamente en la TV! 🎶', type: 'success' });
           logInfo(activeCode, 'host', 'start_autodj_success', 'Canción encolada y avanzada a playing');

@@ -23,12 +23,16 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
     3. `useTvAutoDj` ahora cuenta con fallback local (`isLocalAutoDjActive` y `getLocalAutoDjGenre`) para que la TV continúe reproduciendo y alimentando la cola aun si la conexión a base de datos tiene latencia.
 
 ### 🚀 [ESPECIFICACIÓN / FEATURE]
-- **Visibilidad Inmediata del Siguiente Tema de Auto-DJ (`useTvAutoDj.ts`, `HostView.tsx`, `HostQueueItem.tsx`):**
-  - **Requerimiento:** Como el Auto-DJ sigue tocando de fondo, se debe ver con claridad qué tema o temas vienen a continuación.
+- **Buffer de 3-5 Temas de Auto-DJ y Prioridad Absoluta de Clientes (`karaokeApi.ts`, `useTvAutoDj.ts`, `HostView.tsx`):**
+  - **Requerimiento del Usuario:**
+    1. Mantener una lista buffer de 3 a 5 temas de Auto-DJ por adelantado para que nunca se vacíe la cola.
+    2. Cuando finalice un tema y queden 2 en cola, recargar automáticamente el siguiente tema variado.
+    3. Cuando un cliente (invitado) pida una canción, este pedido tiene **prioridad absoluta** e ingresa delante de los temas de Auto-DJ, pausando la generación de música automática.
+    4. Cuando los pedidos de los clientes terminen, el Auto-DJ retoma automáticamente con el género que estaba sonando previamente sin detener la fiesta.
   - **Implementación:**
-    1. Se actualizó el buffer de `useTvAutoDj` a `nextCount < 2`: mientras haya menos de 2 temas en cola, el sistema precarga de inmediato el siguiente tema.
-    2. Al iniciar o cambiar de estación, `HostView` encola simultáneamente el tema actual y el siguiente tema de fondo.
-    3. Tanto en la TV (widget superior "A continuación") como en la consola del administrador (`HostQueueItem`), el tema siguiente aparece rotulado con la insignia `📻 Auto-DJ Ambiente`, indicando título, artista, duración y posición exacta.
+    1. En `karaokeApi.ts`: al ingresar un pedido de invitado no-VIP (`isAutoDjRequest === false`), el sistema lo inserta inmediatamente después de los temas de otros invitados y **por delante de todos los temas de Auto-DJ**, reordenando sus prioridades.
+    2. En `useTvAutoDj.ts`: el umbral del buffer se ajustó a `>= 3`. Si hay canciones de invitados en cola, el Auto-DJ se suspende para no sobrecargar la lista. Apenas la cola de invitados se agota, retoma el flujo continuo de fondo.
+    3. En `HostView.tsx`: al arrancar o cambiar de estación, precarga 2 temas adicionales para garantizar 3 canciones visibles en lista desde el primer segundo.
 
 ---
 

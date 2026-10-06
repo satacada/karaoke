@@ -27,7 +27,13 @@ export function useTvAutoDj(
   useEffect(() => {
     if (!roomId || !isAutoDjEnabled) return;
     if (status === 'closed' || status === 'paused') return;
-    if (nextCount >= 2) return;
+
+    // Si ya hay temas de invitados reales en cola, no encolar Auto-DJ
+    const hasGuestSongs = nextSongs.some((s) => !s.requested_by.includes('Auto-DJ'));
+    if (hasGuestSongs) return;
+
+    // Mantener una lista buffer de 3 canciones como mínimo
+    if (nextCount >= 3) return;
     if (isQueueingRef.current) return;
 
     const now = Date.now();

@@ -223,16 +223,58 @@ export async function addSongToQueue(params: {
       }
     }
   } else {
-    const { data: maxItem } = await supabase
-      .from('karaoke_queue')
-      .select('priority_order')
-      .eq('room_id', params.roomId)
-      .eq('status', 'queued')
-      .order('priority_order', { ascending: false })
-      .limit(1)
-      .maybeSingle();
+    // Si es un tema de invitado real (no Auto-DJ), tiene prioridad sobre los temas de Auto-DJ existentes
+    const isAutoDjRequest = params.requestedBy?.includes('Auto-DJ');
+    if (!isAutoDjRequest) {
+      // Buscar canciones en cola que sean de invitados reales
+      const { data: queueList } = await supabase
+        .from('karaoke_queue')
+        .select('id, priority_order, requested_by')
+        .eq('room_id', params.roomId)
+        .eq('status', 'queued')
+        .order('priority_order', { ascending: true });
 
-    targetPriority = (maxItem?.priority_order ?? 0) + 1;
+      const guestSongs = queueList?.filter((q) => !q.requested_by?.includes('Auto-DJ')) || [];
+      const autoDjSongs = queueList?.filter((q) => q.requested_by?.includes('Auto-DJ')) || [];
+
+      if (autoDjSongs.length > 0) {
+        // Colocar el tema del invitado después de los temas de otros invitados, pero ANTES de los temas de Auto-DJ
+        const lastGuestPriority = guestSongs.length > 0 ? guestSongs[guestSongs.length - 1].priority_order : 0;
+        targetPriority = lastGuestPriority + 1;
+
+        // Desplazar hacia abajo las canciones de Auto-DJ
+        for (let i = autoDjSongs.length - 1; i >= 0; i--) {
+          if (autoDjSongs[i].priority_order >= targetPriority) {
+            await supabase
+              .from('karaoke_queue')
+              .update({ priority_order: autoDjSongs[i].priority_order + 1 })
+              .eq('id', autoDjSongs[i].id);
+          }
+        }
+      } else {
+        const { data: maxItem } = await supabase
+          .from('karaoke_queue')
+          .select('priority_order')
+          .eq('room_id', params.roomId)
+          .eq('status', 'queued')
+          .order('priority_order', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        targetPriority = (maxItem?.priority_order ?? 0) + 1;
+      }
+    } else {
+      const { data: maxItem } = await supabase
+        .from('karaoke_queue')
+        .select('priority_order')
+        .eq('room_id', params.roomId)
+        .eq('status', 'queued')
+        .order('priority_order', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      targetPriority = (maxItem?.priority_order ?? 0) + 1;
+    }
   }
 
   const encodedThumbnail = encodeSongThumbnail(params.thumbnailUrl, {
