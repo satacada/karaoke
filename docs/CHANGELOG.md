@@ -10,6 +10,9 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 - **Cambio Inmediato de Estación desde el Administrador (`HostView.tsx`, `HostAutoDjModal.tsx`):**
   - **Problema:** Si había una canción de fondo reproduciéndose y el anfitrión pulsaba otra estación (ej. "Cumbia & Fiesta"), el sistema no cambiaba el tema al instante; esperaba a que finalizara la canción actual.
   - **Solución:** Ahora, al pulsar un género desde la tarjeta de cola vacía o guardar desde el modal de Auto-DJ, el sistema encola de inmediato un tema del nuevo género, ejecuta `advanceNextSong` y despacha `play` para que la TV cambie al instante de ritmo musical.
+- **Paro Inesperado de Canción al Finalizar (`useTvRealtime.ts`):**
+  - **Causa Raíz:** A las 11:54 finalizó el tema *"Ráfaga - La Luna y Tú"*. El reproductor disparó `handleNextSong()` y llamó al RPC `fn_advance_next_song()`. Como no había un tema adicional precargado en la cola en ese instante, la base de datos pasó a `is_playing = false` y la TV quedó en reposo.
+  - **Solución:** En `useTvRealtime.ts`, si `advanceNextSong` retorna `null` y Auto-DJ está habilitado, el cliente encola de inmediato el tema de relevo del género activo y avanza la cola en el acto, garantizando reproducción continua infinita sin pausas.
 
 ### 🚀 [ESPECIFICACIÓN / FEATURE]
 - **Variedad Real Multi-Artista y Continuidad Garantizada (`autoDjStations.ts`, `autoDjService.ts`, `useTvAutoDj.ts`):**

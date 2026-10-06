@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabaseClient';
 import type { KaraokeRoom, QueueItem, RemoteCommand } from '../types';
 import { getRoomByCode, getQueueForRoom, advanceNextSong, markCommandExecuted } from '../services/karaokeApi';
 import { isLocalAutoDjActive, setLocalAutoDjActive, getLocalAutoDjGenre } from '../services/autoDjStateService';
+import { enqueueAutoDjSong } from '../services/autoDjService';
 import { getRoomChannelName } from '../utils/channelUtils';
 import { logInfo } from '../services/loggerService';
 
@@ -28,7 +29,12 @@ export function useTvRealtime(roomCode: string, onRemoteCommand?: (command: Remo
   const handleNextSong = useCallback(async () => {
     const activeRoom = roomRef.current;
     if (!activeRoom) return null;
-    const next = await advanceNextSong(activeRoom.id);
+    let next = await advanceNextSong(activeRoom.id);
+    if (!next && (activeRoom.auto_dj_enabled || isLocalAutoDjActive(activeRoom.room_code))) {
+      const g = activeRoom.auto_dj_genre || getLocalAutoDjGenre(activeRoom.room_code) || 'cumbia_fiesta';
+      await enqueueAutoDjSong(activeRoom.id, g);
+      next = await advanceNextSong(activeRoom.id);
+    }
     await refreshState(activeRoom.id);
     return next;
   }, [refreshState]);
@@ -106,7 +112,6 @@ export function useTvRealtime(roomCode: string, onRemoteCommand?: (command: Remo
     const pollTimer = setInterval(() => { if (!document.hidden) refreshState(roomId); }, 3500);
     const onVis = () => { if (!document.hidden) refreshState(roomId); };
     window.addEventListener('focus', onVis); document.addEventListener('visibilitychange', onVis);
-
     return () => {
       clearInterval(pollTimer); window.removeEventListener('focus', onVis); document.removeEventListener('visibilitychange', onVis);
       supabase.removeChannel(channel);
