@@ -3,7 +3,9 @@ import { AlertCircle, CheckCircle2, Loader2, X } from 'lucide-react';
 import { useTvRealtime } from '../../hooks/useTvRealtime'; import { supabase } from '../../lib/supabaseClient';
 import { HostAuth } from './HostAuth'; import { HostHeader } from './HostHeader'; import { HostNowPlayingCard } from './HostNowPlayingCard'; import { HostQueueSection } from './HostQueueSection'; import { HostTransportBar } from './HostTransportBar'; import { HostMultiRoomBar } from './multiroom/HostMultiRoomBar'; import { HostModals } from './HostModals'; import { HostPendingApprovalView } from './HostPendingApprovalView';
 import { sendRemoteCommand, reorderQueueItem, purgeGuestSongs, deleteQueueItem, resetRoomQueue, updateRoomBanners, toggleQueueLock, getRoomsForOwner, updatePlaybackTick, updateRoomSettings, advanceNextSong } from '../../services/karaokeApi';
-import { enqueueAutoDjSong } from '../../services/autoDjService'; import { setLocalAutoDjActive } from '../../services/autoDjStateService'; import { getLocalRentalSession } from '../../services/rentalService'; import { getRoomChannelName } from '../../utils/channelUtils'; import { logInfo, logError } from '../../services/loggerService';
+import { enqueueAutoDjSong, purgeAutoDjSongs } from '../../services/autoDjService';
+import { setLocalAutoDjActive, saveRemoteAutoDjSettings, getLocalAutoDjGenre } from '../../services/autoDjStateService';
+import { getLocalRentalSession } from '../../services/rentalService'; import { getRoomChannelName } from '../../utils/channelUtils'; import { logInfo, logError } from '../../services/loggerService';
 import type { QueueItem, KaraokeRoom, RoomRentalSession } from '../../types';
 
 const SUPER_ADMINS = (import.meta.env.VITE_SUPER_ADMIN_EMAILS || 'satacada@gmail.com,david@gmail.com,admin@karaoke.com').toLowerCase().split(',').map((s: string) => s.trim());
@@ -56,37 +58,20 @@ export const HostView: FC<{ roomCode?: string; onSwitchToTv?: () => void; onSwit
   const handleStartAutoDj = async (chosenGenre?: string) => {
     if (!room || isStartingAutoDj) return;
     setIsStartingAutoDj(true);
-    const targetGenre = chosenGenre || room.auto_dj_genre || 'rock_nacional';
+    const targetGenre = chosenGenre || room.auto_dj_genre || getLocalAutoDjGenre(activeCode) || 'cumbia_fiesta';
     setSystemNotice({ text: 'Conectando con la TV y cargando música...', type: 'loading' });
     logInfo(activeCode, 'host', 'start_autodj_attempt', `Iniciando estación: ${targetGenre}`);
     try {
-      setLocalAutoDjActive(activeCode, true, targetGenre);
-      const ch = getRoomChannelName(room.id);
-      supabase.channel(ch).send({ type: 'broadcast', event: 'set_auto_dj', payload: { enabled: true, genre: targetGenre } }).catch(() => {});
-      await updateRoomSettings(room.id, { is_playing: true, auto_dj_enabled: true, auto_dj_genre: targetGenre });
-      if (!currentSong && nextSongs.length === 0) {
-        const ok = await enqueueAutoDjSong(room.id, targetGenre);
-        if (ok) {
-          await advanceNextSong(room.id); handleCommand('play');
-          // Encolar de inmediato 2 temas más para armar la lista buffer de 3 temas
-          await enqueueAutoDjSong(room.id, targetGenre);
-          await enqueueAutoDjSong(room.id, targetGenre);
-          setSystemNotice({ text: '¡Música iniciada exitosamente en la TV! 🎶', type: 'success' });
-          logInfo(activeCode, 'host', 'start_autodj_success', 'Canción encolada y avanzada a playing');
-        } else { setSystemNotice({ text: 'Reintentando con catálogo garantizado...', type: 'info' }); }
-      } else if (!currentSong && nextSongs.length > 0) {
+      await saveRemoteAutoDjSettings(room.id, activeCode, true, targetGenre);
+      await purgeAutoDjSongs(room.id);
+      const ok = await enqueueAutoDjSong(room.id, targetGenre);
+      if (ok) {
         await advanceNextSong(room.id); handleCommand('play');
-        setSystemNotice({ text: 'Avanzando a siguiente canción...', type: 'success' });
-      } else if (currentSong) {
-        // Si ya hay una canción sonando y el host elige otra estación, cambiar inmediatamente
-        const ok = await enqueueAutoDjSong(room.id, targetGenre);
-        if (ok) {
-          await advanceNextSong(room.id); handleCommand('play');
-          // Encolar de inmediato el tema que sigue del nuevo género
-          await enqueueAutoDjSong(room.id, targetGenre);
-          setSystemNotice({ text: '¡Estación cambiada! Reproduciendo nuevo género 🎶', type: 'success' });
-        }
-      }
+        await enqueueAutoDjSong(room.id, targetGenre);
+        await enqueueAutoDjSong(room.id, targetGenre);
+        setSystemNotice({ text: '¡Música iniciada exitosamente en la TV! 🎶', type: 'success' });
+        logInfo(activeCode, 'host', 'start_autodj_success', 'Canción encolada y avanzada a playing');
+      } else { setSystemNotice({ text: 'Reintentando con catálogo garantizado...', type: 'info' }); }
       await refreshState();
     } catch (err) {
       setSystemNotice({ text: 'Error al iniciar música. Reintenta.', type: 'error' });

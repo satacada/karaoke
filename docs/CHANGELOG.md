@@ -4,6 +4,23 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.47.0] - 2026-10-07
+
+### 🐛 [CORRECCIÓN / FIX]
+- **Persistencia en la Nube de la Estación Auto-DJ y Fin de Reversión a Rock Nacional (`autoDjStateService.ts`, `useTvRealtime.ts`, `HostView.tsx`, `HostEmptyQueueCard.tsx`):**
+  - **Causa Raíz Diagnosticada del Paro a las 8:47-8:48:**
+    1. La tabla `karaoke_rooms` en Supabase no poseía columnas para almacenar `auto_dj_genre`, provocando que cualquier actualización desde el celular del Host fuera descartada por PostgREST (`PGRST204`).
+    2. Como el celular y la TV son dispositivos físicos separados, el almacenamiento local (`localStorage`) del celular del Host nunca existió en la TV.
+    3. Al quedar `room.auto_dj_genre` como nulo/indefinido en la base de datos, todos los componentes del sistema caían en cascada al valor por defecto histórico (`rock_nacional`), ignorando la selección de Cumbia del usuario y volviendo a mostrar Rock Nacional.
+  - **Solución Definitiva:**
+    1. Se implementó persistencia en la nube mediante la tabla `karaoke_commands` con la acción `set_auto_dj`, garantizando que el género elegido por el Host quede guardado permanentemente en Supabase Cloud.
+    2. Al iniciar la TV o la consola del Host, `useTvRealtime` invoca `fetchRemoteAutoDjSettings()` para sincronizar de inmediato la estación activa desde Supabase.
+    3. Se cambió la estación por defecto del sistema a `cumbia_fiesta` en todos los fallbacks de emergencia (`autoDjStations.ts`, `useTvAutoDj.ts`, `TvView.tsx`).
+    4. La tarjeta de cola vacía (`HostEmptyQueueCard`) ahora refleja con fidelidad la estación persistida y no revierte a Rock Nacional.
+  - **Cumplimiento Clean-by-Design:** Todos los componentes se mantuvieron estrictamente por debajo del umbral de 120 líneas.
+
+---
+
 ## [1.46.0] - 2026-10-06
 
 ### 🚀 [ESPECIFICACIÓN / FEATURE]

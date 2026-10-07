@@ -1,10 +1,8 @@
 import { useState, useEffect, type FC } from 'react';
 import { Disc3, X, Sparkles, Radio, Music2, Mic, MicOff } from 'lucide-react';
 import { AUTO_DJ_STATIONS, purgeAutoDjSongs, enqueueAutoDjSong } from '../../services/autoDjService';
-import { updateRoomSettings, advanceNextSong, sendRemoteCommand } from '../../services/karaokeApi';
-import { supabase } from '../../lib/supabaseClient';
-import { getRoomChannelName } from '../../utils/channelUtils';
-import { setLocalAutoDjActive, isLocalAutoDjActive, getLocalAutoDjGenre } from '../../services/autoDjStateService';
+import { advanceNextSong, sendRemoteCommand } from '../../services/karaokeApi';
+import { saveRemoteAutoDjSettings, isLocalAutoDjActive, getLocalAutoDjGenre } from '../../services/autoDjStateService';
 import { logInfo } from '../../services/loggerService';
 import { useSpeechToText } from '../../hooks/useSpeechToText';
 import type { KaraokeRoom } from '../../types';
@@ -23,9 +21,8 @@ export const HostAutoDjModal: FC<HostAutoDjModalProps> = ({ isOpen, room, onClos
 
   useEffect(() => {
     if (room) {
-      const isAct = Boolean(room.auto_dj_enabled) || isLocalAutoDjActive(room.room_code);
-      setEnabled(isAct);
-      const g = getLocalAutoDjGenre(room.room_code) || room.auto_dj_genre || 'cumbia_fiesta';
+      setEnabled(Boolean(room.auto_dj_enabled) || isLocalAutoDjActive(room.room_code));
+      const g = room.auto_dj_genre || getLocalAutoDjGenre(room.room_code) || 'cumbia_fiesta';
       setSelectedGenre(g);
       if (g.startsWith('seed:')) { setMode('seed'); setSeedText(g.slice(5)); }
       else { setMode('station'); setSeedText(''); }
@@ -36,11 +33,9 @@ export const HostAutoDjModal: FC<HostAutoDjModalProps> = ({ isOpen, room, onClos
 
   const applyStation = async (genreToApply: string, isNowEnabled: boolean) => {
     setSaving(true);
-    setLocalAutoDjActive(room.room_code, isNowEnabled, genreToApply);
+    await saveRemoteAutoDjSettings(room.id, room.room_code, isNowEnabled, genreToApply);
     logInfo(room.room_code, 'host', 'autodj_settings_save', `Auto-DJ: ${genreToApply}`, { enabled: isNowEnabled });
     if (!isNowEnabled) await purgeAutoDjSongs(room.id);
-    await updateRoomSettings(room.id, { auto_dj_enabled: isNowEnabled, auto_dj_genre: genreToApply });
-    supabase.channel(getRoomChannelName(room.id)).send({ type: 'broadcast', event: 'set_auto_dj', payload: { enabled: isNowEnabled, genre: genreToApply } }).catch(() => {});
     if (isNowEnabled) {
       const ok = await enqueueAutoDjSong(room.id, genreToApply);
       if (ok) {
@@ -53,12 +48,6 @@ export const HostAutoDjModal: FC<HostAutoDjModalProps> = ({ isOpen, room, onClos
     setSaving(false);
     onUpdated();
     onClose();
-  };
-
-  const handleToggleContinuous = () => {
-    const nextVal = !enabled;
-    setEnabled(nextVal);
-    applyStation(selectedGenre, nextVal);
   };
 
   return (
@@ -85,7 +74,7 @@ export const HostAutoDjModal: FC<HostAutoDjModalProps> = ({ isOpen, room, onClos
             </p>
             <p className="text-[10px] text-zinc-400">La TV nunca queda en silencio mientras no haya pedidos</p>
           </div>
-          <button type="button" onClick={handleToggleContinuous} disabled={saving} className={`w-12 h-6 rounded-full transition-colors relative cursor-pointer ${enabled ? 'bg-pink-600' : 'bg-zinc-800'}`}>
+          <button type="button" onClick={() => { const next = !enabled; setEnabled(next); applyStation(selectedGenre, next); }} disabled={saving} className={`w-12 h-6 rounded-full transition-colors relative cursor-pointer ${enabled ? 'bg-pink-600' : 'bg-zinc-800'}`}>
             <div className={`w-4 h-4 rounded-full bg-white transition-transform absolute top-1 ${enabled ? 'left-7' : 'left-1'}`} />
           </button>
         </div>
@@ -98,13 +87,7 @@ export const HostAutoDjModal: FC<HostAutoDjModalProps> = ({ isOpen, room, onClos
         {mode === 'station' ? (
           <div className="grid grid-cols-2 gap-2 overflow-y-auto max-h-56 pr-1 mb-2">
             {AUTO_DJ_STATIONS.map((st) => (
-              <button
-                key={st.id}
-                type="button"
-                disabled={saving}
-                onClick={() => { setSelectedGenre(st.id); setEnabled(true); applyStation(st.id, true); }}
-                className={`p-3 rounded-2xl border text-left flex flex-col gap-1 transition-all cursor-pointer active:scale-95 ${selectedGenre === st.id && enabled ? 'bg-purple-600/30 border-purple-400 text-white shadow-lg ring-1 ring-purple-400' : 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200'}`}
-              >
+              <button key={st.id} type="button" disabled={saving} onClick={() => { setSelectedGenre(st.id); setEnabled(true); applyStation(st.id, true); }} className={`p-3 rounded-2xl border text-left flex flex-col gap-1 transition-all cursor-pointer active:scale-95 ${selectedGenre === st.id && enabled ? 'bg-purple-600/30 border-purple-400 text-white shadow-lg ring-1 ring-purple-400' : 'bg-zinc-950 border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200'}`}>
                 <div className="flex items-center gap-1.5 text-xs font-bold text-white"><span>{st.icon}</span><span className="truncate">{st.name}</span></div>
                 <p className="text-[10px] text-zinc-400 line-clamp-1">{st.description}</p>
                 {selectedGenre === st.id && enabled && <span className="text-[9px] font-bold text-pink-400 mt-0.5">● Tocando ahora</span>}
@@ -115,16 +98,8 @@ export const HostAutoDjModal: FC<HostAutoDjModalProps> = ({ isOpen, room, onClos
           <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-3 mb-2 space-y-2">
             <label className="block text-[11px] font-bold text-zinc-300">Canción o Artista de Partida:</label>
             <div className="relative flex items-center">
-              <input
-                type="text"
-                placeholder={isListening ? '🎤 Escuchando... Di el artista o tema' : 'Ej: Soda Stereo, Queen, Gilda, Rock 80s...'}
-                value={seedText}
-                onChange={(e) => setSeedText(e.target.value)}
-                className={`w-full bg-zinc-900 border rounded-xl pl-3 pr-10 py-2 text-xs text-white focus:outline-none transition-colors ${isListening ? 'border-pink-500 ring-2 ring-pink-500/30' : 'border-zinc-700 focus:border-pink-500'}`}
-              />
-              <button type="button" onClick={toggleListening} className={`absolute right-1.5 p-1.5 rounded-lg transition-all ${isListening ? 'bg-rose-600 text-white animate-pulse shadow-md' : 'bg-zinc-800 text-pink-400 hover:text-white'}`}>
-                {isListening ? <MicOff className="w-3.5 h-3.5 animate-bounce" /> : <Mic className="w-3.5 h-3.5" />}
-              </button>
+              <input type="text" placeholder={isListening ? '🎤 Escuchando... Di el artista o tema' : 'Ej: Soda Stereo, Queen, Gilda, Cumbia...'} value={seedText} onChange={(e) => setSeedText(e.target.value)} className={`w-full bg-zinc-900 border rounded-xl pl-3 pr-10 py-2 text-xs text-white focus:outline-none transition-colors ${isListening ? 'border-pink-500 ring-2 ring-pink-500/30' : 'border-zinc-700 focus:border-pink-500'}`} />
+              <button type="button" onClick={toggleListening} className={`absolute right-1.5 p-1.5 rounded-lg transition-all ${isListening ? 'bg-rose-600 text-white animate-pulse shadow-md' : 'bg-zinc-800 text-pink-400 hover:text-white'}`}>{isListening ? <MicOff className="w-3.5 h-3.5 animate-bounce" /> : <Mic className="w-3.5 h-3.5" />}</button>
             </div>
             {speechError && <p className="text-[10px] text-amber-400">⚠️ {speechError}</p>}
             <button type="button" onClick={() => applyStation(seedText.trim() ? `seed:${seedText.trim()}` : selectedGenre, true)} disabled={saving || !seedText.trim()} className="w-full mt-2 py-2 rounded-xl text-xs font-bold bg-pink-600 text-white hover:bg-pink-500 disabled:opacity-50">Iniciar desde Semilla</button>

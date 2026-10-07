@@ -19,7 +19,7 @@ export function useTvAutoDj(
 
   const isAutoDjEnabled = Boolean(room?.auto_dj_enabled) || isLocalAutoDjActive(roomCode);
   const roomId = room?.id;
-  const genre = room?.auto_dj_genre || getLocalAutoDjGenre(roomCode) || 'rock_nacional';
+  const genre = room?.auto_dj_genre || getLocalAutoDjGenre(roomCode) || 'cumbia_fiesta';
   const status = room?.status;
   const hasCurrentSong = Boolean(currentSong);
   const nextCount = nextSongs.length;

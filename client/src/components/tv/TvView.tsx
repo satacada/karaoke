@@ -17,7 +17,7 @@ import { TvViewOverlays } from './TvViewOverlays';
 import { TvFloatingReactions } from './TvFloatingReactions';
 import { updatePlaybackTick } from '../../services/karaokeApi';
 import { enqueueAutoDjSong, purgeAutoDjSongs } from '../../services/autoDjService';
-import { setLocalAutoDjActive } from '../../services/autoDjStateService';
+import { setLocalAutoDjActive, getLocalAutoDjGenre } from '../../services/autoDjStateService';
 import { getJoinUrl } from '../../utils/appUrl';
 import { supabase } from '../../lib/supabaseClient';
 import type { TvScale } from '../../types';
@@ -53,7 +53,7 @@ export const TvView: FC<{ roomCode?: string; onUnlink?: () => void; onSwitchToHo
       setLocalAutoDjActive(roomCode, true, room.auto_dj_genre);
       supabase.channel(`tv-room-${room.id}`).send({ type: 'broadcast', event: 'set_auto_dj', payload: { enabled: true, genre: room.auto_dj_genre } }).catch(() => {});
       if (currentSong) { await refreshState(); return; }
-      const targetGenre = room.auto_dj_genre || 'rock_nacional';
+      const targetGenre = room.auto_dj_genre || getLocalAutoDjGenre(roomCode) || 'cumbia_fiesta';
       if (nextSongs.length === 0) { const ok = await enqueueAutoDjSong(room.id, targetGenre); if (ok) await handleNextSongRef.current(); }
       else { await handleNextSongRef.current(); }
     } catch (err) { console.error('Auto-DJ start error:', err); }

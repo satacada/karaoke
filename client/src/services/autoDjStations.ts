@@ -45,14 +45,14 @@ export function getStationArtistQuery(stationId: string, recentArtists: string[]
 }
 
 export function parseAutoDjGenre(genre?: string, recentArtists: string[] = []): { isSeed: boolean; displayName: string; query: string } {
-  if (!genre) return { isSeed: false, displayName: AUTO_DJ_STATIONS[0].name, query: getStationArtistQuery('rock_nacional', recentArtists) };
-  if (genre.startsWith('seed:')) {
-    const seed = genre.slice(5).trim();
+  const effectiveGenre = genre || 'cumbia_fiesta';
+  if (effectiveGenre.startsWith('seed:')) {
+    const seed = effectiveGenre.slice(5).trim();
     return { isSeed: true, displayName: seed || 'Semilla Musical', query: `${seed} musica oficial video` };
   }
-  const found = AUTO_DJ_STATIONS.find((s) => s.id === genre);
+  const found = AUTO_DJ_STATIONS.find((s) => s.id === effectiveGenre);
   if (found) return { isSeed: false, displayName: found.name, query: getStationArtistQuery(found.id, recentArtists) };
-  return { isSeed: false, displayName: genre, query: `${genre} exitos oficial` };
+  return { isSeed: false, displayName: effectiveGenre, query: `${effectiveGenre} exitos oficial` };
 }
 
 const EMERGENCY_FALLBACKS: Record<string, Array<{ videoId: string; title: string; author: string; durationSeconds: number; durationText: string; thumbnailUrl: string }>> = {
@@ -90,8 +90,8 @@ const EMERGENCY_FALLBACKS: Record<string, Array<{ videoId: string; title: string
 };
 
 export function getFallbackTrack(genre?: string, recentArtists: string[] = []): import('../types').SearchResultItem {
-  const stationId = genre && EMERGENCY_FALLBACKS[genre] ? genre : 'rock_nacional';
-  const list = EMERGENCY_FALLBACKS[stationId] || EMERGENCY_FALLBACKS.rock_nacional;
+  const stationId = genre && EMERGENCY_FALLBACKS[genre] ? genre : 'cumbia_fiesta';
+  const list = EMERGENCY_FALLBACKS[stationId] || EMERGENCY_FALLBACKS.cumbia_fiesta || EMERGENCY_FALLBACKS.rock_nacional;
   const filtered = list.filter((t) => !recentArtists.some((r) => r.toLowerCase().includes(t.author.toLowerCase())));
   const pool = filtered.length > 0 ? filtered : list;
   const picked = pool[Math.floor(Math.random() * pool.length)];

@@ -1,6 +1,7 @@
 import type { FC } from 'react';
 import { Music, Radio, Sparkles, AlertCircle, Loader2 } from 'lucide-react';
 import { parseAutoDjGenre, AUTO_DJ_STATIONS } from '../../services/autoDjService';
+import { isLocalAutoDjActive, getLocalAutoDjGenre } from '../../services/autoDjStateService';
 import type { KaraokeRoom } from '../../types';
 
 interface HostEmptyQueueCardProps {
@@ -14,8 +15,9 @@ interface HostEmptyQueueCardProps {
 export const HostEmptyQueueCard: FC<HostEmptyQueueCardProps> = ({
   room, onOpenAutoDj, onStartAutoDj, onStartGenre, isStartingAutoDj = false,
 }) => {
-  const isAutoDj = Boolean(room?.auto_dj_enabled);
-  const genreInfo = parseAutoDjGenre(room?.auto_dj_genre);
+  const isAutoDj = Boolean(room?.auto_dj_enabled) || isLocalAutoDjActive(room?.room_code || 'FIESTA');
+  const activeGenre = room?.auto_dj_genre || getLocalAutoDjGenre(room?.room_code || 'FIESTA') || 'cumbia_fiesta';
+  const genreInfo = parseAutoDjGenre(activeGenre);
 
   return (
     <div className="p-4 text-center text-xs bg-zinc-900/60 rounded-3xl border border-zinc-800 flex flex-col items-center gap-3 shadow-xl">

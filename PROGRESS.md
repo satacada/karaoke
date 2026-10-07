@@ -1,6 +1,6 @@
 # 📊 PLAN MAESTRO DEL PROYECTO: ROCKOLA DIGITAL LIVE (SISTEMA MULTI-TENANT EN TIEMPO REAL)
 
-**Versión del Plan:** 2.46.0 (Selección Inmediata 1-Tap Auto-DJ, Buffer Continuo 3-5 Temas y Preservación de Cola ante Pedidos)  
+**Versión del Plan:** 2.47.0 (Persistencia Cloud de Estación Auto-DJ en Supabase y Sincronización TV-Host)  
 **Fecha de Emisión:** Octubre 2026  
 **Estado:** 🟢 Fase 2, Fase 3, Fase 4 y Fase 5 (Reproducción Continua y Variada Garantizada)  
 **Metodología:** Agile / BDD / Clean Architecture con Compuertas de Control Formales  
