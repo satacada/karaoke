@@ -16,7 +16,8 @@ import { TvVoiceHUD } from './TvVoiceHUD';
 import { TvViewOverlays } from './TvViewOverlays';
 import { TvFloatingReactions } from './TvFloatingReactions';
 import { updatePlaybackTick } from '../../services/karaokeApi';
-import { enqueueAutoDjSong, purgeAutoDjSongs } from '../../services/autoDjService';
+import { purgeAutoDjSongs } from '../../services/autoDjService';
+import { clearRamQueue } from '../../services/autoDjRamQueueService';
 import { setLocalAutoDjActive, getLocalAutoDjGenre } from '../../services/autoDjStateService';
 import { getJoinUrl } from '../../utils/appUrl';
 import { supabase } from '../../lib/supabaseClient';
@@ -53,18 +54,17 @@ export const TvView: FC<{ roomCode?: string; onUnlink?: () => void; onSwitchToHo
       setLocalAutoDjActive(roomCode, true, room.auto_dj_genre);
       supabase.channel(`tv-room-${room.id}`).send({ type: 'broadcast', event: 'set_auto_dj', payload: { enabled: true, genre: room.auto_dj_genre } }).catch(() => {});
       if (currentSong) { await refreshState(); return; }
-      const targetGenre = room.auto_dj_genre || getLocalAutoDjGenre(roomCode) || 'cumbia_fiesta';
-      if (nextSongs.length === 0) { const ok = await enqueueAutoDjSong(room.id, targetGenre); if (ok) await handleNextSongRef.current(); }
-      else { await handleNextSongRef.current(); }
+      await handleNextSongRef.current();
     } catch (err) { console.error('Auto-DJ start error:', err); }
     finally { setIsStartingAutoDj(false); }
-  }, [room, roomCode, isStartingAutoDj, currentSong, nextSongs.length, refreshState]);
+  }, [room, roomCode, isStartingAutoDj, currentSong, refreshState]);
   handleStartAutoDjRef.current = handleStartAutoDj;
 
   const handleStopAutoDj = useCallback(async () => {
     if (!room) return;
     setLocalAutoDjActive(roomCode, false);
     supabase.channel(`tv-room-${room.id}`).send({ type: 'broadcast', event: 'set_auto_dj', payload: { enabled: false } }).catch(() => {});
+    clearRamQueue();
     await purgeAutoDjSongs(room.id);
     await refreshState();
   }, [room, roomCode, refreshState]);

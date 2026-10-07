@@ -64,14 +64,8 @@ export const HostView: FC<{ roomCode?: string; onSwitchToTv?: () => void; onSwit
     try {
       await saveRemoteAutoDjSettings(room.id, activeCode, true, targetGenre);
       await purgeAutoDjSongs(room.id);
-      const ok = await enqueueAutoDjSong(room.id, targetGenre);
-      if (ok) {
-        await advanceNextSong(room.id); handleCommand('play');
-        await enqueueAutoDjSong(room.id, targetGenre);
-        await enqueueAutoDjSong(room.id, targetGenre);
-        setSystemNotice({ text: '¡Música iniciada exitosamente en la TV! 🎶', type: 'success' });
-        logInfo(activeCode, 'host', 'start_autodj_success', 'Canción encolada y avanzada a playing');
-      } else { setSystemNotice({ text: 'Reintentando con catálogo garantizado...', type: 'info' }); }
+      handleCommand('play');
+      setSystemNotice({ text: '¡Estación iniciada exitosamente en la TV! 🎶', type: 'success' });
       await refreshState();
     } catch (err) {
       setSystemNotice({ text: 'Error al iniciar música. Reintenta.', type: 'error' });

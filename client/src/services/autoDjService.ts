@@ -1,11 +1,11 @@
 import { searchVideos, addSongToQueue } from './karaokeApi';
 import { supabase } from '../lib/supabaseClient';
 import type { SearchResultItem } from '../types';
-import { parseAutoDjGenre, AUTO_DJ_STATIONS, getFallbackTrack, type AutoDjStation } from './autoDjStations';
+import { parseAutoDjGenre, AUTO_DJ_STATIONS, getAllStations, addCustomStation, getFallbackTrack, type AutoDjStation } from './autoDjStations';
 import { extractArtistName, isArtistRecent, recordRecentArtist, getNextDiverseSeed } from './artistDiversityService';
 import { logInfo, logError } from './loggerService';
 
-export { parseAutoDjGenre, AUTO_DJ_STATIONS, getFallbackTrack, type AutoDjStation };
+export { parseAutoDjGenre, AUTO_DJ_STATIONS, getAllStations, addCustomStation, getFallbackTrack, type AutoDjStation };
 
 const RECENT_KEY = 'karaoke_autodj_recent_ids';
 

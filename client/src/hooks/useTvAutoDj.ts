@@ -1,8 +1,7 @@
 import { useEffect, useRef } from 'react';
-import { enqueueAutoDjSong } from '../services/autoDjService';
 import type { KaraokeRoom, QueueItem } from '../types';
-
 import { isLocalAutoDjActive, getLocalAutoDjGenre } from '../services/autoDjStateService';
+import { getRamQueue, replenishRamQueue } from '../services/autoDjRamQueueService';
 
 export function useTvAutoDj(
   room: KaraokeRoom | null,
@@ -10,10 +9,9 @@ export function useTvAutoDj(
   nextSongs: QueueItem[],
   refreshState: () => Promise<void>,
   onAdvanceIfIdle?: () => void,
-  roomCode: string = 'FIESTA'
+  roomCode = 'FIESTA'
 ) {
-  const isQueueingRef = useRef(false);
-  const lastQueuedAtRef = useRef(0);
+  const isBufferingRef = useRef(false);
   const refreshRef = useRef(refreshState); refreshRef.current = refreshState;
   const advanceRef = useRef(onAdvanceIfIdle); advanceRef.current = onAdvanceIfIdle;
 
@@ -22,48 +20,35 @@ export function useTvAutoDj(
   const genre = room?.auto_dj_genre || getLocalAutoDjGenre(roomCode) || 'cumbia_fiesta';
   const status = room?.status;
   const hasCurrentSong = Boolean(currentSong);
-  const nextCount = nextSongs.length;
 
   useEffect(() => {
     if (!roomId || !isAutoDjEnabled) return;
     if (status === 'closed' || status === 'paused') return;
 
-    // Si ya hay temas de invitados reales en cola, no encolar Auto-DJ
-    const hasGuestSongs = nextSongs.some((s) => !s.requested_by.includes('Auto-DJ'));
-    if (hasGuestSongs) return;
+    // Si no hay canción sonando en la TV, arrancar de inmediato desde la RAM
+    if (!hasCurrentSong && advanceRef.current) {
+      advanceRef.current();
+      return;
+    }
 
-    // Mantener una lista buffer de 3 canciones como mínimo
-    if (nextCount >= 3) return;
-    if (isQueueingRef.current) return;
+    // Si hay pedidos reales de invitados en cola, no recargar canciones de fondo
+    const hasGuestOrders = nextSongs.some((s) => !s.id.startsWith('ram_') && !s.requested_by.includes('Auto-DJ'));
+    if (hasGuestOrders) return;
 
-    const now = Date.now();
-    if (now - lastQueuedAtRef.current < 2500) return;
+    // Mantener siempre el buffer de 3 canciones en la memoria RAM
+    const ramBuffer = getRamQueue();
+    if (ramBuffer.length >= 3 || isBufferingRef.current) return;
 
     let isMounted = true;
-    isQueueingRef.current = true;
-    lastQueuedAtRef.current = now;
+    isBufferingRef.current = true;
+    replenishRamQueue(roomId, genre, 3)
+      .then(() => {
+        if (isMounted) refreshRef.current();
+      })
+      .finally(() => {
+        if (isMounted) isBufferingRef.current = false;
+      });
 
-    const delayMs = hasCurrentSong ? 1500 : 300;
-    const timer = setTimeout(async () => {
-      try {
-        const ok = await enqueueAutoDjSong(roomId, genre);
-        if (ok && isMounted) {
-          await refreshRef.current();
-          if (!hasCurrentSong && advanceRef.current) {
-            advanceRef.current();
-          }
-        }
-      } catch (err) {
-        console.error('Auto-DJ continuous queueing error:', err);
-      } finally {
-        if (isMounted) isQueueingRef.current = false;
-      }
-    }, delayMs);
-
-    return () => {
-      isMounted = false;
-      clearTimeout(timer);
-      isQueueingRef.current = false;
-    };
-  }, [roomId, isAutoDjEnabled, genre, status, hasCurrentSong, nextCount]);
+    return () => { isMounted = false; };
+  }, [roomId, isAutoDjEnabled, genre, status, hasCurrentSong, nextSongs.length]);
 }

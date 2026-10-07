@@ -4,6 +4,26 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.48.0] - 2026-10-07
+
+### 🚀 [ESPECIFICACIÓN / FEATURE]
+- **Buffer de Auto-DJ 100% en Memoria RAM Temporal (`autoDjRamQueueService.ts`, `useTvRealtime.ts`, `useTvAutoDj.ts`):**
+  - **Desacople Total de Supabase:** Toda la música de fondo de Auto-DJ se almacena y gestiona en la memoria RAM y `sessionStorage` del reproductor (tanto en navegadores web como en el TV Box APK).
+  - **Cero Saturación de Supabase:** Se eliminaron las inserciones y actualizaciones masivas en `karaoke_queue` para música automática, reservando la base de datos de Supabase exclusivamente para pedidos reales de clientes y comandos del DJ.
+  - **Prioridad Absoluta de Clientes:** Si un cliente pide una canción vía QR, la TV reproduce el pedido desde Supabase; al finalizar los pedidos de clientes, la TV retoma automáticamente el buffer en RAM sin silencios.
+- **Canción Semilla Diaria Rotativa por Fecha (`dailySeedService.ts`):**
+  - Cada estación cuenta con una canción de partida determinística que cambia día a día según la fecha del sistema (`YYYY-MM-DD`).
+  - Cada día que abre el local comercial, la música de fondo arranca con un artista y tema distinto.
+- **Pipeline en Cascada (Look-Ahead Replenishment):**
+  - Mientras suena el tema inicial, el sistema precarga en segundo plano 3 temas en la RAM.
+  - Al quedar $\le 1$ tema en la cola de RAM, el sistema consulta YouTube y encola de inmediato 2 canciones adicionales.
+- **Categorías Musicales Claras y Agregador Dinámico de Géneros (`HostAutoDjModal.tsx`, `autoDjStations.ts`):**
+  - La interfaz de selección incluye títulos claros y filtros por familias musicales (*Bailables, Rock, Clásicos, Chill*).
+  - Nuevo buscador/agregador dinámico: permite escribir cualquier género existente en YouTube (ej. *"Guaracha"*, *"Synthwave"*) para registrarlo y listarlo al instante.
+- **Cumplimiento Clean-by-Design:** Todos los archivos nuevos y modificados se mantienen estrictamente $\le 120$ líneas.
+
+---
+
 ## [1.47.0] - 2026-10-07
 
 ### 🐛 [CORRECCIÓN / FIX]
