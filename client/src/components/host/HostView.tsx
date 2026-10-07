@@ -2,10 +2,10 @@ import { useState, useRef, useEffect, type FC } from 'react';
 import { AlertCircle, CheckCircle2, Loader2, X } from 'lucide-react';
 import { useTvRealtime } from '../../hooks/useTvRealtime'; import { supabase } from '../../lib/supabaseClient';
 import { HostAuth } from './HostAuth'; import { HostHeader } from './HostHeader'; import { HostNowPlayingCard } from './HostNowPlayingCard'; import { HostQueueSection } from './HostQueueSection'; import { HostTransportBar } from './HostTransportBar'; import { HostMultiRoomBar } from './multiroom/HostMultiRoomBar'; import { HostModals } from './HostModals'; import { HostPendingApprovalView } from './HostPendingApprovalView';
-import { sendRemoteCommand, reorderQueueItem, purgeGuestSongs, deleteQueueItem, resetRoomQueue, updateRoomBanners, toggleQueueLock, getRoomsForOwner, updatePlaybackTick, updateRoomSettings, advanceNextSong } from '../../services/karaokeApi';
-import { enqueueAutoDjSong, purgeAutoDjSongs } from '../../services/autoDjService';
-import { setLocalAutoDjActive, saveRemoteAutoDjSettings, getLocalAutoDjGenre } from '../../services/autoDjStateService';
-import { getLocalRentalSession } from '../../services/rentalService'; import { getRoomChannelName } from '../../utils/channelUtils'; import { logInfo, logError } from '../../services/loggerService';
+import { sendRemoteCommand, reorderQueueItem, purgeGuestSongs, deleteQueueItem, resetRoomQueue, updateRoomBanners, toggleQueueLock, getRoomsForOwner, updatePlaybackTick } from '../../services/karaokeApi';
+import { purgeAutoDjSongs } from '../../services/autoDjService';
+import { saveRemoteAutoDjSettings, getLocalAutoDjGenre } from '../../services/autoDjStateService';
+import { getLocalRentalSession } from '../../services/rentalService'; import { logInfo, logError } from '../../services/loggerService';
 import type { QueueItem, KaraokeRoom, RoomRentalSession } from '../../types';
 
 const SUPER_ADMINS = (import.meta.env.VITE_SUPER_ADMIN_EMAILS || 'satacada@gmail.com,david@gmail.com,admin@karaoke.com').toLowerCase().split(',').map((s: string) => s.trim());

@@ -18,7 +18,7 @@ import { TvFloatingReactions } from './TvFloatingReactions';
 import { updatePlaybackTick } from '../../services/karaokeApi';
 import { purgeAutoDjSongs } from '../../services/autoDjService';
 import { clearRamQueue } from '../../services/autoDjRamQueueService';
-import { setLocalAutoDjActive, getLocalAutoDjGenre } from '../../services/autoDjStateService';
+import { setLocalAutoDjActive } from '../../services/autoDjStateService';
 import { getJoinUrl } from '../../utils/appUrl';
 import { supabase } from '../../lib/supabaseClient';
 import type { TvScale } from '../../types';

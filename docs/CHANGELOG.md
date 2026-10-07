@@ -4,6 +4,21 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.49.0] - 2026-10-07
+
+### 🐛 [CORRECCIÓN / FIX]
+- **Resolución de Errores TypeScript (`tsc -b`) y Reactivación del Pipeline de Despliegue en Vercel:**
+  - **Causa Raíz de Desactualización en Celular y Vercel:** El proceso de compilación `tsc -b` fallaba con 14 errores de tipos estrictos (`TS6133` por importaciones sin usar y `TS2345` por discrepancia de nodos de logs). Por este motivo, Vercel abortaba el build y continuaba sirviendo el bundle compilado anterior, manteniendo visible el botón obsoleto "Guardar Estación" y bloqueando los cambios recientes.
+  - **Limpieza Rigurosa de Código:** Se eliminaron todas las variables sin usar en `HostAutoDjModal.tsx`, `HostView.tsx`, `TvView.tsx`, `autoDjRamQueueService.ts` y se amplió el tipo `LogNode` para incluir `'system'`. La compilación `tsc -b` ahora pasa con 0 errores (código de salida 0).
+- **Visualización Inmediata de los Próximos 2 Temas en la Pantalla TV (`autoDjRamQueueService.ts`, `TvNextQueueTicker.tsx`):**
+  - **Pre-carga Instantánea en RAM:** `replenishRamQueue()` ahora inyecta de forma síncrona/inmediata los primeros 2 temas de fondo de la estación si el buffer en memoria está vacío, permitiendo que el ticker de la TV (`A continuación (2)`) muestre al instante los siguientes temas sin esperar 10 segundos de peticiones asíncronas secuenciales a YouTube.
+- **Insignia de Versión Visible en Celular y TV (`HostHeader.tsx`, `TvIdleScreen.tsx`):**
+  - Se incorporó la insignia `v1.49.0` en la cabecera de la Consola DJ móvil y en el pie de la pantalla TV para que el usuario verifique de forma inequívoca si su navegador está corriendo la última versión productiva o si requiere refrescar la caché.
+- **1-Tap Instantáneo Sin Botón Guardar en el Celular (`HostAutoDjModal.tsx`):**
+  - Al pulsar cualquier género musical, la estación se guarda de inmediato en memoria y se envía a la nube en tiempo real; no se requiere presionar ningún botón de guardar.
+
+---
+
 ## [1.48.0] - 2026-10-07
 
 ### 🚀 [ESPECIFICACIÓN / FEATURE]

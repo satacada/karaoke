@@ -1,7 +1,7 @@
 import { useState, useEffect, type FC } from 'react';
-import { Disc3, X, Sparkles, Radio, Music2, Plus } from 'lucide-react';
-import { getAllStations, addCustomStation, purgeAutoDjSongs, enqueueAutoDjSong } from '../../services/autoDjService';
-import { advanceNextSong, sendRemoteCommand } from '../../services/karaokeApi';
+import { Disc3, X, Sparkles, Plus } from 'lucide-react';
+import { getAllStations, addCustomStation } from '../../services/autoDjService';
+import { sendRemoteCommand } from '../../services/karaokeApi';
 import { saveRemoteAutoDjSettings, isLocalAutoDjActive, getLocalAutoDjGenre } from '../../services/autoDjStateService';
 import type { KaraokeRoom } from '../../types';
 
@@ -27,11 +27,7 @@ export const HostAutoDjModal: FC<HostAutoDjModalProps> = ({ isOpen, room, onClos
   const applyStation = async (genreId: string, isAct: boolean) => {
     setSaving(true);
     await saveRemoteAutoDjSettings(room.id, room.room_code, isAct, genreId);
-    if (!isAct) await purgeAutoDjSongs(room.id);
-    else {
-      const ok = await enqueueAutoDjSong(room.id, genreId);
-      if (ok) { await advanceNextSong(room.id); await sendRemoteCommand(room.id, 'play'); }
-    }
+    if (isAct) await sendRemoteCommand(room.id, 'play');
     setSaving(false); onUpdated(); onClose();
   };
 

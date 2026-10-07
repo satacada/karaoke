@@ -39,6 +39,7 @@ export const HostHeader: FC<HostHeaderProps> = ({
         <div className="min-w-0">
           <div className="flex items-center gap-1.5">
             <span className="text-[10px] uppercase font-bold text-pink-400 tracking-wider">Consola DJ</span>
+            <span className="text-[9px] font-mono font-bold text-purple-300 bg-purple-950/80 border border-purple-500/30 px-1.5 py-0.2 rounded-md">v1.49.0</span>
             {isOwner && (
               <span className="inline-flex items-center gap-0.5 text-[9px] bg-purple-900/60 text-purple-300 border border-purple-700/50 px-1.5 py-0.2 rounded-full font-bold">
                 <Crown className="w-2.5 h-2.5 text-amber-400" /> Dueño

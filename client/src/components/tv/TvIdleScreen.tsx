@@ -92,7 +92,7 @@ export const TvIdleScreen: FC<TvIdleScreenProps> = ({
         )}
       </main>
       <footer className="absolute bottom-2 right-4 z-20 pointer-events-none select-none">
-        <span className="text-[clamp(9px,0.7vw,11px)] font-mono font-medium text-zinc-400/80 uppercase tracking-widest tv-text-outline-sm">powered : David Taboada</span>
+        <span className="text-[clamp(9px,0.7vw,11px)] font-mono font-medium text-zinc-400/80 uppercase tracking-widest tv-text-outline-sm">powered : David Taboada • v1.49.0</span>
       </footer>
     </div>
   );

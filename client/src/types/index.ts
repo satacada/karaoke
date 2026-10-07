@@ -93,7 +93,7 @@ export interface TvPlayerState {
 }
 
 export type LogLevel = 'info' | 'warn' | 'error';
-export type LogNode = 'tv' | 'host' | 'guest' | 'api' | 'db';
+export type LogNode = 'tv' | 'host' | 'guest' | 'api' | 'db' | 'system';
 
 export interface SystemLog {
   id?: string;

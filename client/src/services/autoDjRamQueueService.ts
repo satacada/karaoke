@@ -1,3 +1,9 @@
+// ==============================================================================
+// SERVICIO DE BUFFER AUTO-DJ EN RAM (ZERO ESCRIBIR EN SUPABASE)
+// Archivo: client/src/services/autoDjRamQueueService.ts
+// Regla Clean-by-Design: <= 120 líneas
+// ==============================================================================
+
 import type { QueueItem, SearchResultItem } from '../types';
 import { fetchNextAutoDjTrack, getFallbackTrack } from './autoDjService';
 import { getDailySeedForGenre } from './dailySeedService';
@@ -33,7 +39,7 @@ export function clearRamQueue(): void {
   try { sessionStorage.removeItem(RAM_KEY); } catch {}
 }
 
-export function trackToRamItem(track: SearchResultItem, roomId: string, genre: string): QueueItem {
+export function trackToRamItem(track: SearchResultItem, roomId: string, _genre = ''): QueueItem {
   return {
     id: `ram_${track.videoId}_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
     room_id: roomId, guest_id: null,
@@ -62,14 +68,23 @@ export async function replenishRamQueue(roomId: string, genre: string, targetBuf
   const needed = Math.max(0, targetBuffer - current.length);
   if (needed === 0) return current;
 
+  // Si la cola en memoria está vacía, pre-cargar de inmediato para visualización instantánea en TV
+  if (current.length === 0) {
+    for (let i = 0; i < Math.min(needed, 2); i++) {
+      const fb = getFallbackTrack(genre, current.map((c) => c.author));
+      current.push(trackToRamItem(fb, roomId, genre));
+    }
+    setRamQueue(current);
+  }
+
   const recentArtists = current.map((c) => c.author);
   for (let i = 0; i < needed; i++) {
     const track = await fetchNextAutoDjTrack(genre, recentArtists);
     if (track) {
       current.push(trackToRamItem(track, roomId, genre));
       recentArtists.push(track.author);
+      setRamQueue(current);
     }
   }
-  setRamQueue(current);
   return current;
 }
