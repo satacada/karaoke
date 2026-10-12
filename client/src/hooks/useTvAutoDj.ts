@@ -25,11 +25,8 @@ export function useTvAutoDj(
     if (!roomId || !isAutoDjEnabled) return;
     if (status === 'closed' || status === 'paused') return;
 
-    // Si no hay canción sonando en la TV, arrancar de inmediato desde la RAM
-    if (!hasCurrentSong && advanceRef.current) {
-      advanceRef.current();
-      return;
-    }
+    // Si no hay canción sonando en la TV, NO auto-arrancar solo; esperar la orden del administrador
+    // (Auto-DJ solo mantiene canciones preparadas en RAM)
 
     // Si hay pedidos reales de invitados en cola, no recargar canciones de fondo
     const hasGuestOrders = nextSongs.some((s) => !s.id.startsWith('ram_') && !s.requested_by.includes('Auto-DJ'));

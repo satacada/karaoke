@@ -43,7 +43,7 @@ export async function saveRemoteAutoDjSettings(
     supabase.channel(ch).send({
       type: 'broadcast',
       event: 'set_auto_dj',
-      payload: { enabled, genre },
+      payload: { enabled, genre, immediate: true },
     }).catch(() => {});
 
     await supabase.from('karaoke_commands').insert([

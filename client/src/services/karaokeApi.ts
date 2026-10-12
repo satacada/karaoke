@@ -72,6 +72,10 @@ export async function sendRemoteCommand(
   command: CommandType,
   payload: Record<string, unknown> = {}
 ): Promise<RemoteCommand | null> {
+  try {
+    const ch = supabase.channel(`tv-room-${roomId}`);
+    ch.send({ type: 'broadcast', event: 'remote_command', payload: { command, payload } }).catch(() => {});
+  } catch {}
   const { data, error } = await supabase
     .from('karaoke_commands')
     .insert([{ room_id: roomId, command, payload }])

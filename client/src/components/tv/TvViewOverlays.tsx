@@ -6,7 +6,7 @@ import type { QueueItem, PromoBanner } from '../../types';
 interface TvViewOverlaysProps {
   roomCode: string;
   roomName?: string;
-  joinUrl: string;
+  joinUrl?: string;
   currentSong: QueueItem | null;
   banners: PromoBanner[];
   showUnlinkModal: boolean;
@@ -18,7 +18,6 @@ interface TvViewOverlaysProps {
 export const TvViewOverlays: FC<TvViewOverlaysProps> = ({
   roomCode,
   roomName,
-  joinUrl,
   currentSong,
   banners,
   showUnlinkModal,
@@ -30,11 +29,9 @@ export const TvViewOverlays: FC<TvViewOverlaysProps> = ({
     <>
       <TvSidebarOverlay
         roomCode={roomCode}
-        joinUrl={joinUrl}
         currentSong={currentSong}
         banners={banners}
         onOpenSettings={() => setShowUnlinkModal(true)}
-        onSwitchToHost={onSwitchToHost}
       />
       <TvUnlinkModal
         isOpen={showUnlinkModal}

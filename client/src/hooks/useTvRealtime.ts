@@ -73,6 +73,11 @@ export function useTvRealtime(roomCode: string, onRemoteCommand?: (command: Remo
           await markCommandExecuted(cmd.id);
         }
       })
+      .on('broadcast', { event: 'remote_command' }, ({ payload }) => {
+        if (onCommandRef.current && payload?.command) {
+          onCommandRef.current({ id: 'b_cmd', room_id: roomId, command: payload.command, payload: payload.payload || {}, is_executed: true, created_at: new Date().toISOString() });
+        }
+      })
       .on('broadcast', { event: 'set_promo_banners' }, ({ payload }) => {
         if (onCommandRef.current && payload?.banners) onCommandRef.current({ id: 'b_local', room_id: roomId, command: 'set_promo_banners', payload: { banners: payload.banners }, is_executed: true, created_at: new Date().toISOString() });
       })
@@ -82,10 +87,15 @@ export function useTvRealtime(roomCode: string, onRemoteCommand?: (command: Remo
       .on('broadcast', { event: 'set_tv_scale' }, ({ payload }) => {
         if (onCommandRef.current && payload?.scale) onCommandRef.current({ id: 'b_scale', room_id: roomId, command: 'volume', payload: { action: 'set_tv_scale', scale: payload.scale }, is_executed: true, created_at: new Date().toISOString() });
       })
-      .on('broadcast', { event: 'set_auto_dj' }, ({ payload }) => {
+      .on('broadcast', { event: 'set_auto_dj' }, async ({ payload }) => {
         if (payload) {
           setLocalAutoDjActive(roomCode, Boolean(payload.enabled), payload.genre);
           setRoom((p) => p ? { ...p, auto_dj_enabled: payload.enabled, auto_dj_genre: payload.genre } : p);
+          if (payload.immediate && payload.genre) {
+            const seed = await fetchDailySeedRamTrack(roomId, payload.genre);
+            ramSongRef.current = seed; setCurrentSong(seed);
+            replenishRamQueue(roomId, payload.genre, 3).then(() => setNextSongs(getRamQueue()));
+          }
         }
       })
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'karaoke_rooms', filter: `id=eq.${roomId}` }, (payload) => {

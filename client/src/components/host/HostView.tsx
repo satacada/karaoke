@@ -74,9 +74,6 @@ export const HostView: FC<{ roomCode?: string; onSwitchToTv?: () => void; onSwit
   };
 
   const handleTogglePlayPause = () => {
-    if (!currentSong && nextSongs.length === 0) {
-      setShowAutoDjModal(true); setSystemNotice({ text: 'Cola vacía: selecciona una estación para dar tu visto bueno.', type: 'info' }); return;
-    }
     const nextPlaying = !isPlaying; setIsPlaying(nextPlaying); handleCommand(nextPlaying ? 'play' : 'pause');
     if (room) updatePlaybackTick(room.id, nextPlaying, room.current_time_seconds || 0).catch(() => {});
   };

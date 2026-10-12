@@ -1,22 +1,18 @@
 import type { FC } from 'react';
 import { Settings } from 'lucide-react';
-import { TvFloatingQr } from './TvFloatingQr';
-import { TvLiveReactionsZone } from './TvLiveReactionsZone';
 import { TvPromoTicker } from './TvPromoTicker';
 import { TvDedicationBanner } from './TvDedicationBanner';
 import type { PromoBanner, QueueItem } from '../../types';
 
 interface TvSidebarOverlayProps {
   roomCode: string;
-  joinUrl: string;
   currentSong: QueueItem | null;
   banners: PromoBanner[];
   onOpenSettings: () => void;
-  onSwitchToHost?: () => void;
 }
 
 export const TvSidebarOverlay: FC<TvSidebarOverlayProps> = ({
-  roomCode, joinUrl, currentSong, banners, onOpenSettings, onSwitchToHost
+  roomCode, currentSong, banners, onOpenSettings
 }) => {
   if (!currentSong) return null;
   return (
@@ -31,10 +27,6 @@ export const TvSidebarOverlay: FC<TvSidebarOverlayProps> = ({
           <Settings className="w-3 h-3" />
         </button>
       </div>
-      <div className="pointer-events-auto w-full">
-        <TvFloatingQr roomCode={roomCode} joinUrl={joinUrl} onSwitchToHost={onSwitchToHost} currentSongId={currentSong?.id} />
-      </div>
-      <TvLiveReactionsZone roomCode={roomCode} />
       <TvPromoTicker banners={banners} roomCode={roomCode} />
       <TvDedicationBanner currentSong={currentSong} />
     </aside>

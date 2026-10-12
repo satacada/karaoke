@@ -25,15 +25,13 @@ export const HostSettingsModal: FC<HostSettingsModalProps> = ({
   if (!isOpen || !room) return null;
 
   const handleThemeChange = (theme: TvTheme) => {
-    setTvTheme(theme);
-    sendRemoteCommand(room.id, 'volume', { action: 'set_tv_theme', theme }).catch(() => {});
+    setTvTheme(theme); sendRemoteCommand(room.id, 'volume', { action: 'set_tv_theme', theme }).catch(() => {});
     supabase.channel(`tv-room-${room.id}`).send({ type: 'broadcast', event: 'set_tv_theme', payload: { theme } }).catch(() => {});
     try { localStorage.setItem(`tv_theme_${room.room_code}`, theme); } catch {}
   };
 
   const handleScaleChange = (scale: TvScale) => {
-    setTvScale(scale);
-    sendRemoteCommand(room.id, 'volume', { action: 'set_tv_scale', scale }).catch(() => {});
+    setTvScale(scale); sendRemoteCommand(room.id, 'volume', { action: 'set_tv_scale', scale }).catch(() => {});
     supabase.channel(`tv-room-${room.id}`).send({ type: 'broadcast', event: 'set_tv_scale', payload: { scale } }).catch(() => {});
     try { localStorage.setItem(`tv_scale_${room.room_code}`, scale); } catch {}
   };
@@ -97,9 +95,21 @@ export const HostSettingsModal: FC<HostSettingsModalProps> = ({
           </div>
 
           <div className="pt-1 flex gap-2">
-            <button type="button" onClick={onClose} className="flex-1 py-2.5 rounded-xl text-xs font-semibold bg-zinc-800 text-zinc-300 hover:bg-zinc-700">Cancelar</button>
-            <button type="submit" disabled={saving || newPin.length !== 4} className="flex-1 py-2.5 rounded-xl text-xs font-bold bg-purple-600 hover:bg-purple-500 text-white flex items-center justify-center gap-1.5 disabled:opacity-50">
-              {savedSuccess ? <Check className="w-4 h-4 text-emerald-300" /> : saving ? 'Guardando...' : 'Guardar'}
+            <button type="button" onClick={onClose} className="flex-1 py-2 rounded-xl text-xs font-semibold bg-zinc-800 text-zinc-300 hover:bg-zinc-700">Cancelar</button>
+            <button type="submit" disabled={saving || newPin.length !== 4} className="flex-1 py-2 rounded-xl text-xs font-bold bg-purple-600 hover:bg-purple-500 text-white flex items-center justify-center gap-1.5 disabled:opacity-50">{savedSuccess ? <Check className="w-4 h-4 text-emerald-300" /> : saving ? 'Guardando...' : 'Guardar'}</button>
+          </div>
+
+          <div className="pt-2 border-t border-zinc-800/80">
+            <button
+              type="button"
+              onClick={() => {
+                const nav = window.navigator as unknown as { app?: { exitApp?: () => void } };
+                const cap = (window as unknown as { Capacitor?: { Plugins?: { App?: { exitApp: () => void } } } })?.Capacitor;
+                if (nav?.app?.exitApp) { nav.app.exitApp(); } else if (cap?.Plugins?.App?.exitApp) { cap.Plugins.App.exitApp(); } else { window.location.href = '/'; }
+              }}
+              className="w-full py-2 px-3 rounded-xl bg-rose-950/40 hover:bg-rose-900/60 border border-rose-500/30 text-rose-300 font-bold text-xs flex items-center justify-center gap-2 cursor-pointer transition-colors active:scale-95"
+            >
+              <span>🚪 Salir de la aplicación</span>
             </button>
           </div>
         </form>

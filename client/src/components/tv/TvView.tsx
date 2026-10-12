@@ -14,6 +14,7 @@ import { TvThemeFrame } from './TvThemeFrame';
 import { TvRentalBadge } from './TvRentalBadge';
 import { TvVoiceHUD } from './TvVoiceHUD';
 import { TvViewOverlays } from './TvViewOverlays';
+import { TvFloatingQr } from './TvFloatingQr';
 import { TvFloatingReactions } from './TvFloatingReactions';
 import { updatePlaybackTick } from '../../services/karaokeApi';
 import { purgeAutoDjSongs } from '../../services/autoDjService';
@@ -30,11 +31,9 @@ export const TvView: FC<{ roomCode?: string; onUnlink?: () => void; onSwitchToHo
   const lastSyncRef = useRef<number>(0);
   const handleNextSongRef = useRef<() => void>(() => {});
   const handleStartAutoDjRef = useRef<() => void>(() => {});
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
+  const [currentTime, setCurrentTime] = useState(0), [duration, setDuration] = useState(0);
   const [errorNotice, setErrorNotice] = useState<string | null>(null);
-  const [showUnlinkModal, setShowUnlinkModal] = useState(false);
-  const [isStartingAutoDj, setIsStartingAutoDj] = useState(false);
+  const [showUnlinkModal, setShowUnlinkModal] = useState(false), [isStartingAutoDj, setIsStartingAutoDj] = useState(false);
 
   const { isPaused, setIsPaused, isFlashing, banners, setBanners, rentalSession, tvTheme, tvScale, handleRemoteCommand } =
     useTvRemoteHandler(roomCode, playerRef, handleNextSongRef, handleStartAutoDjRef, onUnlink);
@@ -113,6 +112,7 @@ export const TvView: FC<{ roomCode?: string; onUnlink?: () => void; onSwitchToHo
         </>
       )}
       <div className="absolute top-0 right-0 z-40 pointer-events-none" style={{ transform: `scale(${scaleFactor})`, transformOrigin: 'top right' }}><TvViewOverlays roomCode={roomCode} roomName={room?.zone_name || room?.name} joinUrl={joinUrl} currentSong={currentSong} banners={banners} showUnlinkModal={showUnlinkModal} setShowUnlinkModal={setShowUnlinkModal} onUnlink={onUnlink} onSwitchToHost={onSwitchToHost} /></div>
+      {currentSong && <div className="absolute bottom-3 right-3 z-40" style={{ transform: `scale(${scaleFactor})`, transformOrigin: 'bottom right' }}><TvFloatingQr roomCode={roomCode} joinUrl={joinUrl} onSwitchToHost={onSwitchToHost} /></div>}
       <TvFloatingReactions roomCode={roomCode} />
     </div>
   );

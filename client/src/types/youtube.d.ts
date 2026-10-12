@@ -16,6 +16,7 @@ declare global {
             origin?: string;
             playsinline?: 0 | 1;
             rel?: 0 | 1;
+            cc_load_policy?: 0 | 1;
             start?: number;
           };
           events?: {
@@ -53,5 +54,7 @@ export interface YTPlayerInstance {
   getPlayerState(): number;
   getCurrentTime(): number;
   getDuration(): number;
+  unloadModule?(moduleName: string): void;
+  setOption?(module: string, option: string, value: unknown): void;
   destroy(): void;
 }

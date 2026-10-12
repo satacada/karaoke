@@ -9,6 +9,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@capacitor/android": "7.6.9",
+    "@capacitor/cli": "7.6.9",
+    "@capacitor/core": "7.6.9",
     "@supabase/supabase-js": "^2.116.0",
     "@tailwindcss/vite": "^4.3.3",
     "canvas-confetti": "^1.9.4",
@@ -28,5 +31,8 @@
     "puppeteer-core": "^25.10.0",
     "typescript": "~6.0.2",
     "vite": "^8.2.2"
+  },
+  "optionalDependencies": {
+    "@rolldown/binding-linux-x64-gnu": "^1.2.13"
   }
 }
