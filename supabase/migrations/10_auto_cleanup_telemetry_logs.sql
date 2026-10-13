@@ -1,5 +1,5 @@
 -- ==============================================================================
--- MIGRACIÓN 10: AUTO-LIMPIEZA DE TELEMETRÍA Y TAREA PROGRAMADA (TEMPORAL)
+-- MIGRACIÓN 10: AUTO-LIMPIEZA DE TELEMETRÍA Y TAREA PROGRAMADA (IDEMPOTENTE)
 -- Archivo: supabase/migrations/10_auto_cleanup_telemetry_logs.sql
 -- Motor: PostgreSQL 15+ (Supabase)
 -- ==============================================================================
@@ -26,14 +26,19 @@ ON public.karaoke_system_logs (created_at DESC);
 -- Habilitar RLS
 ALTER TABLE public.karaoke_system_logs ENABLE ROW LEVEL SECURITY;
 
-DROP POLICY IF EXISTS "Permitir insercion anonima de logs" ON public.karaoke_system_logs;
+-- Limpieza segura de políticas previas (evita error 42710)
+DO $$
+BEGIN
+    DROP POLICY IF EXISTS "Permitir insercion anonima de logs" ON public.karaoke_system_logs;
+    DROP POLICY IF EXISTS "Permitir lectura publica de logs" ON public.karaoke_system_logs;
+END $$;
+
 CREATE POLICY "Permitir insercion anonima de logs"
 ON public.karaoke_system_logs
 FOR INSERT
 TO anon, authenticated
 WITH CHECK (true);
 
-DROP POLICY IF EXISTS "Permitir lectura publica de logs" ON public.karaoke_system_logs;
 CREATE POLICY "Permitir lectura publica de logs"
 ON public.karaoke_system_logs
 FOR SELECT
@@ -68,7 +73,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 CREATE OR REPLACE FUNCTION public.tr_trigger_auto_cleanup_logs()
 RETURNS TRIGGER AS $$
 BEGIN
-    -- Ejecuta la purga con 1% de probabilidad en cada inserción para no afectar rendimiento
+    -- Ejecuta la purga con probabilidad en cada inserción para no afectar rendimiento
     IF (random() < 0.05) THEN
         PERFORM public.fn_cleanup_old_telemetry_logs();
     END IF;

@@ -4,6 +4,31 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.49.7] - 2026-10-13
+
+### 🚀 [ESPECIFICACIÓN / FEATURE]
+- **Buscador Directo de Canciones para DJ / Administrador (`HostSongSearchModal.tsx`, `HostQueueSection.tsx`, `HostView.tsx`):**
+  - Nuevo modal dedicado de búsqueda en YouTube para el anfitrión con dos acciones por resultado: `▶ Sonar YA` (reproduce inmediatamente en la TV) y `⚡ Siguiente` (la ubica primera en la fila de espera).
+  - Botón accesible `+ Buscar Tema` en la cabecera de la cola del administrador y acceso destacado desde la tarjeta de cola vacía.
+- **Opción para Ocultar/Cerrar Géneros en la Consola Administrador (`HostEmptyQueueCard.tsx`):**
+  - Botón toggle `Ocultar Estaciones / Ver Estaciones` para evitar que la tarjeta de géneros bloquee la pantalla del anfitrión.
+  - Etiquetas globales claras de cada estación musical (Hits 80s & 90s, Rock Nacional & Clásicos, Cumbia & Fiesta, Cuarteto Cordobés).
+- **Selección Táctil y Botón "Sonar YA" en Canciones de la Cola (`HostQueueItem.tsx`):**
+  - Las tarjetas de la cola ahora responden al toque con retroalimentación visual (`isSelected`, resaltado púrpura).
+  - Nuevo botón directo `▶ Sonar YA` en cada ítem de la cola para forzar reproducción inmediata en la TV.
+- **Rediseño del HUD Inferior en la TV (`TvNowPlayingHUD.tsx`):**
+  - Se eliminó por completo el botón visual de Pausa/Continuar que saltaba en pantalla. El control remoto físico sigue respondiendo a las teclas multimedia sin invasión visual.
+  - Nueva distribución ergonómica: Título y artista en la parte inferior izquierda, tiempo de reproducción a su derecha (`[1:20 / 3:45]`), barra de avance horizontal continua en la parte inferior y marca de agua `Powered by DTC`.
+- **Títulos de Canciones Más Suaves y No Invasivos en la TV (`TvNextQueueTicker.tsx`):**
+  - Títulos con color claro, suave y translúcido (`text-white/75`) con contorno oscuro nítido (`tv-text-outline`), reduciendo el impacto visual sobre el video musical.
+- **Tuerca de Ajustes en la Esquina Superior Derecha de la TV (`TvSidebarOverlay.tsx`, `TvUnlinkModal.tsx`):**
+  - Botón de tuerca accesible arriba a la derecha que abre el modal con el Código QR para el Administrador, opciones de diagnóstico, desvinculación y salida segura de la aplicación (`window.close()` / `Capacitor.App.exitApp()`).
+- **Sincronización Total de Listas TV ➔ Celular (`useTvRealtime.ts`):**
+  - La TV transmite el evento broadcast `tv_sync_state` cada vez que avanza o cambia de tema en Auto-DJ o temas reales, garantizando que el celular del administrador y la TV muestren exactamente las mismas canciones.
+  - Soporte para `request_tv_state` cuando el celular se conecta a la sala para consultar la lista en tiempo real de la TV.
+
+---
+
 ## [1.49.6] - 2026-10-12
 
 ### 🐛 [CORRECCIÓN / FIX]

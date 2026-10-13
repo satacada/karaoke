@@ -2,8 +2,8 @@ import { useState, useRef, useEffect, type FC } from 'react';
 import { AlertCircle, CheckCircle2, Loader2, X } from 'lucide-react';
 import { useTvRealtime } from '../../hooks/useTvRealtime'; import { supabase } from '../../lib/supabaseClient';
 import { HostAuth } from './HostAuth'; import { HostHeader } from './HostHeader'; import { HostNowPlayingCard } from './HostNowPlayingCard'; import { HostQueueSection } from './HostQueueSection'; import { HostTransportBar } from './HostTransportBar'; import { HostMultiRoomBar } from './multiroom/HostMultiRoomBar'; import { HostModals } from './HostModals'; import { HostPendingApprovalView } from './HostPendingApprovalView';
-import { sendRemoteCommand, reorderQueueItem, purgeGuestSongs, deleteQueueItem, resetRoomQueue, updateRoomBanners, toggleQueueLock, getRoomsForOwner, updatePlaybackTick } from '../../services/karaokeApi'; import { getRoomChannelName } from '../../utils/channelUtils'; import { purgeAutoDjSongs } from '../../services/autoDjService'; import { saveRemoteAutoDjSettings, getLocalAutoDjGenre } from '../../services/autoDjStateService'; import { clearRamQueue, fetchDailySeedRamTrack, replenishRamQueue } from '../../services/autoDjRamQueueService'; import { getLocalRentalSession } from '../../services/rentalService'; import { logError, logInfo } from '../../services/loggerService';
-import type { QueueItem, KaraokeRoom, RoomRentalSession } from '../../types';
+import { sendRemoteCommand, reorderQueueItem, purgeGuestSongs, deleteQueueItem, resetRoomQueue, updateRoomBanners, toggleQueueLock, getRoomsForOwner, updatePlaybackTick, addSongToQueue } from '../../services/karaokeApi'; import { getRoomChannelName } from '../../utils/channelUtils'; import { purgeAutoDjSongs } from '../../services/autoDjService'; import { saveRemoteAutoDjSettings, getLocalAutoDjGenre } from '../../services/autoDjStateService'; import { clearRamQueue, fetchDailySeedRamTrack, replenishRamQueue } from '../../services/autoDjRamQueueService'; import { getLocalRentalSession } from '../../services/rentalService'; import { logError, logInfo } from '../../services/loggerService';
+import type { QueueItem, KaraokeRoom, RoomRentalSession, SearchResultItem } from '../../types';
 
 const SUPER_ADMINS = (import.meta.env.VITE_SUPER_ADMIN_EMAILS || 'satacada@gmail.com,david@gmail.com,admin@karaoke.com').toLowerCase().split(',').map((s: string) => s.trim());
 
@@ -12,6 +12,7 @@ export const HostView: FC<{ roomCode?: string; onSwitchToTv?: () => void; onSwit
   const [isOwner, setIsOwner] = useState(false); const [ownerEmail, setOwnerEmail] = useState<string | null>(null); const [userName, setUserName] = useState<string | null>(null); const [ownerRooms, setOwnerRooms] = useState<KaraokeRoom[]>([]);
   const [volume, setVolume] = useState(100); const [isPlaying, setIsPlaying] = useState(true); const [theme, setTheme] = useState<'dark' | 'blue' | 'neon' | 'light'>(() => (localStorage.getItem('host_theme') as 'dark' | 'blue' | 'neon' | 'light') || 'dark'); const [fontSize, setFontSize] = useState<'normal' | 'large' | 'xl'>(() => (localStorage.getItem('host_font_size') as 'normal' | 'large' | 'xl') || 'normal');
   const [showResetModal, setShowResetModal] = useState(false); const [showGuestModal, setShowGuestModal] = useState(false); const [showSettingsModal, setShowSettingsModal] = useState(false); const [showSuperAdminModal, setShowSuperAdminModal] = useState(false); const [showBannersModal, setShowBannersModal] = useState(false); const [showMasterHubModal, setShowMasterHubModal] = useState(false); const [showCreateRoomModal, setShowCreateRoomModal] = useState(false); const [roomToTransfer, setRoomToTransfer] = useState<KaraokeRoom | null>(null); const [songToDelete, setSongToDelete] = useState<QueueItem | null>(null); const [isResetting, setIsResetting] = useState(false); const [showAutoDjModal, setShowAutoDjModal] = useState(false); const [showRentalModal, setShowRentalModal] = useState(false); const [isStartingAutoDj, setIsStartingAutoDj] = useState(false); const [rentalSession, setRentalSession] = useState<RoomRentalSession | null>(() => getLocalRentalSession(activeCode)); const [showPairTvModal, setShowPairTvModal] = useState(() => Boolean(new URLSearchParams(window.location.search).get('pair'))); const [pairCode] = useState(() => new URLSearchParams(window.location.search).get('pair') || ''); const [showDiagnosticsModal, setShowDiagnosticsModal] = useState(false);
+  const [showSongSearchModal, setShowSongSearchModal] = useState(false);
   const [systemNotice, setSystemNotice] = useState<{ text: string; type: 'info' | 'success' | 'error' | 'loading' } | null>(null);
   const draggedIndexRef = useRef<number | null>(null);
   const { room, currentSong, nextSongs, handleNextSong, refreshState } = useTvRealtime(activeCode);
@@ -22,8 +23,7 @@ export const HostView: FC<{ roomCode?: string; onSwitchToTv?: () => void; onSwit
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       if (data?.user?.email) {
-        setIsOwner(true); setOwnerEmail(data.user.email);
-        const name = data.user.user_metadata?.full_name || data.user.user_metadata?.name || data.user.email.split('@')[0];
+        setIsOwner(true); setOwnerEmail(data.user.email); const name = data.user.user_metadata?.full_name || data.user.user_metadata?.name || data.user.email.split('@')[0];
         setUserName(name); setIsAuthenticated(true); sessionStorage.setItem(`host_auth_${activeCode}`, 'true'); localStorage.setItem(`host_auth_${activeCode}`, 'true'); localStorage.setItem('rockola_is_admin_device', 'true'); loadOwnerRooms(data.user.email);
       } else { loadOwnerRooms('all'); }
     });
@@ -45,58 +45,60 @@ export const HostView: FC<{ roomCode?: string; onSwitchToTv?: () => void; onSwit
     handleCommand('skip'); await handleNextSong();
   };
 
+  const handlePlayNow = async (song: SearchResultItem) => {
+    if (!room) return;
+    logInfo(activeCode, 'host', 'host_play_now', `DJ eligió reproducir de inmediato: ${song.title}`);
+    await addSongToQueue({ roomId: room.id, videoId: song.videoId, title: song.title, author: song.author, thumbnailUrl: song.thumbnailUrl, durationSeconds: song.durationSeconds, durationText: song.durationText, requestedBy: 'DJ Anfitrión', isVip: true });
+    await handleSkip();
+  };
+  const handleAddToQueueNext = async (song: SearchResultItem) => {
+    if (!room) return;
+    await addSongToQueue({ roomId: room.id, videoId: song.videoId, title: song.title, author: song.author, thumbnailUrl: song.thumbnailUrl, durationSeconds: song.durationSeconds, durationText: song.durationText, requestedBy: 'DJ Anfitrión', isVip: true });
+    refreshState();
+  };
+  const handlePlayQueueSongNow = async (item: QueueItem) => {
+    if (!room) return;
+    if (item.id.startsWith('ram_')) {
+      const q = nextSongs.filter((s) => s.id !== item.id);
+      const payload = { currentSong: item, nextSongs: q };
+      supabase.channel(getRoomChannelName(room.id)).send({ type: 'broadcast', event: 'tv_sync_state', payload }).catch(() => {});
+      supabase.channel(`tv-room-${room.id}`).send({ type: 'broadcast', event: 'tv_sync_state', payload }).catch(() => {});
+      handleCommand('play'); refreshState();
+    } else {
+      await reorderQueueItem(room.id, item.id, 1); await handleSkip();
+    }
+  };
+
   const handleStartAutoDj = async (chosenGenre?: string) => {
     if (!room || isStartingAutoDj) return;
-    setIsStartingAutoDj(true);
-    const targetGenre = chosenGenre || room.auto_dj_genre || getLocalAutoDjGenre(activeCode) || 'cumbia_fiesta';
+    setIsStartingAutoDj(true); const targetGenre = chosenGenre || room.auto_dj_genre || getLocalAutoDjGenre(activeCode) || 'cumbia_fiesta';
     setSystemNotice({ text: `Cambiando a estación "${targetGenre}"...`, type: 'loading' });
     try {
-      await saveRemoteAutoDjSettings(room.id, activeCode, true, targetGenre);
-      await purgeAutoDjSongs(room.id); clearRamQueue();
-      const seed = await fetchDailySeedRamTrack(room.id, targetGenre);
-      const q = await replenishRamQueue(room.id, targetGenre, 3);
+      await saveRemoteAutoDjSettings(room.id, activeCode, true, targetGenre); await purgeAutoDjSongs(room.id); clearRamQueue();
+      const seed = await fetchDailySeedRamTrack(room.id, targetGenre); const q = await replenishRamQueue(room.id, targetGenre, 3);
       supabase.channel(getRoomChannelName(room.id)).send({ type: 'broadcast', event: 'tv_sync_state', payload: { currentSong: seed, nextSongs: q } }).catch(() => {});
       supabase.channel(`tv-room-${room.id}`).send({ type: 'broadcast', event: 'tv_sync_state', payload: { currentSong: seed, nextSongs: q } }).catch(() => {});
       handleCommand('play'); handleCommand('skip');
-      setSystemNotice({ text: '¡Estación iniciada exitosamente en la TV! 🎶', type: 'success' });
-      await refreshState();
-    } catch (err) {
-      setSystemNotice({ text: 'Error al cambiar música. Reintenta.', type: 'error' });
-      logError(activeCode, 'host', 'start_autodj_error', 'Error iniciando Auto-DJ', { err: String(err) });
-    } finally { setIsStartingAutoDj(false); setTimeout(() => setSystemNotice(null), 4000); }
+      setSystemNotice({ text: '¡Estación iniciada exitosamente en la TV! 🎶', type: 'success' }); await refreshState();
+    } catch (err) { setSystemNotice({ text: 'Error al cambiar música. Reintenta.', type: 'error' }); logError(activeCode, 'host', 'start_autodj_error', 'Error iniciando Auto-DJ', { err: String(err) }); }
+    finally { setIsStartingAutoDj(false); setTimeout(() => setSystemNotice(null), 4000); }
   };
 
   const handleTogglePlayPause = () => {
     const nextPlaying = !isPlaying; setIsPlaying(nextPlaying); handleCommand(nextPlaying ? 'play' : 'pause');
-    logInfo(activeCode, 'host', 'host_play_pause', `DJ cambió estado a ${nextPlaying ? 'REPRODUCIENDO' : 'PAUSADO'}`, { nextPlaying });
     if (room) updatePlaybackTick(room.id, nextPlaying, room.current_time_seconds || 0).catch(() => {});
   };
 
   const handleMoveToNext = async (id: string) => {
     if (!room) return;
-    logInfo(activeCode, 'host', 'host_promote_next', `DJ promovió canción a #1 siguiente: ${id}`, { songId: id });
     if (id.startsWith('ram_')) {
-      const currentQueue = [...nextSongs];
-      const targetIdx = currentQueue.findIndex((s) => s.id === id);
-      if (targetIdx > 0) {
-        const [targetSong] = currentQueue.splice(targetIdx, 1);
-        currentQueue.unshift(targetSong);
-        const ch = getRoomChannelName(room.id);
-        const payload = { currentSong, nextSongs: currentQueue };
-        supabase.channel(ch).send({ type: 'broadcast', event: 'tv_sync_state', payload }).catch(() => {});
-        supabase.channel(`tv-room-${room.id}`).send({ type: 'broadcast', event: 'tv_sync_state', payload }).catch(() => {});
-        refreshState();
-      }
-    } else {
-      await reorderQueueItem(room.id, id, 1);
-      refreshState();
-    }
+      const q = [...nextSongs]; const idx = q.findIndex((s) => s.id === id);
+      if (idx > 0) { const [t] = q.splice(idx, 1); q.unshift(t); const payload = { currentSong, nextSongs: q }; supabase.channel(getRoomChannelName(room.id)).send({ type: 'broadcast', event: 'tv_sync_state', payload }).catch(() => {}); supabase.channel(`tv-room-${room.id}`).send({ type: 'broadcast', event: 'tv_sync_state', payload }).catch(() => {}); refreshState(); }
+    } else { await reorderQueueItem(room.id, id, 1); refreshState(); }
   };
 
   if (!isAuthenticated) return <HostAuth expectedPin={room?.host_pin || '1234'} roomCode={activeCode} onAuthenticated={handleAuth} />;
-  if (room && room.is_approved === false && !isSuperAdmin) {
-    return <HostPendingApprovalView roomCode={activeCode} businessName={room.business_name || room.name} ownerEmail={ownerEmail || 'No asignado'} onLoggedOut={handleLogout} />;
-  }
+  if (room && room.is_approved === false && !isSuperAdmin) return <HostPendingApprovalView roomCode={activeCode} businessName={room.business_name || room.name} ownerEmail={ownerEmail || 'No asignado'} onLoggedOut={handleLogout} />;
 
   return (
     <div className={`theme-${theme} font-scale-${fontSize} min-h-screen bg-zinc-950 text-zinc-100 flex flex-col max-w-lg mx-auto pb-32 pt-2 px-3 sm:px-4 select-none transition-colors duration-200`}>
@@ -108,11 +110,9 @@ export const HostView: FC<{ roomCode?: string; onSwitchToTv?: () => void; onSwit
           <button type="button" onClick={() => setSystemNotice(null)} className="p-1 text-zinc-400 hover:text-white"><X className="w-3 h-3" /></button>
         </div>
       )}
-      <section className="mb-4">
-        <HostNowPlayingCard currentSong={currentSong} currentTime={room?.current_time_seconds || 0} onSkip={handleSkip} onSeek={(targetSec) => handleCommand('seek', { seconds: targetSec })} />
-      </section>
-      <HostQueueSection room={room} currentSong={currentSong} nextSongs={nextSongs} isStartingAutoDj={isStartingAutoDj} onOpenAutoDj={() => setShowAutoDjModal(true)} onStartAutoDj={!currentSong ? () => handleStartAutoDj() : undefined} onStartGenre={(g) => handleStartAutoDj(g)} onMoveToNext={handleMoveToNext} onMoveUp={async (id, pos) => { if (room) { await reorderQueueItem(room.id, id, pos - 1); refreshState(); } }} onMoveDown={async (id, pos) => { if (room) { await reorderQueueItem(room.id, id, pos + 1); refreshState(); } }} onDelete={setSongToDelete} onDragStart={(_, i) => { draggedIndexRef.current = i; }} onDrop={async (tIdx) => { if (room && draggedIndexRef.current !== null && nextSongs[draggedIndexRef.current]) { await reorderQueueItem(room.id, nextSongs[draggedIndexRef.current].id, tIdx + 1); refreshState(); } }} />
-      <HostModals showResetModal={showResetModal} isResetting={isResetting} onConfirmReset={async () => { if (room) { setIsResetting(true); await resetRoomQueue(room.id); setIsResetting(false); setShowResetModal(false); refreshState(); } }} onCloseReset={() => setShowResetModal(false)} showGuestModal={showGuestModal} nextSongs={nextSongs} onPurgeGuest={async (gid) => { if (room) await purgeGuestSongs(room.id, gid); refreshState(); setShowGuestModal(false); }} onCloseGuest={() => setShowGuestModal(false)} songToDelete={songToDelete} onConfirmDeleteSong={async () => { if (songToDelete) await deleteQueueItem(songToDelete.id); setSongToDelete(null); refreshState(); }} onCloseDeleteSong={() => setSongToDelete(null)} showSettingsModal={showSettingsModal} room={room} ownerEmail={ownerEmail} onCloseSettings={() => setShowSettingsModal(false)} onSavedSettings={refreshState} showSuperAdminModal={showSuperAdminModal} onCloseSuperAdmin={() => setShowSuperAdminModal(false)} onUpdatedSuperAdmin={refreshState} showBannersModal={showBannersModal} onCloseBanners={() => setShowBannersModal(false)} onSaveBanners={async (b) => { if (room) await updateRoomBanners(room.id, b); refreshState(); setShowBannersModal(false); }} showMasterHubModal={showMasterHubModal} ownerRooms={ownerRooms} onCloseMasterHub={() => setShowMasterHubModal(false)} onRefreshMasterHub={() => { refreshState(); if (ownerEmail) loadOwnerRooms(ownerEmail); }} onOpenTransfer={(r) => setRoomToTransfer(r)} onOpenCreateRoom={() => setShowCreateRoomModal(true)} showCreateRoomModal={showCreateRoomModal} onCloseCreateRoom={() => setShowCreateRoomModal(false)} onCreatedRoom={(newR) => { if (ownerEmail) loadOwnerRooms(ownerEmail); setActiveCode(newR.room_code); }} roomToTransfer={roomToTransfer} onCloseTransfer={() => setRoomToTransfer(null)} onTransferred={() => { refreshState(); if (ownerEmail) loadOwnerRooms(ownerEmail); }} showAutoDjModal={showAutoDjModal} onCloseAutoDj={() => setShowAutoDjModal(false)} onUpdatedAutoDj={refreshState} showPairTvModal={showPairTvModal} initialTvCode={pairCode} onOpenPairTv={() => setShowPairTvModal(true)} onClosePairTv={() => { setShowPairTvModal(false); if (window.location.search.includes('pair=')) window.history.replaceState({}, '', window.location.pathname); }} onPairedTv={(c) => { setActiveCode(c); refreshState(); if (window.location.search.includes('pair=')) window.history.replaceState({}, '', window.location.pathname); }} showRentalModal={showRentalModal} onCloseRental={() => setShowRentalModal(false)} onRentalUpdated={(s) => setRentalSession(s)} showDiagnosticsModal={showDiagnosticsModal} onCloseDiagnostics={() => setShowDiagnosticsModal(false)} />
+      <section className="mb-4"><HostNowPlayingCard currentSong={currentSong} currentTime={room?.current_time_seconds || 0} onSkip={handleSkip} onSeek={(targetSec) => handleCommand('seek', { seconds: targetSec })} /></section>
+      <HostQueueSection room={room} currentSong={currentSong} nextSongs={nextSongs} isStartingAutoDj={isStartingAutoDj} onOpenAutoDj={() => setShowAutoDjModal(true)} onOpenSearch={() => setShowSongSearchModal(true)} onStartAutoDj={!currentSong ? () => handleStartAutoDj() : undefined} onStartGenre={(g) => handleStartAutoDj(g)} onMoveToNext={handleMoveToNext} onPlayNow={handlePlayQueueSongNow} onMoveUp={async (id, pos) => { if (room) { await reorderQueueItem(room.id, id, pos - 1); refreshState(); } }} onMoveDown={async (id, pos) => { if (room) { await reorderQueueItem(room.id, id, pos + 1); refreshState(); } }} onDelete={setSongToDelete} onDragStart={(_, i) => { draggedIndexRef.current = i; }} onDrop={async (tIdx) => { if (room && draggedIndexRef.current !== null && nextSongs[draggedIndexRef.current]) { await reorderQueueItem(room.id, nextSongs[draggedIndexRef.current].id, tIdx + 1); refreshState(); } }} />
+      <HostModals showResetModal={showResetModal} isResetting={isResetting} onConfirmReset={async () => { if (room) { setIsResetting(true); await resetRoomQueue(room.id); setIsResetting(false); setShowResetModal(false); refreshState(); } }} onCloseReset={() => setShowResetModal(false)} showGuestModal={showGuestModal} nextSongs={nextSongs} onPurgeGuest={async (gid) => { if (room) await purgeGuestSongs(room.id, gid); refreshState(); setShowGuestModal(false); }} onCloseGuest={() => setShowGuestModal(false)} songToDelete={songToDelete} onConfirmDeleteSong={async () => { if (songToDelete) await deleteQueueItem(songToDelete.id); setSongToDelete(null); refreshState(); }} onCloseDeleteSong={() => setSongToDelete(null)} showSettingsModal={showSettingsModal} room={room} ownerEmail={ownerEmail} onCloseSettings={() => setShowSettingsModal(false)} onSavedSettings={refreshState} showSuperAdminModal={showSuperAdminModal} onCloseSuperAdmin={() => setShowSuperAdminModal(false)} onUpdatedSuperAdmin={refreshState} showBannersModal={showBannersModal} onCloseBanners={() => setShowBannersModal(false)} onSaveBanners={async (b) => { if (room) await updateRoomBanners(room.id, b); refreshState(); setShowBannersModal(false); }} showMasterHubModal={showMasterHubModal} ownerRooms={ownerRooms} onCloseMasterHub={() => setShowMasterHubModal(false)} onRefreshMasterHub={() => { refreshState(); if (ownerEmail) loadOwnerRooms(ownerEmail); }} onOpenTransfer={(r) => setRoomToTransfer(r)} onOpenCreateRoom={() => setShowCreateRoomModal(true)} showCreateRoomModal={showCreateRoomModal} onCloseCreateRoom={() => setShowCreateRoomModal(false)} onCreatedRoom={(newR) => { if (ownerEmail) loadOwnerRooms(ownerEmail); setActiveCode(newR.room_code); }} roomToTransfer={roomToTransfer} onCloseTransfer={() => setRoomToTransfer(null)} onTransferred={() => { refreshState(); if (ownerEmail) loadOwnerRooms(ownerEmail); }} showAutoDjModal={showAutoDjModal} onCloseAutoDj={() => setShowAutoDjModal(false)} onUpdatedAutoDj={refreshState} showPairTvModal={showPairTvModal} initialTvCode={pairCode} onOpenPairTv={() => setShowPairTvModal(true)} onClosePairTv={() => { setShowPairTvModal(false); if (window.location.search.includes('pair=')) window.history.replaceState({}, '', window.location.pathname); }} onPairedTv={(c) => { setActiveCode(c); refreshState(); if (window.location.search.includes('pair=')) window.history.replaceState({}, '', window.location.pathname); }} showRentalModal={showRentalModal} onCloseRental={() => setShowRentalModal(false)} onRentalUpdated={(s) => setRentalSession(s)} showDiagnosticsModal={showDiagnosticsModal} onCloseDiagnostics={() => setShowDiagnosticsModal(false)} showSongSearchModal={showSongSearchModal} onCloseSongSearch={() => setShowSongSearchModal(false)} onPlayNow={handlePlayNow} onAddToQueueNext={handleAddToQueueNext} />
       <HostTransportBar isPlaying={isPlaying} volume={volume} onPlayPause={handleTogglePlayPause} onSkip={handleSkip} onSeek={(sec) => handleCommand('seek', { seconds: (room?.current_time_seconds || 0) + sec })} onVolumeChange={(v) => { setVolume(v); handleCommand('volume', { volume: v }); }} />
     </div>
   );
