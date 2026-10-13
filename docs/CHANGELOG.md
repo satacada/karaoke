@@ -4,6 +4,19 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.49.8] - 2026-10-13
+
+### 🔧 [AFINAMIENTO / REFINAMIENTO]
+- **Modal Simplificado de 2 Opciones en Pantalla TV (`TvUnlinkModal.tsx`):**
+  - Al presionar **AJUSTES / QR** en la esquina superior derecha o en la tarjeta flotante, la pantalla despliega un menú limpio y directo con exactamente 2 opciones:
+    - **1. QR Admin:** Muestra el código QR para escanear y acceder como Administrador / DJ (con opción de abrir en TV si se desea y botón de retorno).
+    - **2. Salir App:** Cierra la aplicación de forma segura (`Capacitor.App.exitApp()` / `window.close()`).
+- **Limpieza de Botones Redundantes y Mayor Interactividad (`TvIdleScreen.tsx`, `TvView.tsx`):**
+  - Se eliminó el botón duplicado de tuerca dentro de `TvIdleScreen.tsx` para evitar colisiones visuales con el botón principal de nivel raíz.
+  - El botón superior derecho `AJUSTES / QR` opera siempre a nivel raíz sin ser tapado por capas secundarias.
+
+---
+
 ## [1.49.7] - 2026-10-13
 
 ### 🚀 [ESPECIFICACIÓN / FEATURE]

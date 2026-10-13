@@ -1,110 +1,74 @@
-import { useState, type FC } from 'react';
-import { X, Tv, Sliders, Terminal, Smartphone, LogOut } from 'lucide-react';
+import { useState, useEffect, type FC } from 'react';
+import { X, Tv, QrCode, LogOut, ArrowLeft, Smartphone } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
-import { getHostUrl, getJoinUrl } from '../../utils/appUrl';
-import { SystemDiagnosticsModal } from '../common/SystemDiagnosticsModal';
+import { getHostUrl } from '../../utils/appUrl';
 
 interface TvUnlinkModalProps {
   isOpen: boolean; roomCode: string; roomName?: string;
   onClose: () => void; onConfirmUnlink: () => void; onSwitchToHost?: () => void;
 }
 
-export const TvUnlinkModal: FC<TvUnlinkModalProps> = ({
-  isOpen, roomCode, onClose, onConfirmUnlink, onSwitchToHost,
-}) => {
-  const [qrType, setQrType] = useState<'host' | 'guest'>('host');
-  const [showDiag, setShowDiag] = useState(false);
+export const TvUnlinkModal: FC<TvUnlinkModalProps> = ({ isOpen, roomCode, onClose, onSwitchToHost }) => {
+  const [view, setView] = useState<'menu' | 'admin_qr'>('menu');
+  useEffect(() => { if (isOpen) setView('menu'); }, [isOpen]);
   if (!isOpen) return null;
 
-  const currentUrl = qrType === 'host' ? getHostUrl(roomCode) : getJoinUrl(roomCode);
+  const adminUrl = getHostUrl(roomCode);
+  const handleExitApp = () => {
+    try {
+      const cap = (window as unknown as { Capacitor?: { Plugins?: { App?: { exitApp: () => void } } } })?.Capacitor;
+      if (cap?.Plugins?.App?.exitApp) { cap.Plugins.App.exitApp(); return; }
+    } catch {}
+    window.close();
+  };
 
   return (
-    <>
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md p-4 select-none animate-in fade-in duration-150 pointer-events-auto">
-        <div className="w-full max-w-md bg-zinc-900 border border-zinc-700/80 rounded-3xl p-5 shadow-2xl space-y-3 pointer-events-auto">
-          <div className="flex items-center justify-between pb-2 border-b border-zinc-800">
-            <div className="flex items-center gap-2 text-white font-bold text-sm">
-              <Tv className="w-4 h-4 text-purple-400" /><span>Ajustes y Códigos QR de Pantalla</span>
-            </div>
-            <button type="button" onClick={onClose} className="p-1 rounded-lg text-zinc-400 hover:text-white cursor-pointer"><X className="w-4 h-4" /></button>
+    <div role="dialog" aria-modal="true" className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90 backdrop-blur-xl p-4 select-none animate-in fade-in duration-150 pointer-events-auto" onClick={onClose}>
+      <div className="w-full max-w-sm bg-zinc-900 border-2 border-zinc-700/80 rounded-3xl p-6 shadow-2xl space-y-4 pointer-events-auto relative text-white" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
+          <div className="flex items-center gap-2">
+            <Tv className="w-5 h-5 text-pink-400" /><h2 className="font-black text-sm tracking-wide text-white uppercase">{view === 'menu' ? 'Ajustes de Pantalla' : 'QR Administrador (DJ)'}</h2>
           </div>
-
-          {/* Selector de tipo de QR: Administrador vs Clientes */}
-          <div className="grid grid-cols-2 gap-1.5 p-1 bg-zinc-950 rounded-2xl border border-zinc-800">
-            <button
-              type="button"
-              onClick={() => setQrType('host')}
-              className={`py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                qrType === 'host'
-                  ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-md'
-                  : 'text-zinc-400 hover:text-white'
-              }`}
-            >
-              <Sliders className="w-3.5 h-3.5" />
-              <span>QR Administrador (DJ)</span>
+          <button type="button" onClick={onClose} className="p-1.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white cursor-pointer"><X className="w-4 h-4" /></button>
+        </div>
+        {view === 'menu' ? (
+          <div className="flex flex-col gap-3 py-1">
+            <button type="button" onClick={() => setView('admin_qr')} className="w-full py-4 px-4 rounded-2xl bg-gradient-to-r from-purple-600 via-pink-600 to-amber-500 hover:opacity-95 text-white font-black text-sm flex items-center justify-between shadow-xl active:scale-98 cursor-pointer border border-white/20">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-black/30 flex items-center justify-center"><QrCode className="w-5 h-5 text-white" /></div>
+                <div className="text-left"><span className="block text-sm font-black">1. QR Admin</span><span className="block text-[10px] text-white/80 font-medium">Escanear para ser Administrador</span></div>
+              </div>
+              <span className="text-xs text-white/80">▶</span>
             </button>
-            <button
-              type="button"
-              onClick={() => setQrType('guest')}
-              className={`py-2 px-3 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                qrType === 'guest'
-                  ? 'bg-gradient-to-r from-pink-600 to-amber-600 text-white shadow-md'
-                  : 'text-zinc-400 hover:text-white'
-              }`}
-            >
-              <Smartphone className="w-3.5 h-3.5" />
-              <span>QR Clientes (Pedir)</span>
+            <button type="button" onClick={handleExitApp} className="w-full py-4 px-4 rounded-2xl bg-zinc-800/90 hover:bg-rose-950/80 border border-zinc-700 hover:border-rose-500 text-rose-200 font-black text-sm flex items-center justify-between shadow-xl active:scale-98 cursor-pointer">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-rose-500/20 flex items-center justify-center"><LogOut className="w-5 h-5 text-rose-400" /></div>
+                <div className="text-left"><span className="block text-sm font-black text-rose-300">2. Salir App</span><span className="block text-[10px] text-zinc-400 font-medium">Cerrar y salir de la aplicación</span></div>
+              </div>
+              <span className="text-xs text-rose-400">🚪</span>
             </button>
+            <p className="text-[10px] text-zinc-500 text-center font-mono mt-2">Sala TV: <b className="text-pink-400">{roomCode}</b></p>
           </div>
-
-          {/* Código QR grande */}
-          <div className="p-4 bg-zinc-950 border border-zinc-800 rounded-2xl flex flex-col items-center gap-2 text-center">
-            <div className="bg-white p-2.5 rounded-2xl shadow-xl">
-              <QRCodeSVG value={currentUrl} size={150} level="M" includeMargin={false} />
+        ) : (
+          <div className="flex flex-col items-center gap-3 py-1">
+            <div className="bg-white p-3 rounded-2xl shadow-2xl border-4 border-purple-500/40">
+              <QRCodeSVG value={adminUrl} size={180} level="M" includeMargin={false} />
             </div>
-            <div>
-              <p className="text-xs font-black text-white">
-                {qrType === 'host' ? '🎧 Escanear para Controlar como DJ Anfitrión' : '🎤 Escanear para Pedir Canciones (Clientes)'}
-              </p>
+            <div className="text-center">
+              <p className="text-xs font-black text-white">Escanear con tu Celular para ser Administrador</p>
               <p className="text-[10px] text-zinc-400 font-mono mt-0.5">Sala: <b className="text-pink-400 uppercase">{roomCode}</b></p>
             </div>
-            {qrType === 'host' && onSwitchToHost && (
-              <button type="button" onClick={() => { onClose(); onSwitchToHost(); }} className="mt-1 w-full py-1.5 px-3 rounded-xl bg-purple-600/30 hover:bg-purple-600/50 border border-purple-500/40 text-purple-200 font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer">
-                <Sliders className="w-3.5 h-3.5" /><span>Abrir Consola DJ en esta misma pantalla</span>
+            {onSwitchToHost && (
+              <button type="button" onClick={() => { onClose(); onSwitchToHost(); }} className="w-full py-2 px-3 rounded-xl bg-purple-600/30 hover:bg-purple-600 border border-purple-500/40 text-purple-200 hover:text-white font-bold text-xs flex items-center justify-center gap-2 cursor-pointer">
+                <Smartphone className="w-4 h-4" /><span>Abrir Administrador en esta pantalla</span>
               </button>
             )}
-          </div>
-
-          <div className="flex gap-2 pt-1">
-            <button type="button" onClick={() => setShowDiag(true)} className="flex-1 py-2 px-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-pink-300 font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer">
-              <Terminal className="w-3.5 h-3.5 text-pink-400" /><span>Diagnóstico</span>
-            </button>
-            <button type="button" onClick={onConfirmUnlink} className="flex-1 py-2 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs shadow-md cursor-pointer">
-              Desvincular
-            </button>
-            <button type="button" onClick={onClose} className="px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold text-xs cursor-pointer">
-              Cerrar
+            <button type="button" onClick={() => setView('menu')} className="w-full mt-1 py-2 px-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold text-xs flex items-center justify-center gap-2 cursor-pointer">
+              <ArrowLeft className="w-4 h-4" /><span>Volver a Opciones</span>
             </button>
           </div>
-
-          {/* Botón Salir de la Aplicación */}
-          <div className="pt-2 border-t border-zinc-800">
-            <button
-              type="button"
-              onClick={() => {
-                const cap = (window as unknown as { Capacitor?: { Plugins?: { App?: { exitApp: () => void } } } })?.Capacitor;
-                if (cap?.Plugins?.App?.exitApp) cap.Plugins.App.exitApp();
-                else window.close();
-              }}
-              className="w-full py-2 px-3 rounded-xl bg-rose-950/40 hover:bg-rose-900/60 border border-rose-500/30 text-rose-200 font-bold text-xs flex items-center justify-center gap-1.5 shadow-md active:scale-95 cursor-pointer"
-            >
-              <LogOut className="w-3.5 h-3.5 text-rose-400" />
-              <span>🚪 Salir / Cerrar la Aplicación</span>
-            </button>
-          </div>
-        </div>
+        )}
       </div>
-      <SystemDiagnosticsModal isOpen={showDiag} roomCode={roomCode} onClose={() => setShowDiag(false)} />
-    </>
+    </div>
   );
 };
