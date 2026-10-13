@@ -3,6 +3,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import { Disc3, Sparkles, Smartphone, Sliders, Play, Pause, ShieldCheck, Monitor, Settings } from 'lucide-react';
 import { TvIdlePromoCard } from './TvIdlePromoCard';
 import { getHostUrl } from '../../utils/appUrl';
+import { APP_VERSION } from '../../version';
 import type { PromoBanner } from '../../types';
 
 interface TvIdleScreenProps {
@@ -108,7 +109,7 @@ export const TvIdleScreen: FC<TvIdleScreenProps> = ({
           title="Configuración y Diagnóstico"
           className="text-[clamp(9px,0.7vw,11px)] font-mono font-medium text-zinc-400/80 hover:text-white uppercase tracking-widest tv-text-outline-sm cursor-pointer transition-colors"
         >
-          Powered by DTC • v1.49.6
+          Powered by DTC • {APP_VERSION}
         </button>
       </footer>
     </div>

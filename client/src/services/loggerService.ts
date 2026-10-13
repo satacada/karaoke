@@ -5,6 +5,7 @@
 // ==============================================================================
 
 import { supabase } from '../lib/supabaseClient';
+import { APP_VERSION } from '../version';
 import type { LogLevel, LogNode, SystemLog } from '../types';
 
 const LOCAL_LOGS_KEY = 'rockola_circular_logs_v1';
@@ -36,7 +37,7 @@ export function clearLocalLogs(): void {
 
 export function exportDiagnosticText(roomCode = 'FIESTA'): string {
   const logs = getLocalLogs();
-  const header = `=== DIAGNÓSTICO ROCKOLA DIGITAL (SALA ${roomCode}) ===\nGenerado: ${new Date().toLocaleString()}\nEventos registrados: ${logs.length}\n----------------------------------------\n`;
+  const header = `=== DIAGNÓSTICO ROCKOLA DIGITAL (${APP_VERSION}) (SALA ${roomCode}) ===\nGenerado: ${new Date().toLocaleString()}\nEventos registrados: ${logs.length}\n----------------------------------------\n`;
   const body = logs.map((l) => {
     const time = l.created_at ? new Date(l.created_at).toLocaleTimeString() : '??:??:??';
     const detailStr = l.details && Object.keys(l.details).length ? ` | Detalle: ${JSON.stringify(l.details)}` : '';
@@ -54,7 +55,8 @@ export function writeSystemLog(
   details: Record<string, unknown> = {}
 ): void {
   const cleanCode = (roomCode || 'FIESTA').toUpperCase().trim();
-  const entry: SystemLog = { room_code: cleanCode, node_type: nodeType, level, event, message, details, created_at: new Date().toISOString() };
+  const fullDetails = { ...details, app_version: APP_VERSION };
+  const entry: SystemLog = { room_code: cleanCode, node_type: nodeType, level, event, message, details: fullDetails, created_at: new Date().toISOString() };
 
   const prefix = `[${level.toUpperCase()}][${nodeType.toUpperCase()}][${event}]`;
   if (level === 'error') console.error(prefix, message, details);

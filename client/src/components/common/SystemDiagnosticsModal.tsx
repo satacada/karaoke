@@ -7,6 +7,7 @@
 import { useState, useEffect, type FC } from 'react';
 import { X, Copy, Check, Trash2, Bug, Terminal, ShieldAlert } from 'lucide-react';
 import { getLocalLogs, clearLocalLogs, exportDiagnosticText } from '../../services/loggerService';
+import { APP_VERSION } from '../../version';
 import type { SystemLog } from '../../types';
 
 interface SystemDiagnosticsModalProps {
@@ -59,7 +60,8 @@ export const SystemDiagnosticsModal: FC<SystemDiagnosticsModalProps> = ({ isOpen
             <div>
               <h3 className="text-sm font-bold text-white flex items-center gap-1.5">
                 <span>Diagnóstico del Sistema</span>
-                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-zinc-800 text-purple-300">Sala: {roomCode}</span>
+                <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-purple-950 border border-purple-500/40 text-purple-300">{APP_VERSION}</span>
+                <span className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-zinc-800 text-zinc-300">Sala: {roomCode}</span>
               </h3>
               <p className="text-[10px] text-zinc-400 font-mono">Últimos {logs.length} eventos en memoria</p>
             </div>

@@ -1,6 +1,8 @@
 import type { FC } from 'react';
 import { RotateCcw, Users, Settings, Megaphone, Lock, LockOpen, Disc3, Sun, Moon, Sparkles, Droplets, Clock, Music, QrCode, Crown, Type, SlidersHorizontal, ShieldCheck, Terminal } from 'lucide-react';
 
+import { APP_VERSION } from '../../version';
+
 interface HostHeaderProps {
   roomCode: string; zoneName?: string; isOwner?: boolean; isSuperAdmin?: boolean;
   isQueueLocked?: boolean; isAutoDjActive?: boolean; userName?: string | null; ownerEmail?: string | null;
@@ -29,11 +31,7 @@ export const HostHeader: FC<HostHeaderProps> = ({
             <span className="text-zinc-200 font-semibold truncate">{userName}</span>
             {ownerEmail && <span className="text-zinc-500 text-[10px] hidden sm:inline truncate">({ownerEmail})</span>}
           </div>
-          {onLogout && (
-            <button type="button" onClick={onLogout} className="text-rose-400 hover:text-rose-300 font-semibold text-[10px] px-2 py-0.5 rounded-md hover:bg-rose-950/30 transition-colors shrink-0">
-              Salir
-            </button>
-          )}
+          {onLogout && (<button type="button" onClick={onLogout} className="text-rose-400 hover:text-rose-300 font-semibold text-[10px] px-2 py-0.5 rounded-md hover:bg-rose-950/30 transition-colors shrink-0">Salir</button>)}
         </div>
       )}
 
@@ -43,10 +41,10 @@ export const HostHeader: FC<HostHeaderProps> = ({
             <span className="text-[10px] uppercase font-bold text-pink-400 tracking-wider">Consola DJ</span>
             {onOpenDiagnostics ? (
               <button type="button" onClick={onOpenDiagnostics} title="Ver diagnóstico de errores" className="text-[9px] font-mono font-bold text-purple-300 bg-purple-950/80 border border-purple-500/30 px-1.5 py-0.2 rounded-md hover:bg-purple-900 transition-colors flex items-center gap-1 cursor-pointer">
-                <Terminal className="w-2.5 h-2.5 text-pink-400" /><span>v1.49.6</span>
+                <Terminal className="w-2.5 h-2.5 text-pink-400" /><span>{APP_VERSION}</span>
               </button>
             ) : (
-              <span className="text-[9px] font-mono font-bold text-purple-300 bg-purple-950/80 border border-purple-500/30 px-1.5 py-0.2 rounded-md">v1.49.6</span>
+              <span className="text-[9px] font-mono font-bold text-purple-300 bg-purple-950/80 border border-purple-500/30 px-1.5 py-0.2 rounded-md">{APP_VERSION}</span>
             )}
             {isOwner && (
               <span className="inline-flex items-center gap-0.5 text-[9px] bg-purple-900/60 text-purple-300 border border-purple-700/50 px-1.5 py-0.2 rounded-full font-bold">
