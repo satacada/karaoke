@@ -68,7 +68,7 @@ export function writeSystemLog(
   // Enviar a la tabla de telemetría de Supabase de forma asíncrona segura
   supabase
     .from('karaoke_system_logs')
-    .insert([{ room_code: cleanCode, node_type: nodeType, level, event, message, details }])
+    .insert([{ room_code: cleanCode, node_type: nodeType, level, event, message, details: fullDetails }])
     .then(({ error }) => {
       if (error && error.code !== '42P01') console.warn('[Logger] Cloud error:', error.message);
     }, () => {});
