@@ -2,12 +2,7 @@ import { useState, useRef, useEffect, type FC } from 'react';
 import { AlertCircle, CheckCircle2, Loader2, X } from 'lucide-react';
 import { useTvRealtime } from '../../hooks/useTvRealtime'; import { supabase } from '../../lib/supabaseClient';
 import { HostAuth } from './HostAuth'; import { HostHeader } from './HostHeader'; import { HostNowPlayingCard } from './HostNowPlayingCard'; import { HostQueueSection } from './HostQueueSection'; import { HostTransportBar } from './HostTransportBar'; import { HostMultiRoomBar } from './multiroom/HostMultiRoomBar'; import { HostModals } from './HostModals'; import { HostPendingApprovalView } from './HostPendingApprovalView';
-import { sendRemoteCommand, reorderQueueItem, purgeGuestSongs, deleteQueueItem, resetRoomQueue, updateRoomBanners, toggleQueueLock, getRoomsForOwner, updatePlaybackTick } from '../../services/karaokeApi';
-import { getRoomChannelName } from '../../utils/channelUtils';
-import { purgeAutoDjSongs } from '../../services/autoDjService';
-import { saveRemoteAutoDjSettings, getLocalAutoDjGenre } from '../../services/autoDjStateService';
-import { clearRamQueue, fetchDailySeedRamTrack, replenishRamQueue } from '../../services/autoDjRamQueueService';
-import { getLocalRentalSession } from '../../services/rentalService'; import { logError } from '../../services/loggerService';
+import { sendRemoteCommand, reorderQueueItem, purgeGuestSongs, deleteQueueItem, resetRoomQueue, updateRoomBanners, toggleQueueLock, getRoomsForOwner, updatePlaybackTick } from '../../services/karaokeApi'; import { getRoomChannelName } from '../../utils/channelUtils'; import { purgeAutoDjSongs } from '../../services/autoDjService'; import { saveRemoteAutoDjSettings, getLocalAutoDjGenre } from '../../services/autoDjStateService'; import { clearRamQueue, fetchDailySeedRamTrack, replenishRamQueue } from '../../services/autoDjRamQueueService'; import { getLocalRentalSession } from '../../services/rentalService'; import { logError, logInfo } from '../../services/loggerService';
 import type { QueueItem, KaraokeRoom, RoomRentalSession } from '../../types';
 
 const SUPER_ADMINS = (import.meta.env.VITE_SUPER_ADMIN_EMAILS || 'satacada@gmail.com,david@gmail.com,admin@karaoke.com').toLowerCase().split(',').map((s: string) => s.trim());
@@ -45,7 +40,10 @@ export const HostView: FC<{ roomCode?: string; onSwitchToTv?: () => void; onSwit
   };
 
   const handleCommand = (cmd: 'play' | 'pause' | 'skip' | 'volume' | 'seek', payload: Record<string, unknown> = {}) => { if (room) sendRemoteCommand(room.id, cmd, payload); };
-  const handleSkip = async () => { handleCommand('skip'); await handleNextSong(); };
+  const handleSkip = async () => {
+    logInfo(activeCode, 'host', 'host_skip', `DJ saltó tema actual en sala ${activeCode}`, { currentSongId: currentSong?.id, title: currentSong?.title });
+    handleCommand('skip'); await handleNextSong();
+  };
 
   const handleStartAutoDj = async (chosenGenre?: string) => {
     if (!room || isStartingAutoDj) return;
@@ -70,11 +68,13 @@ export const HostView: FC<{ roomCode?: string; onSwitchToTv?: () => void; onSwit
 
   const handleTogglePlayPause = () => {
     const nextPlaying = !isPlaying; setIsPlaying(nextPlaying); handleCommand(nextPlaying ? 'play' : 'pause');
+    logInfo(activeCode, 'host', 'host_play_pause', `DJ cambió estado a ${nextPlaying ? 'REPRODUCIENDO' : 'PAUSADO'}`, { nextPlaying });
     if (room) updatePlaybackTick(room.id, nextPlaying, room.current_time_seconds || 0).catch(() => {});
   };
 
   const handleMoveToNext = async (id: string) => {
     if (!room) return;
+    logInfo(activeCode, 'host', 'host_promote_next', `DJ promovió canción a #1 siguiente: ${id}`, { songId: id });
     if (id.startsWith('ram_')) {
       const currentQueue = [...nextSongs];
       const targetIdx = currentQueue.findIndex((s) => s.id === id);

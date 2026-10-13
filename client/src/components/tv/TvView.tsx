@@ -17,12 +17,7 @@ import { TvViewOverlays } from './TvViewOverlays';
 import { TvFloatingQr } from './TvFloatingQr';
 import { TvFloatingReactions } from './TvFloatingReactions';
 import { updatePlaybackTick } from '../../services/karaokeApi';
-import { purgeAutoDjSongs } from '../../services/autoDjService';
-import { clearRamQueue } from '../../services/autoDjRamQueueService';
-import { setLocalAutoDjActive } from '../../services/autoDjStateService';
-import { getJoinUrl } from '../../utils/appUrl';
-import { parseSongMeta } from '../../utils/songMeta';
-import { supabase } from '../../lib/supabaseClient';
+import { purgeAutoDjSongs } from '../../services/autoDjService'; import { clearRamQueue } from '../../services/autoDjRamQueueService'; import { setLocalAutoDjActive } from '../../services/autoDjStateService'; import { logError } from '../../services/loggerService'; import { getJoinUrl } from '../../utils/appUrl'; import { parseSongMeta } from '../../utils/songMeta'; import { supabase } from '../../lib/supabaseClient';
 import type { TvScale } from '../../types';
 const SCALE_MAP: Record<TvScale, number> = { compact: 0.85, normal: 1.0, large: 1.15, xl: 1.30 };
 
@@ -82,8 +77,9 @@ export const TvView: FC<{ roomCode?: string; onUnlink?: () => void; onSwitchToHo
   }, [isLoading, currentSong, nextSongs.length]);
 
   const handlePlayerError = useCallback(() => {
+    logError(roomCode, 'tv', 'yt_restricted_skip', `Video con restricción detectado en sala ${roomCode}. Saltando automáticamente al siguiente tema...`, { currentSongId: currentSong?.id, videoId: currentSong?.video_id, title: currentSong?.title });
     setErrorNotice('Video restringido en YouTube. Saltando...'); setTimeout(() => { setErrorNotice(null); handleNextSongRef.current(); }, 2000);
-  }, []);
+  }, [roomCode, currentSong]);
 
   const handleTimeUpdate = useCallback((curr: number, dur: number) => {
     setCurrentTime(curr); setDuration(dur); const now = Date.now();
