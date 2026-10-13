@@ -3,6 +3,10 @@ import { Disc3, X, Sparkles, Plus } from 'lucide-react';
 import { getAllStations, addCustomStation } from '../../services/autoDjService';
 import { sendRemoteCommand } from '../../services/karaokeApi';
 import { saveRemoteAutoDjSettings, isLocalAutoDjActive, getLocalAutoDjGenre } from '../../services/autoDjStateService';
+import { clearRamQueue, fetchDailySeedRamTrack, replenishRamQueue } from '../../services/autoDjRamQueueService';
+import { supabase } from '../../lib/supabaseClient';
+import { getRoomChannelName } from '../../utils/channelUtils';
+import { logInfo } from '../../services/loggerService';
 import type { KaraokeRoom } from '../../types';
 
 interface HostAutoDjModalProps { isOpen: boolean; room: KaraokeRoom | null; onClose: () => void; onUpdated: () => void; }
@@ -26,8 +30,17 @@ export const HostAutoDjModal: FC<HostAutoDjModalProps> = ({ isOpen, room, onClos
 
   const applyStation = async (genreId: string, isAct: boolean) => {
     setSaving(true);
+    logInfo(room.room_code, 'host', 'change_genre', `DJ cambió estación a "${genreId}" (activo=${isAct})`, { genreId, isAct });
     await saveRemoteAutoDjSettings(room.id, room.room_code, isAct, genreId);
-    if (isAct) await sendRemoteCommand(room.id, 'play');
+    if (isAct) {
+      clearRamQueue();
+      const seed = await fetchDailySeedRamTrack(room.id, genreId);
+      const q = await replenishRamQueue(room.id, genreId, 3);
+      supabase.channel(getRoomChannelName(room.id)).send({ type: 'broadcast', event: 'tv_sync_state', payload: { currentSong: seed, nextSongs: q } }).catch(() => {});
+      supabase.channel(`tv-room-${room.id}`).send({ type: 'broadcast', event: 'tv_sync_state', payload: { currentSong: seed, nextSongs: q } }).catch(() => {});
+      await sendRemoteCommand(room.id, 'play');
+      await sendRemoteCommand(room.id, 'skip');
+    }
     setSaving(false); onUpdated(); onClose();
   };
 

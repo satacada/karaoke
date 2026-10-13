@@ -41,19 +41,19 @@ export const HostQueueItem: FC<HostQueueItemProps> = ({
       onDragStart={(e) => onDragStart(e, index)}
       onDragOver={onDragOver}
       onDrop={(e) => onDrop(e, index)}
-      className="flex items-center justify-between gap-2.5 p-3 rounded-2xl bg-zinc-900/90 border border-zinc-800 shadow-sm active:bg-zinc-800 transition-all select-none"
+      className="flex items-center justify-between gap-2.5 p-3 rounded-2xl bg-zinc-950/60 border border-zinc-700/80 shadow-md active:bg-zinc-900 transition-all select-none"
     >
       <div className="flex items-center gap-2 min-w-0 flex-1">
         <div
           onTouchStart={handleTouchStart}
           onTouchMove={handleTouchMove}
           onTouchEnd={() => { startYRef.current = 0; }}
-          className="cursor-grab active:cursor-grabbing text-zinc-500 hover:text-zinc-300 p-1 touch-none"
+          className="cursor-grab active:cursor-grabbing text-zinc-400 hover:text-white p-1 touch-none"
           title="Arrastra con el dedo"
         >
-          <GripVertical className="w-5 h-5 text-purple-400/80" />
+          <GripVertical className="w-5 h-5 text-pink-400" />
         </div>
-        <span className="w-6 h-6 rounded-lg bg-zinc-800 text-zinc-300 text-xs font-mono font-bold flex items-center justify-center shrink-0">
+        <span className="w-6 h-6 rounded-lg bg-pink-950/80 border border-pink-500/50 text-white text-xs font-mono font-black flex items-center justify-center shrink-0">
           {index + 1}
         </span>
         <div className="min-w-0 flex-1">
@@ -80,14 +80,15 @@ export const HostQueueItem: FC<HostQueueItemProps> = ({
         </div>
       </div>
 
-      <div className="flex items-center gap-1 shrink-0">
+      <div className="flex items-center gap-1.5 shrink-0">
         {index > 0 && (
           <button
             onClick={() => onMoveToNext(item.id)}
-            title="Poner siguiente"
-            className="p-1.5 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-500/30 hover:bg-amber-500/40 active:scale-90 transition-all"
+            title="Elegir esta canción para que sea la siguiente"
+            className="px-2 py-1 rounded-xl bg-gradient-to-r from-amber-500 to-pink-600 text-white font-black text-[10px] border border-white/40 shadow-md hover:brightness-110 active:scale-95 transition-all flex items-center gap-1 cursor-pointer"
           >
-            <Zap className="w-4 h-4" />
+            <Zap className="w-3.5 h-3.5 fill-white" />
+            <span>Siguiente</span>
           </button>
         )}
         <div className="flex flex-col gap-0.5">

@@ -1,11 +1,9 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { supabase } from '../lib/supabaseClient';
-import type { KaraokeRoom, QueueItem, RemoteCommand } from '../types';
+import { supabase } from '../lib/supabaseClient'; import type { KaraokeRoom, QueueItem, RemoteCommand } from '../types';
 import { getRoomByCode, getQueueForRoom, advanceNextSong, markCommandExecuted } from '../services/karaokeApi';
 import { isLocalAutoDjActive, setLocalAutoDjActive, getLocalAutoDjGenre, fetchRemoteAutoDjSettings } from '../services/autoDjStateService';
-import { getRamQueue, dequeueRamSong, fetchDailySeedRamTrack, replenishRamQueue } from '../services/autoDjRamQueueService';
-import { getRoomChannelName } from '../utils/channelUtils';
-import { logInfo } from '../services/loggerService';
+import { getRamQueue, dequeueRamSong, fetchDailySeedRamTrack, replenishRamQueue, clearRamQueue, setRamQueue } from '../services/autoDjRamQueueService';
+import { getRoomChannelName } from '../utils/channelUtils'; import { logInfo } from '../services/loggerService';
 
 export function useTvRealtime(roomCode: string, onRemoteCommand?: (command: RemoteCommand) => void) {
   const [room, setRoom] = useState<KaraokeRoom | null>(null);
@@ -91,12 +89,19 @@ export function useTvRealtime(roomCode: string, onRemoteCommand?: (command: Remo
         if (payload) {
           setLocalAutoDjActive(roomCode, Boolean(payload.enabled), payload.genre);
           setRoom((p) => p ? { ...p, auto_dj_enabled: payload.enabled, auto_dj_genre: payload.genre } : p);
-          if (payload.immediate && payload.genre) {
+          if (payload.genre) {
+            clearRamQueue();
             const seed = await fetchDailySeedRamTrack(roomId, payload.genre);
             ramSongRef.current = seed; setCurrentSong(seed);
-            replenishRamQueue(roomId, payload.genre, 3).then(() => setNextSongs(getRamQueue()));
+            const q = await replenishRamQueue(roomId, payload.genre, 3);
+            setNextSongs(q);
+            supabase.channel(getRoomChannelName(roomId)).send({ type: 'broadcast', event: 'tv_sync_state', payload: { currentSong: seed, nextSongs: q } }).catch(() => {});
           }
         }
+      })
+      .on('broadcast', { event: 'tv_sync_state' }, ({ payload }) => {
+        if (payload?.currentSong) { ramSongRef.current = payload.currentSong; setCurrentSong(payload.currentSong); }
+        if (payload?.nextSongs) { setRamQueue(payload.nextSongs); setNextSongs(payload.nextSongs); }
       })
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'karaoke_rooms', filter: `id=eq.${roomId}` }, (payload) => {
         const updated = payload.new as KaraokeRoom;

@@ -30,18 +30,7 @@ export const TvDedicationBanner: FC<TvDedicationBannerProps> = ({ currentSong })
     setRequestedBy(currentSong.requested_by || 'Un invitado');
     setIsVisible(true);
 
-    let timer: ReturnType<typeof setTimeout>;
-    const scheduleNext = (showing: boolean) => {
-      timer = setTimeout(() => {
-        setIsVisible(!showing);
-        scheduleNext(!showing);
-      }, showing ? 12000 : 33000);
-    };
-
-    scheduleNext(true);
-
     return () => {
-      clearTimeout(timer);
       setIsVisible(false);
     };
   }, [currentSong?.id]);

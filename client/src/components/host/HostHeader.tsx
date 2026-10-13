@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import { RotateCcw, Users, Settings, Megaphone, Lock, LockOpen, Disc3, Sun, Moon, Sparkles, Droplets, Clock, Music, QrCode, Crown, Type, SlidersHorizontal, ShieldCheck } from 'lucide-react';
+import { RotateCcw, Users, Settings, Megaphone, Lock, LockOpen, Disc3, Sun, Moon, Sparkles, Droplets, Clock, Music, QrCode, Crown, Type, SlidersHorizontal, ShieldCheck, Terminal } from 'lucide-react';
 
 interface HostHeaderProps {
   roomCode: string; zoneName?: string; isOwner?: boolean; isSuperAdmin?: boolean;
@@ -10,6 +10,7 @@ interface HostHeaderProps {
   onOpenSuperAdmin?: () => void; onOpenBanners?: () => void; onOpenAutoDj?: () => void;
   onToggleQueueLock?: () => void; onOpenMasterHub?: () => void; onSwitchToTv?: () => void;
   onSwitchToGuest?: () => void; onOpenRental?: () => void; isRentalActive?: boolean;
+  onOpenDiagnostics?: () => void;
 }
 
 export const HostHeader: FC<HostHeaderProps> = ({
@@ -17,6 +18,7 @@ export const HostHeader: FC<HostHeaderProps> = ({
   userName, ownerEmail, currentTheme = 'dark', onToggleTheme, currentFontSize = 'normal', onToggleFontSize, onLogout,
   onOpenGuests, onOpenReset, onOpenSettings, onOpenSuperAdmin, onOpenBanners,
   onOpenAutoDj, onToggleQueueLock, onOpenMasterHub, onSwitchToTv, onSwitchToGuest, onOpenRental, isRentalActive = false,
+  onOpenDiagnostics,
 }) => {
   return (
     <header className="py-2 border-b border-zinc-800/80 mb-3 space-y-2">
@@ -39,7 +41,13 @@ export const HostHeader: FC<HostHeaderProps> = ({
         <div className="min-w-0">
           <div className="flex items-center gap-1.5">
             <span className="text-[10px] uppercase font-bold text-pink-400 tracking-wider">Consola DJ</span>
-            <span className="text-[9px] font-mono font-bold text-purple-300 bg-purple-950/80 border border-purple-500/30 px-1.5 py-0.2 rounded-md">v1.49.0</span>
+            {onOpenDiagnostics ? (
+              <button type="button" onClick={onOpenDiagnostics} title="Ver diagnóstico de errores" className="text-[9px] font-mono font-bold text-purple-300 bg-purple-950/80 border border-purple-500/30 px-1.5 py-0.2 rounded-md hover:bg-purple-900 transition-colors flex items-center gap-1 cursor-pointer">
+                <Terminal className="w-2.5 h-2.5 text-pink-400" /><span>v1.49.6</span>
+              </button>
+            ) : (
+              <span className="text-[9px] font-mono font-bold text-purple-300 bg-purple-950/80 border border-purple-500/30 px-1.5 py-0.2 rounded-md">v1.49.6</span>
+            )}
             {isOwner && (
               <span className="inline-flex items-center gap-0.5 text-[9px] bg-purple-900/60 text-purple-300 border border-purple-700/50 px-1.5 py-0.2 rounded-full font-bold">
                 <Crown className="w-2.5 h-2.5 text-amber-400" /> Dueño
@@ -53,6 +61,11 @@ export const HostHeader: FC<HostHeaderProps> = ({
         </div>
 
         <div className="flex items-center gap-1.5 shrink-0">
+          {onOpenDiagnostics && (
+            <button type="button" onClick={onOpenDiagnostics} className="flex items-center gap-1 px-2 py-1.5 rounded-xl border border-pink-500/40 bg-pink-950/30 text-xs font-bold hover:bg-pink-900/50 active:scale-95 transition-all text-pink-300" title="Ver logs y diagnóstico">
+              <Terminal className="w-3.5 h-3.5 text-pink-400" />
+            </button>
+          )}
           {onToggleFontSize && (
             <button type="button" onClick={onToggleFontSize} className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-zinc-800 bg-zinc-900 text-xs font-bold hover:border-zinc-700 active:scale-95 transition-all text-zinc-300" title="Aumentar tamaño de letra" aria-label="Tamaño de letra">
               <Type className="w-3.5 h-3.5 text-pink-400" /><span className="text-[10px] font-bold">{currentFontSize === 'xl' ? 'A++' : currentFontSize === 'large' ? 'A+' : 'A'}</span>

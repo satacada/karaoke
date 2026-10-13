@@ -54,19 +54,17 @@ export function parseAutoDjGenre(genre?: string, recentArtists: string[] = []): 
   return { isSeed: false, displayName: effectiveGenre, query: `${effectiveGenre} exitos oficial` };
 }
 
-const EMERGENCY_FALLBACKS: Record<string, Array<{ videoId: string; title: string; author: string; durationSeconds: number; durationText: string; thumbnailUrl: string }>> = {
-  cumbia_fiesta: [
-    { videoId: 'GMbn2yVTak4', title: 'Los Palmeras - El Bombón Asesino', author: 'Los Palmeras', durationSeconds: 200, durationText: '3:20', thumbnailUrl: 'https://i.ytimg.com/vi/GMbn2yVTak4/hqdefault.jpg' },
-    { videoId: 'O3cWvhw1jK8', title: 'Gilda - No Me Arrepiento de Este Amor', author: 'Gilda', durationSeconds: 215, durationText: '3:35', thumbnailUrl: 'https://i.ytimg.com/vi/O3cWvhw1jK8/hqdefault.jpg' },
-  ],
-  rock_nacional: [
-    { videoId: 'T_FkEw27XJ0', title: 'Soda Stereo - De Música Ligera', author: 'Soda Stereo', durationSeconds: 215, durationText: '3:35', thumbnailUrl: 'https://i.ytimg.com/vi/T_FkEw27XJ0/hqdefault.jpg' },
-  ],
-};
+import { EMERGENCY_FALLBACKS } from './autoDjFallbacks';
 
-export function getFallbackTrack(genre?: string, recentArtists: string[] = []): import('../types').SearchResultItem {
-  const list = EMERGENCY_FALLBACKS[genre || 'cumbia_fiesta'] || EMERGENCY_FALLBACKS.cumbia_fiesta;
-  const filtered = list.filter((t) => !recentArtists.some((r) => r.toLowerCase().includes(t.author.toLowerCase())));
-  const pool = filtered.length > 0 ? filtered : list;
-  return { ...pool[Math.floor(Math.random() * pool.length)], versionType: 'official' };
+export function getFallbackTrack(genre?: string, recentArtists: string[] = [], excludedVideoIds: string[] = []): import('../types').SearchResultItem {
+  const clean = genre ? genre.toLowerCase().replace('seed:', '') : 'cumbia_fiesta';
+  const list = EMERGENCY_FALLBACKS[clean] || EMERGENCY_FALLBACKS.cumbia_fiesta;
+  // Filtrar tanto por artistas recientes como por IDs de video ya presentes en la cola
+  const filtered = list.filter((t) =>
+    !excludedVideoIds.includes(t.videoId) &&
+    !recentArtists.some((r) => r.toLowerCase().includes(t.author.toLowerCase()))
+  );
+  const pool = filtered.length > 0 ? filtered : list.filter((t) => !excludedVideoIds.includes(t.videoId));
+  const finalPool = pool.length > 0 ? pool : list;
+  return { ...finalPool[Math.floor(Math.random() * finalPool.length)], versionType: 'official' };
 }

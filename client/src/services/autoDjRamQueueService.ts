@@ -64,27 +64,30 @@ export async function fetchDailySeedRamTrack(roomId: string, genre: string): Pro
 }
 
 export async function replenishRamQueue(roomId: string, genre: string, targetBuffer = 3): Promise<QueueItem[]> {
-  const current = getRamQueue();
+  let current = getRamQueue();
   const needed = Math.max(0, targetBuffer - current.length);
   if (needed === 0) return current;
 
-  // Si la cola en memoria está vacía, pre-cargar de inmediato para visualización instantánea en TV
-  if (current.length === 0) {
-    for (let i = 0; i < Math.min(needed, 2); i++) {
-      const fb = getFallbackTrack(genre, current.map((c) => c.author));
-      current.push(trackToRamItem(fb, roomId, genre));
-    }
-    setRamQueue(current);
-  }
-
-  const recentArtists = current.map((c) => c.author);
+  // Pre-cargar de inmediato canciones del género para visualización instantánea (TV y Celular)
   for (let i = 0; i < needed; i++) {
-    const track = await fetchNextAutoDjTrack(genre, recentArtists);
-    if (track) {
-      current.push(trackToRamItem(track, roomId, genre));
-      recentArtists.push(track.author);
-      setRamQueue(current);
-    }
+    const excludedIds = current.map((c) => c.video_id);
+    const recentAuthors = current.map((c) => c.author);
+    const fb = getFallbackTrack(genre, recentAuthors, excludedIds);
+    current.push(trackToRamItem(fb, roomId, genre));
   }
+  setRamQueue(current);
+
+  // En segundo plano enriquecer con búsqueda de YouTube si está disponible
+  const recentArtists = current.map((c) => c.author);
+  fetchNextAutoDjTrack(genre, recentArtists).then((track) => {
+    if (track) {
+      const q = getRamQueue();
+      if (q.length > 0 && !q.some((x) => x.video_id === track.videoId)) {
+        q[q.length - 1] = trackToRamItem(track, roomId, genre);
+        setRamQueue(q);
+      }
+    }
+  }).catch(() => {});
+
   return current;
 }

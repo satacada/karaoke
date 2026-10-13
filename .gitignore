@@ -94,3 +94,6 @@ dist/
 build/
 out/
 .vite/
+releases/*.apk
+client/android/
+.gradle/

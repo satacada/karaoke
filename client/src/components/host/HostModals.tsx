@@ -11,6 +11,7 @@ import { HostTransferQueueModal } from './multiroom/HostTransferQueueModal';
 import { HostAutoDjModal } from './HostAutoDjModal';
 import { HostPairTvModal } from './HostPairTvModal';
 import { HostRentalModal } from './HostRentalModal';
+import { SystemDiagnosticsModal } from '../common/SystemDiagnosticsModal';
 import type { KaraokeRoom, QueueItem, PromoBanner, RoomRentalSession } from '../../types';
 
 interface HostModalsProps {
@@ -27,6 +28,7 @@ interface HostModalsProps {
   showAutoDjModal?: boolean; onCloseAutoDj?: () => void; onUpdatedAutoDj?: () => void;
   showPairTvModal?: boolean; initialTvCode?: string; onOpenPairTv?: () => void; onClosePairTv?: () => void; onPairedTv?: (roomCode: string) => void;
   showRentalModal?: boolean; onCloseRental?: () => void; onRentalUpdated?: (session: RoomRentalSession | null) => void;
+  showDiagnosticsModal?: boolean; onCloseDiagnostics?: () => void;
 }
 
 export const HostModals: FC<HostModalsProps> = ({
@@ -42,6 +44,7 @@ export const HostModals: FC<HostModalsProps> = ({
   showAutoDjModal = false, onCloseAutoDj = () => {}, onUpdatedAutoDj = () => {},
   showPairTvModal = false, initialTvCode = '', onOpenPairTv = () => {}, onClosePairTv = () => {}, onPairedTv = () => {},
   showRentalModal = false, onCloseRental = () => {}, onRentalUpdated = () => {},
+  showDiagnosticsModal = false, onCloseDiagnostics = () => {},
 }) => {
   return (
     <>
@@ -59,6 +62,7 @@ export const HostModals: FC<HostModalsProps> = ({
       <HostAutoDjModal isOpen={showAutoDjModal} room={room} onClose={onCloseAutoDj} onUpdated={onUpdatedAutoDj} />
       <HostPairTvModal isOpen={showPairTvModal} initialCode={initialTvCode} rooms={ownerRooms} onClose={onClosePairTv} onSuccess={onPairedTv} />
       <HostRentalModal isOpen={showRentalModal} roomId={room?.id || ''} roomCode={room?.room_code || ''} roomName={room?.zone_name || room?.name || 'Sala'} onClose={onCloseRental} onSessionUpdated={onRentalUpdated} />
+      <SystemDiagnosticsModal isOpen={showDiagnosticsModal} roomCode={room?.room_code || 'FIESTA'} onClose={onCloseDiagnostics} />
     </>
   );
 };

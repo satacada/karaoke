@@ -97,8 +97,8 @@ export const TvPlayer = forwardRef<TvPlayerRef, TvPlayerProps>(function TvPlayer
   }, []);
 
   return (
-    <div onClick={togglePlayPause} className="relative w-full h-full bg-black flex items-center justify-center overflow-hidden cursor-pointer tv-player-container">
-      <div ref={containerRef} className="w-full h-full" />
+    <div className="relative w-full h-full bg-black flex items-center justify-center overflow-hidden tv-player-container select-none">
+      <div ref={containerRef} className="w-full h-full pointer-events-none" />
       {isAutoplayBlocked && <TvAutoplayBlockedPrompt onUnlock={togglePlayPause} />}
     </div>
   );

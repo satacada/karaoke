@@ -1,6 +1,7 @@
 import { supabase } from '../lib/supabaseClient';
 import { encodeSongThumbnail } from '../utils/songMeta';
 import { getPublicBaseUrl } from '../utils/appUrl';
+import { getRoomChannelName } from '../utils/channelUtils';
 import type {
   KaraokeRoom,
   QueueItem,
@@ -73,8 +74,9 @@ export async function sendRemoteCommand(
   payload: Record<string, unknown> = {}
 ): Promise<RemoteCommand | null> {
   try {
-    const ch = supabase.channel(`tv-room-${roomId}`);
-    ch.send({ type: 'broadcast', event: 'remote_command', payload: { command, payload } }).catch(() => {});
+    const chName = getRoomChannelName(roomId);
+    supabase.channel(chName).send({ type: 'broadcast', event: 'remote_command', payload: { command, payload } }).catch(() => {});
+    supabase.channel(`tv-room-${roomId}`).send({ type: 'broadcast', event: 'remote_command', payload: { command, payload } }).catch(() => {});
   } catch {}
   const { data, error } = await supabase
     .from('karaoke_commands')

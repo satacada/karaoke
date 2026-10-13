@@ -1,6 +1,6 @@
 import { useState, useEffect, type FC } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
-import { Disc3, Sparkles, Smartphone, Sliders, Play, Pause, ShieldCheck, Monitor } from 'lucide-react';
+import { Disc3, Sparkles, Smartphone, Sliders, Play, Pause, ShieldCheck, Monitor, Settings } from 'lucide-react';
 import { TvIdlePromoCard } from './TvIdlePromoCard';
 import { getHostUrl } from '../../utils/appUrl';
 import type { PromoBanner } from '../../types';
@@ -9,12 +9,12 @@ interface TvIdleScreenProps {
   roomCode: string; joinUrl: string; roomName?: string; zoneName?: string;
   status?: 'active' | 'paused' | 'closed'; banners?: PromoBanner[];
   autoDjActive?: boolean; onStartAutoDj?: () => void; isStartingAutoDj?: boolean;
-  onSwitchToHost?: () => void;
+  onSwitchToHost?: () => void; onOpenSettings?: () => void;
 }
 
 export const TvIdleScreen: FC<TvIdleScreenProps> = ({
   roomCode, roomName = 'Rockola Digital Live', zoneName, status = 'active',
-  banners = [], autoDjActive = false, onStartAutoDj, isStartingAutoDj = false, onSwitchToHost,
+  banners = [], autoDjActive = false, onStartAutoDj, isStartingAutoDj = false, onSwitchToHost, onOpenSettings,
 }) => {
   const [localBanners, setLocalBanners] = useState<PromoBanner[]>(banners);
   const [promoIdx, setPromoIdx] = useState(0); const [now, setNow] = useState(() => Date.now());
@@ -39,6 +39,16 @@ export const TvIdleScreen: FC<TvIdleScreenProps> = ({
 
   return (
     <div className="relative w-full h-screen bg-gradient-to-br from-zinc-950 via-purple-950/40 to-zinc-950 flex flex-col items-center justify-center p-6 overflow-hidden select-none">
+      {onOpenSettings && (
+        <button
+          type="button"
+          onClick={onOpenSettings}
+          title="Configuración de pantalla y Salir"
+          className="absolute top-4 right-4 z-30 p-2 rounded-xl bg-zinc-900/80 hover:bg-zinc-800 text-zinc-400 hover:text-white border border-zinc-800 shadow-lg cursor-pointer transition-colors"
+        >
+          <Settings className="w-4 h-4" />
+        </button>
+      )}
       <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-600/15 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-pink-600/15 rounded-full blur-3xl pointer-events-none" />
       <main className="relative z-10 flex flex-col items-center max-w-4xl text-center">
@@ -91,8 +101,15 @@ export const TvIdleScreen: FC<TvIdleScreenProps> = ({
           </div>
         )}
       </main>
-      <footer className="absolute bottom-2 right-4 z-20 pointer-events-none select-none">
-        <span className="text-[clamp(9px,0.7vw,11px)] font-mono font-medium text-zinc-400/80 uppercase tracking-widest tv-text-outline-sm">Powered by DTC • v1.49.0</span>
+      <footer className="absolute bottom-2 right-4 z-20 select-none">
+        <button
+          type="button"
+          onClick={onOpenSettings}
+          title="Configuración y Diagnóstico"
+          className="text-[clamp(9px,0.7vw,11px)] font-mono font-medium text-zinc-400/80 hover:text-white uppercase tracking-widest tv-text-outline-sm cursor-pointer transition-colors"
+        >
+          Powered by DTC • v1.49.6
+        </button>
       </footer>
     </div>
   );

@@ -1,5 +1,5 @@
 // ==============================================================================
-// SERVICIO DE TELEMETRÍA Y LOGS EN TIEMPO REAL (CAJA NEGRA)
+// SERVICIO DE TELEMETRÍA Y LOGS EN TIEMPO REAL (BUFFER CIRCULAR 100 EVENTOS)
 // Archivo: client/src/services/loggerService.ts
 // Regla Clean-by-Design: <= 120 líneas
 // ==============================================================================
@@ -7,35 +7,52 @@
 import { supabase } from '../lib/supabaseClient';
 import type { LogLevel, LogNode, SystemLog } from '../types';
 
-const LOCAL_LOGS_KEY = 'rockola_system_logs_cache';
-const MAX_LOCAL_LOGS = 60;
+const LOCAL_LOGS_KEY = 'rockola_circular_logs_v1';
+const MAX_LOCAL_LOGS = 100;
 
-function saveLocalLog(entry: SystemLog) {
+function saveLocalLog(entry: SystemLog): void {
   try {
-    const raw = sessionStorage.getItem(LOCAL_LOGS_KEY);
+    const raw = localStorage.getItem(LOCAL_LOGS_KEY);
     const list: SystemLog[] = raw ? JSON.parse(raw) : [];
     list.unshift(entry);
-    sessionStorage.setItem(LOCAL_LOGS_KEY, JSON.stringify(list.slice(0, MAX_LOCAL_LOGS)));
+    localStorage.setItem(LOCAL_LOGS_KEY, JSON.stringify(list.slice(0, MAX_LOCAL_LOGS)));
   } catch {}
 }
 
 export function getLocalLogs(): SystemLog[] {
   try {
-    const raw = sessionStorage.getItem(LOCAL_LOGS_KEY);
+    const raw = localStorage.getItem(LOCAL_LOGS_KEY);
     return raw ? JSON.parse(raw) : [];
   } catch {
     return [];
   }
 }
 
-export async function writeSystemLog(
+export function clearLocalLogs(): void {
+  try {
+    localStorage.removeItem(LOCAL_LOGS_KEY);
+  } catch {}
+}
+
+export function exportDiagnosticText(roomCode = 'FIESTA'): string {
+  const logs = getLocalLogs();
+  const header = `=== DIAGNÓSTICO ROCKOLA DIGITAL (SALA ${roomCode}) ===\nGenerado: ${new Date().toLocaleString()}\nEventos registrados: ${logs.length}\n----------------------------------------\n`;
+  const body = logs.map((l) => {
+    const time = l.created_at ? new Date(l.created_at).toLocaleTimeString() : '??:??:??';
+    const detailStr = l.details && Object.keys(l.details).length ? ` | Detalle: ${JSON.stringify(l.details)}` : '';
+    return `[${time}][${l.level.toUpperCase()}][${l.node_type.toUpperCase()}][${l.event}] ${l.message}${detailStr}`;
+  }).join('\n');
+  return header + body;
+}
+
+export function writeSystemLog(
   roomCode: string,
   nodeType: LogNode,
   level: LogLevel,
   event: string,
   message: string,
   details: Record<string, unknown> = {}
-): Promise<void> {
+): void {
   const cleanCode = (roomCode || 'FIESTA').toUpperCase().trim();
   const entry: SystemLog = { room_code: cleanCode, node_type: nodeType, level, event, message, details, created_at: new Date().toISOString() };
 
@@ -46,12 +63,12 @@ export async function writeSystemLog(
 
   saveLocalLog(entry);
 
-  // Enviar a Supabase de forma asíncrona segura
+  // Enviar a la tabla de telemetría de Supabase de forma asíncrona segura
   supabase
     .from('karaoke_system_logs')
     .insert([{ room_code: cleanCode, node_type: nodeType, level, event, message, details }])
     .then(({ error }) => {
-      if (error && error.code !== '42P01') console.warn('[Logger] No se pudo enviar log:', error.message);
+      if (error && error.code !== '42P01') console.warn('[Logger] Cloud error:', error.message);
     }, () => {});
 }
 
@@ -65,19 +82,4 @@ export function logWarn(roomCode: string, nodeType: LogNode, event: string, mess
 
 export function logError(roomCode: string, nodeType: LogNode, event: string, message: string, details?: Record<string, unknown>): void {
   writeSystemLog(roomCode, nodeType, 'error', event, message, details);
-}
-
-export async function fetchRemoteLogs(roomCode: string, limit = 50): Promise<SystemLog[]> {
-  try {
-    const { data, error } = await supabase
-      .from('karaoke_system_logs')
-      .select('*')
-      .eq('room_code', (roomCode || 'FIESTA').toUpperCase().trim())
-      .order('created_at', { ascending: false })
-      .limit(limit);
-    if (error || !data) return getLocalLogs();
-    return data as SystemLog[];
-  } catch {
-    return getLocalLogs();
-  }
 }

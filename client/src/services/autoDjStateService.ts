@@ -8,9 +8,9 @@ const DEFAULT_GENRE = 'cumbia_fiesta';
 export function isLocalAutoDjActive(roomCode: string): boolean {
   try {
     const val = localStorage.getItem(`${KEY_ENABLED}${roomCode}`);
-    return val === null ? true : val === 'true';
+    return val === null ? false : val === 'true';
   } catch {
-    return true;
+    return false;
   }
 }
 
@@ -40,11 +40,9 @@ export async function saveRemoteAutoDjSettings(
   setLocalAutoDjActive(roomCode, enabled, genre);
   try {
     const ch = getRoomChannelName(roomId);
-    supabase.channel(ch).send({
-      type: 'broadcast',
-      event: 'set_auto_dj',
-      payload: { enabled, genre, immediate: true },
-    }).catch(() => {});
+    const payload = { enabled, genre, immediate: true };
+    supabase.channel(ch).send({ type: 'broadcast', event: 'set_auto_dj', payload }).catch(() => {});
+    supabase.channel(`tv-room-${roomId}`).send({ type: 'broadcast', event: 'set_auto_dj', payload }).catch(() => {});
 
     await supabase.from('karaoke_commands').insert([
       {
@@ -76,7 +74,7 @@ export async function fetchRemoteAutoDjSettings(
 
     if (data?.payload && typeof data.payload === 'object') {
       const payload = data.payload as { enabled?: boolean; genre?: string };
-      const enabled = payload.enabled !== undefined ? Boolean(payload.enabled) : true;
+      const enabled = payload.enabled !== undefined ? Boolean(payload.enabled) : false;
       const genre = payload.genre || DEFAULT_GENRE;
       setLocalAutoDjActive(roomCode, enabled, genre);
       return { enabled, genre };

@@ -4,6 +4,95 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.49.6] - 2026-10-12
+
+### 🐛 [CORRECCIÓN / FIX]
+- **Sincronización Bidireccional Celular y TV al Cambiar de Género (`HostView.tsx`, `HostAutoDjModal.tsx`, `autoDjStateService.ts`, `autoDjRamQueueService.ts`):**
+  - Se corrigió el desfase donde la TV reproducía el nuevo género (ej. Rock de los 80s) pero el celular seguía mostrando temas antiguos de cumbia.
+  - Al cambiar de estación en la consola DJ (`HostAutoDjModal.tsx` o `HostView.tsx`), el celular purga su buffer RAM, obtiene la semilla del género seleccionado (ej. Michael Jackson, Queen, Bon Jovi) y 3 temas adicionales de los 80s, difunde el estado sincrónico `tv_sync_state` a ambos canales (`getRoomChannelName` y `tv-room-${roomId}`), reflejándose idénticamente tanto en la pantalla del celular como en la TV.
+  - Se corrigió la función en segundo plano de `replenishRamQueue` para que no sobreescriba temas con Los Palmeras si el género no es cumbia.
+- **Selección Inmediata de Canciones de la Fila de Próximos Temas (`HostQueueItem.tsx`, `HostView.tsx`):**
+  - El botón `⚡ Siguiente` en los items de la cola traslada el tema elegido a la posición #1 e inmediatamente emite `tv_sync_state` tanto al canal de sala como al canal TV, permitiendo que al pulsar "Saltar" o al terminar la canción actual empiece inmediatamente el tema elegido por el anfitrión.
+- **Solución Definitiva a Videos Restringidos en YouTube (`autoDjFallbacks.ts`):**
+  - Se verificaron individualmente todas las canciones de fallback mediante llamadas HTTP reales a la API oEmbed y endpoint iframe embed de YouTube. Todos los temas seleccionados de Cumbia, Cuarteto, Rock Nacional, Rock Internacional, Hits 80s/90s, Karaoke, Folclore y Chill son 100% reproducibles en reproductores embed sin restricciones.
+- **Bordes Negros Marcados en Letras del Ticker TV (`index.css`):**
+  - Se reforzó la clase `.tv-text-outline` y `.tv-text-outline-sm` implementando un trazo sólido de 8 puntos (`text-shadow`) para asegurar un borde negro nítido y perfecto sobre cualquier fondo de video.
+- **Iconos de Reacciones y Limpieza Visual sobre el Código QR (`TvFloatingQr.tsx`):**
+  - Se reubicó y redimensionó la zona de reacciones (`text-4xl`, `-top-36`, `h-36`) para que los emojis enviados por los invitados floten con máxima claridad directamente sobre la tarjeta del código QR.
+  - Se removió el botón redundante de la tuerca dentro del módulo QR, dejando la interfaz limpia y sin duplicidades.
+- **Sistema de Telemetría Nivel 1 - Buffer Circular de 100 Eventos y Diagnóstico Directo (`loggerService.ts`, `SystemDiagnosticsModal.tsx`, `HostHeader.tsx`, `TvUnlinkModal.tsx`):**
+  - Implementación de un buffer circular de los últimos 100 eventos almacenados en memoria local y `localStorage` (ocupa 0 bytes en base de datos remota).
+  - Captura cronológica de eventos de ciclo de vida (`change_genre`, `play`, `pause`, `skip`, errores de YouTube `101/150`, estado de conexión).
+  - Nuevo modal interactivo de diagnóstico accesible con 1 clic desde:
+    - La versión `v1.49.6` o el ícono de terminal en la consola del celular del anfitrión (`HostHeader.tsx`).
+    - El menú de configuración de la TV o haciendo clic en el código de sala / pie de página (`TvUnlinkModal.tsx`, `TvIdleScreen.tsx`, `TvFloatingQr.tsx`).
+  - Botón integrado **"Copiar Diagnóstico para Enviar"** para que el usuario o tester pueda copiar y pegar de inmediato la secuencia de eventos por WhatsApp para soporte técnico sin necesidad de adivinar.
+- **Compilación de Producción y Nuevo Release APK v1.49.6 (`releases/Karaoke-TV-v1.49.6.apk`):**
+  - Generado exitosamente sin errores de TypeScript y cumpliendo la regla Clean-by-Design ($\le 120$ líneas por archivo).
+
+---
+
+## [1.49.5] - 2026-10-12
+
+### 🐛 [CORRECCIÓN / FIX]
+- **Eliminación del Ícono de Tuerca Duplicado y Prevención de Pausa Involuntaria (`TvSidebarOverlay.tsx`, `TvFloatingQr.tsx`):**
+  - Se removió la tuerca superior derecha redundante de la pantalla TV. Ahora existe una única tuerca (⚙️) ubicada de manera ergonómica dentro del módulo QR de la TV.
+  - Se agregó `e.stopPropagation()` a todos los botones del módulo QR (pestañas "📱 Pedir" / "🎧 DJ" y botón de tuerca ⚙️). Al hacer click en la tuerca o pestañas, se abre la ventana de configuración y desconexión/salida de manera limpia sin pausar la música en el reproductor.
+- **Solución a Repetición de Canciones de Auto-DJ (`autoDjFallbacks.ts`, `autoDjStations.ts`, `autoDjRamQueueService.ts`):**
+  - Se amplió el banco de respaldo (`autoDjFallbacks.ts`) con una lista diversa de canciones por género musical (Cuarteto, Cumbia, RKT, Rock Nacional, Rock Internacional, 80s/90s, Karaoke, Folclore y Chill).
+  - En `replenishRamQueue`, se excluyen estrictamente los `video_id` de canciones ya presentes en la cola y en reproducción, garantizando que nunca se repita el mismo tema continuamente al llenar las 3 canciones de la lista.
+- **Ticker de Próximas Canciones sin Bordes ni Contornos de Caja (`TvNextQueueTicker.tsx`):**
+  - Se eliminaron por completo los marcos, fondos de caja y contornos de las canciones siguientes, mostrando los títulos limpios con excelente contraste directo sobre el video.
+- **Empaquetado de Release APK v1.49.5 (`releases/Karaoke-TV-v1.49.5.apk`):**
+  - Compilación nativa exitosa con todas las optimizaciones aplicadas.
+
+---
+
+## [1.49.4] - 2026-10-12
+
+### 🐛 [CORRECCIÓN / FIX]
+- **Sincronización Total Celular-TV y Control del Salto de Canción (`useTvRealtime.ts`, `HostView.tsx`, `karaokeApi.ts`):**
+  - Se sincronizó la cola de canciones y canción actual vía el evento Realtime `tv_sync_state` emitido simultáneamente en los canales de la sala. TV y Celular muestran exactamente la misma canción y las siguientes 3.
+  - Al pulsar "Saltar" en el celular, se envía la instrucción remota `skip` a la TV y se avanza la cola local de forma atómica sin repetir canciones previas.
+- **Control Total del Anfitrión sobre las Siguientes 3 Canciones (`HostQueueItem.tsx`, `HostView.tsx`):**
+  - En la lista de próximas canciones, se agregó el botón `⚡ Siguiente` destacado. El DJ puede elegir cuál de las 3 canciones reproducir a continuación con un solo toque, desplazándola al inicio de la cola y sincronizando la TV al instante.
+- **Control de Línea de Tiempo y Regreso al Inicio (`HostNowPlayingCard.tsx`, `TvPlayer.tsx`):**
+  - La barra de progreso en la consola DJ es ahora interactiva: el anfitrión puede tocar cualquier punto de la línea de tiempo para avanzar/retroceder a los segundos exactos.
+  - Se agregó el botón explícito `⏮ Inicio` para reiniciar la canción inmediatamente a 0:00.
+- **Carga Inmediata de Canciones al Cambiar de Género (`autoDjStations.ts`, `autoDjRamQueueService.ts`, `useTvRealtime.ts`):**
+  - Se implementó la biblioteca de respaldo inmediata para TODOS los géneros (Cumbia, Cuarteto, RKT, Rock Nacional, Rock Internacional, 80s/90s, Karaoke, Folclore, Chill).
+  - Al cambiar de género musical en el celular, la cola en RAM de la TV se repone de inmediato con las siguientes 3 canciones del nuevo género y se refleja en el ticker de la TV y la consola del celular.
+- **Nuevo Estilo del Ticker TV de Canciones Siguientes (`TvNextQueueTicker.tsx`):**
+  - Se removieron los fondos oscuros/translúcidos pesados. Ahora cuenta con fondos transparentes con bordes negros nítidos, badges de contraste y texto blanco con borde negro (`tv-text-outline`) para una legibilidad óptima sobre el video.
+- **HUD TV: Título Intermitente y Barra de Avance Inferior Sincronizada (`TvNowPlayingHUD.tsx`):**
+  - Título y autor se muestran durante los primeros 15 segundos y reaparecen cada 60 segundos (durante 10 segundos).
+  - La línea de progreso horizontal se ubica en el borde inferior absoluto de la pantalla.
+  - El contador de duración y el botón pausar se ubican directamente arriba de la barra de progreso.
+  - Pausa y reproducción 100% sincronizadas entre el botón de la TV, el control físico del TV Box (`MediaPlayPause`, `MediaPlay`, `MediaPause`, barra espaciadora, Enter, código 179) y el celular del anfitrión.
+
+---
+
+## [1.49.3] - 2026-10-12
+
+### 🐛 [CORRECCIÓN / FIX]
+- **Arranque en Reposo Garantizado Sin Reproducción No Autorizada (`autoDjStateService.ts`):**
+  - Al instalar o abrir la app por primera vez, el estado por defecto de `isLocalAutoDjActive` ahora es `false`.
+  - La TV permanece en pantalla de espera (`TvIdleScreen`) hasta que el anfitrión pulse explícitamente "Iniciar Música Inteligente" o elija una estación en la consola DJ.
+- **Canal Realtime y Comando Remoto 'Saltar' (`karaokeApi.ts`, `HostView.tsx`):**
+  - Se unificó la emisión de comandos remotos en `getRoomChannelName(roomId)` y `tv-room-${roomId}` para asegurar recepción instantánea en cualquier nodo.
+  - El botón "Saltar" del celular (`HostTransportBar` y `HostNowPlayingCard`) ahora emite la instrucción remota `skip` a la TV además de actualizar la cola local, evitando repetición de canciones.
+- **Cambio de Estación en 1 Solo Toque con Indicador de Proceso (`HostAutoDjModal.tsx`, `HostView.tsx`):**
+  - Al seleccionar un género (ej: Cumbia -> Rock), el sistema guarda la estación y despacha inmediatamente la orden de salto a la semilla del nuevo género en la TV.
+  - La consola DJ muestra un banner animado de carga ("Cambiando a estación...") informando el progreso en tiempo real.
+- **Acceso a Configuración y Salir de la App en Modo TV (`TvFloatingQr.tsx`, `TvIdleScreen.tsx`, `TvUnlinkModal.tsx`):**
+  - Botón de engranaje ⚙️ accesible tanto en reposo como durante reproducción sobre el stack del QR interactivo.
+  - Botón funcional "🚪 Salir de la aplicación" con soporte para Capacitor (`Capacitor.Plugins.App.exitApp()`), WebView de Android y navegador.
+- **Reacciones Flotantes y Mensajes/Dedicatorias de Clientes (`TvFloatingQr.tsx`, `TvFloatingReactions.tsx`):**
+  - La tarjeta con dedicatoria ("💌 DEDICATORIA de [Nombre]: [Mensaje]") se ubica de forma continua directamente arriba del código QR sin desaparecer arbitrariamente.
+  - Las reacciones en vivo de los invitados (👏, 🔥, ❤️, 🍻) flotan directamente sobre la columna lateral derecha encima del QR.
+
+---
+
 ## [1.49.0] - 2026-10-07
 
 ### 🐛 [CORRECCIÓN / FIX]
