@@ -19,14 +19,12 @@ import { TvFloatingReactions } from './TvFloatingReactions';
 import { TvUnlinkModal } from './TvUnlinkModal';
 import { updatePlaybackTick } from '../../services/karaokeApi';
 import { purgeAutoDjSongs } from '../../services/autoDjService'; import { clearRamQueue } from '../../services/autoDjRamQueueService'; import { setLocalAutoDjActive } from '../../services/autoDjStateService'; import { logError } from '../../services/loggerService'; import { getJoinUrl } from '../../utils/appUrl'; import { parseSongMeta } from '../../utils/songMeta'; import { supabase } from '../../lib/supabaseClient';
-import type { TvScale } from '../../types';
-const SCALE_MAP: Record<TvScale, number> = { compact: 0.85, normal: 1.0, large: 1.15, xl: 1.30 };
+import type { TvScale } from '../../types'; const SCALE_MAP: Record<TvScale, number> = { compact: 0.85, normal: 1.0, large: 1.15, xl: 1.30 };
 
 export const TvView: FC<{ roomCode?: string; onUnlink?: () => void; onSwitchToHost?: () => void }> = ({ roomCode = 'FIESTA', onUnlink, onSwitchToHost }) => {
   const playerRef = useRef<TvPlayerRef>(null);
   const lastSyncRef = useRef<number>(0), handleNextSongRef = useRef<() => void>(() => {}), handleStartAutoDjRef = useRef<() => void>(() => {});
-  const [currentTime, setCurrentTime] = useState(0), [duration, setDuration] = useState(0);
-  const [errorNotice, setErrorNotice] = useState<string | null>(null), [showUnlinkModal, setShowUnlinkModal] = useState(false), [isStartingAutoDj, setIsStartingAutoDj] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0), [duration, setDuration] = useState(0), [errorNotice, setErrorNotice] = useState<string | null>(null), [showUnlinkModal, setShowUnlinkModal] = useState(false), [isStartingAutoDj, setIsStartingAutoDj] = useState(false);
 
   const { setIsPaused, isFlashing, banners, setBanners, rentalSession, tvTheme, tvScale, handleRemoteCommand } =
     useTvRemoteHandler(roomCode, playerRef, handleNextSongRef, handleStartAutoDjRef, onUnlink);
@@ -67,8 +65,13 @@ export const TvView: FC<{ roomCode?: string; onUnlink?: () => void; onSwitchToHo
   }, [room?.promo_banners, roomCode]);
 
   useEffect(() => {
-    if (!isLoading && !currentSong && nextSongs.length > 0) handleNextSongRef.current();
-  }, [isLoading, currentSong, nextSongs.length]);
+    const handleKey = (e: KeyboardEvent) => {
+      if (['ContextMenu', 'Settings', 'Menu', 'F1', 'm', 'M', 'q', 'Q'].includes(e.key) || e.keyCode === 82) { e.preventDefault(); setShowUnlinkModal((p) => !p); }
+    };
+    window.addEventListener('keydown', handleKey); return () => window.removeEventListener('keydown', handleKey);
+  }, []);
+
+  useEffect(() => { if (!isLoading && !currentSong && nextSongs.length > 0) handleNextSongRef.current(); }, [isLoading, currentSong, nextSongs.length]);
 
   const handlePlayerError = useCallback(() => {
     logError(roomCode, 'tv', 'yt_restricted_skip', `Video restringido en sala ${roomCode}`, { currentSongId: currentSong?.id, videoId: currentSong?.video_id });
@@ -110,8 +113,6 @@ export const TvView: FC<{ roomCode?: string; onUnlink?: () => void; onSwitchToHo
       <div className="absolute top-0 right-0 z-40 pointer-events-none" style={{ transform: `scale(${scaleFactor})`, transformOrigin: 'top right' }}><TvViewOverlays roomCode={roomCode} currentSong={currentSong} banners={banners} /></div>
       {currentSong && <div className="absolute bottom-3 right-3 z-40" style={{ transform: `scale(${scaleFactor})`, transformOrigin: 'bottom right' }}><TvFloatingQr roomCode={roomCode} joinUrl={joinUrl} onSwitchToHost={onSwitchToHost} onOpenSettings={() => setShowUnlinkModal(true)} dedication={parseSongMeta(currentSong).dedication ? { text: parseSongMeta(currentSong).dedication!, sender: currentSong.requested_by || 'Un invitado' } : null} /></div>}
       <TvFloatingReactions roomCode={roomCode} />
-
-      {/* Modal a nivel raíz: Libre de pointer-events-none y de scale */}
       <TvUnlinkModal isOpen={showUnlinkModal} roomCode={roomCode} roomName={room?.zone_name || room?.name} onClose={() => setShowUnlinkModal(false)} onSwitchToHost={onSwitchToHost} onConfirmUnlink={() => { try { localStorage.removeItem('tv_paired_room'); } catch {} setShowUnlinkModal(false); onUnlink?.(); }} />
     </div>
   );
