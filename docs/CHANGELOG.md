@@ -4,6 +4,18 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.49.10] - 2026-10-14
+
+### 🐛 [CORRECCIÓN / FIX]
+- **Solución al Conflicto de Tecla OK / Enter con el Reproductor (`TvPlayer.tsx`, `TvView.tsx`):**
+  - Anteriormente, presionar **OK / Enter** en el control remoto para activar la tuerca o cualquier botón interactivo era interceptado globalmente por el reproductor de video como orden de pausar/reproducir (`togglePlayPause`), cancelando el clic del botón.
+  - Se corrigió el listener: ahora cuando el foco está sobre la tuerca o cualquier elemento interactivo, presionar **OK** no pausa el video, sino que ejecuta la acción del botón de inmediato abriendo el modal con `1. QR Admin` y `2. Salir App`.
+  - Se añadió `focus:ring-4 focus:ring-pink-500` y `tabIndex={0}` a la tuerca para que resalte claramente cuando el control remoto de la TV la tiene seleccionada.
+- **Letras Blancas Translúcidas en la Lista de Canciones (`TvNextQueueTicker.tsx`):**
+  - Se eliminó el tono plomo/gris (`text-white/45`, `text-white/35`), reemplazándolo por blanco puro y sutilmente translúcido (`text-white/85` y `text-white/70`), con contorno oscuro nítido (`tv-text-outline`) para que no se vea opaco.
+
+---
+
 ## [1.49.9] - 2026-10-13
 
 ### 🔧 [AFINAMIENTO / REFINAMIENTO]

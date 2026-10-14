@@ -40,8 +40,10 @@ export const TvPlayer = forwardRef<TvPlayerRef, TvPlayerProps>(function TvPlayer
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
-      if ([' ', 'Enter', 'MediaPlayPause', 'MediaPlay', 'MediaPause'].includes(e.key) || e.keyCode === 179) { e.preventDefault(); togglePlayPause(); }
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement || e.target instanceof HTMLButtonElement) return;
+      if ((e.target as HTMLElement)?.closest('button, a, [role="dialog"], [role="button"]')) return;
+      if (['MediaPlayPause', 'MediaPlay', 'MediaPause'].includes(e.key) || e.keyCode === 179) { e.preventDefault(); togglePlayPause(); }
+      else if (e.key === ' ' && (!e.target || e.target === document.body)) { e.preventDefault(); togglePlayPause(); }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
