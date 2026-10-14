@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { supabase } from '../lib/supabaseClient'; import type { KaraokeRoom, QueueItem, RemoteCommand } from '../types';
 import { getRoomByCode, getQueueForRoom, advanceNextSong, markCommandExecuted, markSongFinished } from '../services/karaokeApi';
 import { isLocalAutoDjActive, setLocalAutoDjActive, getLocalAutoDjGenre, fetchRemoteAutoDjSettings } from '../services/autoDjStateService';
-import { getRamQueue, dequeueRamSong, fetchDiverseRamTrack, replenishRamQueue, clearRamQueue, setRamQueue } from '../services/autoDjRamQueueService';
+import { getRamQueue, dequeueRamSong, fetchDiverseRamTrack, replenishRamQueue, clearRamQueue, setRamQueue, initializeGenreRamQueue } from '../services/autoDjRamQueueService';
 import { getRoomChannelName } from '../utils/channelUtils'; import { logInfo } from '../services/loggerService';
 
 export function useTvRealtime(roomCode: string, onRemoteCommand?: (command: RemoteCommand) => void) {
@@ -40,7 +40,7 @@ export function useTvRealtime(roomCode: string, onRemoteCommand?: (command: Remo
     if (activeRoom.auto_dj_enabled || isLocalAutoDjActive(activeRoom.room_code)) {
       const g = activeRoom.auto_dj_genre || getLocalAutoDjGenre(activeRoom.room_code) || 'cumbia_fiesta';
       const curVid = finishedSong?.video_id;
-      let ramSong = dequeueRamSong(curVid) || await fetchDiverseRamTrack(activeRoom.id, g, curVid ? [curVid] : []);
+      let ramSong = dequeueRamSong(curVid, g) || await fetchDiverseRamTrack(activeRoom.id, g, curVid ? [curVid] : []);
       ramSongRef.current = ramSong; setCurrentSong(ramSong);
       const nxt = await replenishRamQueue(activeRoom.id, g, 3, ramSong.video_id);
       setNextSongs(nxt); broadcastSync(activeRoom.id, ramSong, nxt);
@@ -93,9 +93,10 @@ export function useTvRealtime(roomCode: string, onRemoteCommand?: (command: Remo
           setLocalAutoDjActive(roomCode, Boolean(payload.enabled), payload.genre);
           setRoom((p) => p ? { ...p, auto_dj_enabled: payload.enabled, auto_dj_genre: payload.genre } : p);
           if (payload.genre) {
-            clearRamQueue(); const seed = await fetchDiverseRamTrack(roomId, payload.genre);
-            ramSongRef.current = seed; setCurrentSong(seed); const q = await replenishRamQueue(roomId, payload.genre, 3);
-            setNextSongs(q); broadcastSync(roomId, seed, q);
+            clearRamQueue(); const qInit = initializeGenreRamQueue(roomId, payload.genre);
+            const first = dequeueRamSong(undefined, payload.genre) || qInit[0];
+            ramSongRef.current = first; setCurrentSong(first); const q = await replenishRamQueue(roomId, payload.genre, 3, first?.video_id);
+            setNextSongs(q); broadcastSync(roomId, first, q);
           }
         }
       })

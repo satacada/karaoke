@@ -1,4 +1,5 @@
 import { AUTO_DJ_STATIONS } from './autoDjStations';
+import { getGenreRotationIndex } from './genreRotationService';
 
 const DAILY_ARTISTS: Record<string, string[]> = {
   cumbia_fiesta: ['Los Palmeras', 'Gilda', 'Rafaga', 'Amar Azul', 'La Nueva Luna', 'Damas Gratis', 'Leo Mattioli'],
@@ -13,22 +14,11 @@ const DAILY_ARTISTS: Record<string, string[]> = {
   folclore_argentino: ['Los Nocheros', 'Soledad Pastorutti', 'Chaqueño Palavecino', 'Horacio Guarany', 'Mercedes Sosa'],
 };
 
-function getDayHash(seedStr: string): number {
-  let hash = 0;
-  for (let i = 0; i < seedStr.length; i++) {
-    hash = (hash << 5) - hash + seedStr.charCodeAt(i);
-    hash |= 0;
-  }
-  return Math.abs(hash);
-}
-
-export function getDailySeedForGenre(genreId: string, dateStr?: string): { artist: string; query: string } {
-  const effectiveDate = dateStr || new Date().toISOString().slice(0, 10);
+export function getDailySeedForGenre(genreId: string): { artist: string; query: string } {
   const cleanGenre = genreId.startsWith('seed:') ? 'cumbia_fiesta' : genreId;
   const list = DAILY_ARTISTS[cleanGenre] || DAILY_ARTISTS.cumbia_fiesta;
-  const hash = getDayHash(`${cleanGenre}_${effectiveDate}`);
-  const index = hash % list.length;
-  const artist = list[index] || list[0];
+  const index = getGenreRotationIndex(cleanGenre);
+  const artist = list[index % list.length] || list[0];
 
   return {
     artist,

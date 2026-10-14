@@ -54,17 +54,4 @@ export function parseAutoDjGenre(genre?: string, recentArtists: string[] = []): 
   return { isSeed: false, displayName: effectiveGenre, query: `${effectiveGenre} exitos oficial` };
 }
 
-import { EMERGENCY_FALLBACKS } from './autoDjFallbacks';
-
-export function getFallbackTrack(genre?: string, recentArtists: string[] = [], excludedVideoIds: string[] = []): import('../types').SearchResultItem {
-  const clean = genre ? genre.toLowerCase().replace('seed:', '') : 'cumbia_fiesta';
-  const list = EMERGENCY_FALLBACKS[clean] || EMERGENCY_FALLBACKS.cumbia_fiesta;
-  // Filtrar tanto por artistas recientes como por IDs de video ya presentes en la cola
-  const filtered = list.filter((t) =>
-    !excludedVideoIds.includes(t.videoId) &&
-    !recentArtists.some((r) => r.toLowerCase().includes(t.author.toLowerCase()))
-  );
-  const pool = filtered.length > 0 ? filtered : list.filter((t) => !excludedVideoIds.includes(t.videoId));
-  const finalPool = pool.length > 0 ? pool : list;
-  return { ...finalPool[Math.floor(Math.random() * finalPool.length)], versionType: 'official' };
-}
+export { EMERGENCY_FALLBACKS, getFallbackTrack } from './autoDjFallbacks';

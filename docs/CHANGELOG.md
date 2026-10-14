@@ -4,6 +4,25 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.49.17] - 2026-10-14
+
+### 🚀 [ESPECIFICACIÓN / FEATURE]
+- **Rotación Diaria Condicional de Géneros por Historial de Reproducción (`genreRotationService.ts`):**
+  - Si un género **fue reproducido** en la TV durante el día, al día siguiente su lista inicial rota a un nuevo conjunto de canciones curadas (`rotationIndex + 1`).
+  - Si un género **NO fue tocado/reproducido** en el player, conserva su lista inicial intacta durante días consecutivos hasta que efectivamente se utilice.
+- **Transición Dinámica a Canciones Aleatorias Sin Repeticiones (`autoDjRamQueueService.ts`, `autoDjFallbacks.ts`):**
+  - Al abrir un género en Auto-DJ, inicia con los temas iniciales curados de la rotación del día.
+  - Al ir reproduciéndose dichos temas iniciales, el sistema inserta automáticamente los temas siguientes del **mismo género**, seleccionados de forma aleatoria y diversa (vía YouTube y catálogo ampliado).
+  - Se registra el historial de sesión (`karaoke_autodj_played_ids`) para **excluir rigurosamente cualquier tema ya reproducido**, impidiendo que el video dé vueltas sobre las mismas canciones.
+- **Banco de Catálogos Modular de 4 Rotaciones por Género (`autoDjCatalogBailables.ts`, `autoDjCatalogRockPop.ts`, `autoDjCatalogClasicos.ts`):**
+  - Expansión a 12 temas curados por género repartidos en 4 rotaciones diarias independientes cumpliendo con la regla Clean-by-Design ($\le 120$ líneas por archivo).
+
+### 🎨 [AFINAMIENTO / REFINAMIENTO]
+- **Tuerca Flotante Más Pequeña en TV (`TvView.tsx`):**
+  - Se redujo el tamaño de la tuerca superior derecha a `w-5 h-5` (20x20px) con padding más compacto (`p-1`) y resplandor rosado proporcionado, resultando mucho más discreta, elegante y minimalista en la pantalla del televisor.
+
+---
+
 ## [1.49.16] - 2026-10-14
 
 ### 🐛 [CORRECCIÓN / FIX]
