@@ -12,9 +12,10 @@ interface HostPairTvModalProps {
 }
 
 export const HostPairTvModal: FC<HostPairTvModalProps> = ({
-  isOpen, initialCode = '', rooms, onClose, onSuccess,
+  isOpen, rooms, onClose, onSuccess,
 }) => {
-  const [tvCode, setTvCode] = useState(initialCode);
+  // El cuadro NO DEBE estar lleno por defecto; el administrador debe tipear el código de la TV
+  const [tvCode, setTvCode] = useState('');
   const [selectedRoomId, setSelectedRoomId] = useState<string>(() => rooms[0]?.id || '');
   const [isSendingFlash, setIsSendingFlash] = useState(false);
   const [isLinking, setIsLinking] = useState(false);

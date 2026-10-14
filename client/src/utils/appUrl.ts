@@ -41,10 +41,10 @@ export function getJoinUrl(roomCode: string): string {
   return `${getPublicBaseUrl()}/join?room=${encodeURIComponent(roomCode)}`;
 }
 
-export function getHostUrl(roomCode: string): string {
-  return `${getPublicBaseUrl()}/host?room=${encodeURIComponent(roomCode)}`;
+export function getHostUrl(_roomCode?: string): string {
+  return `${getPublicBaseUrl()}/host?link=tv`;
 }
 
-export function getPairUrl(pairCode: string): string {
-  return `${getPublicBaseUrl()}/host?pair=${encodeURIComponent(pairCode)}`;
+export function getPairUrl(_pairCode?: string): string {
+  return `${getPublicBaseUrl()}/host?link=tv`;
 }

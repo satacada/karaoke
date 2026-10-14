@@ -1,11 +1,13 @@
 import type { FC } from 'react';
-import { Disc3, Music2, Clock } from 'lucide-react';
+import { Disc3, Music2, Clock, Play, Pause } from 'lucide-react';
 import type { QueueItem } from '../../types';
 
 interface TvNowPlayingHUDProps {
   song: QueueItem;
   currentTime: number;
   duration: number;
+  isPaused?: boolean;
+  onTogglePlayPause?: () => void;
 }
 
 function formatTime(seconds: number): string {
@@ -18,6 +20,8 @@ export const TvNowPlayingHUD: FC<TvNowPlayingHUDProps> = ({
   song,
   currentTime,
   duration,
+  isPaused = false,
+  onTogglePlayPause,
 }) => {
   const effectiveDuration = duration > 0 ? duration : song.duration_seconds || 180;
   const progressPercent = Math.min(100, Math.max(0, (currentTime / effectiveDuration) * 100));
@@ -67,14 +71,34 @@ export const TvNowPlayingHUD: FC<TvNowPlayingHUDProps> = ({
           </div>
         </div>
 
-        {/* Barra horizontal de avance en la parte inferior extrema + Powered by DTC más chico */}
+        {/* Barra horizontal de avance: Seleccionable e interactiva con el control remoto */}
         <div className="flex items-center gap-2.5 pr-36 sm:pr-44">
-          <div className="flex-1 bg-black/80 h-1.5 rounded-full overflow-hidden border border-white/20 shadow-md">
-            <div
-              className="h-full bg-gradient-to-r from-purple-500 via-pink-500 to-amber-400 rounded-full transition-all duration-300 ease-linear shadow-sm"
-              style={{ width: `${progressPercent}%` }}
-            />
-          </div>
+          <button
+            id="tv-timeline-bar"
+            type="button"
+            tabIndex={0}
+            onClick={(e) => { e.stopPropagation(); onTogglePlayPause?.(); }}
+            onKeyDown={(e) => {
+              if (['Enter', ' ', 'MediaPlayPause', 'MediaPlay', 'MediaPause'].includes(e.key) || e.keyCode === 179) {
+                e.preventDefault(); e.stopPropagation(); onTogglePlayPause?.();
+              } else if (e.key === 'ArrowUp') {
+                e.preventDefault(); document.getElementById('tv-gear-btn')?.focus();
+              }
+            }}
+            title={isPaused ? 'Línea de tiempo pausada - Presiona OK para reproducir' : 'Línea de tiempo activa - Presiona OK para pausar'}
+            className="flex-1 group/bar relative py-1 focus:outline-none pointer-events-auto cursor-pointer"
+          >
+            <div className="w-full bg-black/80 h-2 group-focus/bar:h-3 rounded-full overflow-hidden border border-white/20 group-focus/bar:border-pink-400 group-focus/bar:ring-4 group-focus/bar:ring-pink-500/80 shadow-md transition-all">
+              <div
+                className="h-full bg-gradient-to-r from-purple-500 via-pink-500 to-amber-400 rounded-full transition-all duration-300 ease-linear shadow-sm"
+                style={{ width: `${progressPercent}%` }}
+              />
+            </div>
+            <div className="hidden group-focus/bar:flex absolute -top-8 left-1/2 -translate-x-1/2 items-center gap-1.5 px-3 py-1 rounded-full bg-pink-600/95 text-white text-[11px] font-black shadow-2xl border border-white/40 animate-pulse">
+              {isPaused ? <Play className="w-3.5 h-3.5 fill-current" /> : <Pause className="w-3.5 h-3.5 fill-current" />}
+              <span>{isPaused ? 'OK: Reanudar' : 'OK: Pausar'}</span>
+            </div>
+          </button>
           <span className="tracking-widest uppercase font-black text-white/50 text-[8px] tv-text-outline-sm shrink-0 whitespace-nowrap">
             Powered by DTC
           </span>

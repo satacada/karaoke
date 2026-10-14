@@ -3,6 +3,7 @@ import { TvView } from './components/tv/TvView';
 import { TvActivationScreen } from './components/tv/TvActivationScreen';
 import { HostView } from './components/host/HostView';
 import { GuestView } from './components/guest/GuestView';
+import { HostQrValidationView } from './components/host/HostQrValidationView';
 import { isTvDevice } from './utils/deviceDetector';
 import { Sliders, Music, QrCode } from 'lucide-react';
 
@@ -12,7 +13,7 @@ export function getInitialMode(isTv: boolean): 'tv' | 'host' | 'guest' {
     const path = window.location.pathname.toLowerCase();
     const qMode = p.get('mode')?.toLowerCase();
     if (path.startsWith('/join') || path.startsWith('/guest') || qMode === 'guest') return 'guest';
-    if (path.startsWith('/host') || p.has('pair') || qMode === 'host') return 'host';
+    if (path.startsWith('/host') || p.has('pair') || p.get('link') === 'tv' || qMode === 'host') return 'host';
     if (path.startsWith('/tv') || qMode === 'tv' || p.get('device') === 'tv') return 'tv';
     if (isTv) return 'tv';
     const s = sessionStorage.getItem('rockola_app_mode') as 'tv' | 'host' | 'guest' | null;
@@ -24,6 +25,9 @@ export function getInitialMode(isTv: boolean): 'tv' | 'host' | 'guest' {
 export const App: FC = () => {
   const isTv = useMemo(() => isTvDevice(), []);
   const [currentMode, setCurrentMode] = useState<'tv' | 'host' | 'guest'>(() => getInitialMode(isTv));
+  const [isLinkingTv, setIsLinkingTv] = useState(() => {
+    try { return new URLSearchParams(window.location.search).get('link') === 'tv'; } catch { return false; }
+  });
   const [roomCode, setRoomCode] = useState<string | null>(() => {
     try {
       const p = new URLSearchParams(window.location.search);
@@ -53,20 +57,9 @@ export const App: FC = () => {
     }
   }, []);
 
-  const handleSelectMode = (mode: 'tv' | 'host' | 'guest') => {
-    setCurrentMode(mode);
-    try { sessionStorage.setItem('rockola_app_mode', mode); } catch {}
-  };
-
-  const handleTvPaired = (newCode: string) => {
-    setRoomCode(newCode);
-    try { localStorage.setItem('tv_paired_room', newCode); } catch {}
-  };
-
-  const handleTvUnlink = () => {
-    setRoomCode(null);
-    try { localStorage.removeItem('tv_paired_room'); } catch {}
-  };
+  const handleSelectMode = (mode: 'tv' | 'host' | 'guest') => { setCurrentMode(mode); try { sessionStorage.setItem('rockola_app_mode', mode); } catch {} };
+  const handleTvPaired = (newCode: string) => { setRoomCode(newCode); try { localStorage.setItem('tv_paired_room', newCode); } catch {} };
+  const handleTvUnlink = () => { setRoomCode(null); try { localStorage.removeItem('tv_paired_room'); } catch {} };
 
   return (
     <div className="relative min-h-screen bg-zinc-950 text-zinc-100 flex flex-col w-full overflow-x-hidden">
@@ -93,7 +86,23 @@ export const App: FC = () => {
       )}
 
       {currentMode === 'host' && (
-        <HostView roomCode={roomCode || 'FIESTA'} onSwitchToTv={() => handleSelectMode('tv')} onSwitchToGuest={() => handleSelectMode('guest')} />
+        isLinkingTv ? (
+          <HostQrValidationView
+            onLinked={(newCode) => {
+              setRoomCode(newCode);
+              setIsLinkingTv(false);
+              try {
+                localStorage.setItem('tv_paired_room', newCode);
+                localStorage.setItem('rockola_is_admin_device', 'true');
+                sessionStorage.setItem(`host_auth_${newCode}`, 'true');
+              } catch {}
+              window.history.replaceState({}, '', `/host?room=${newCode}`);
+            }}
+            defaultRoomFallback={roomCode || 'FIESTA'}
+          />
+        ) : (
+          <HostView roomCode={roomCode || 'FIESTA'} onSwitchToTv={() => handleSelectMode('tv')} onSwitchToGuest={() => handleSelectMode('guest')} />
+        )
       )}
 
       {currentMode === 'guest' && (

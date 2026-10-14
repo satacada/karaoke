@@ -1,4 +1,4 @@
-import { useState, useEffect, type FC } from 'react';
+import { useState, useEffect, useRef, type FC } from 'react';
 import { X, Tv, QrCode, LogOut, ArrowLeft, Smartphone } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { getHostUrl } from '../../utils/appUrl';
@@ -10,7 +10,27 @@ interface TvUnlinkModalProps {
 
 export const TvUnlinkModal: FC<TvUnlinkModalProps> = ({ isOpen, roomCode, onClose, onSwitchToHost }) => {
   const [view, setView] = useState<'menu' | 'admin_qr'>('menu');
-  useEffect(() => { if (isOpen) setView('menu'); }, [isOpen]);
+  const adminQrBtnRef = useRef<HTMLButtonElement>(null);
+  const backBtnRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      setView('menu');
+      const t = setTimeout(() => adminQrBtnRef.current?.focus(), 60);
+      return () => clearTimeout(t);
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (view === 'admin_qr') {
+      const t = setTimeout(() => backBtnRef.current?.focus(), 60);
+      return () => clearTimeout(t);
+    } else if (view === 'menu' && isOpen) {
+      const t = setTimeout(() => adminQrBtnRef.current?.focus(), 60);
+      return () => clearTimeout(t);
+    }
+  }, [view, isOpen]);
+
   if (!isOpen) return null;
 
   const adminUrl = getHostUrl(roomCode);
@@ -33,14 +53,26 @@ export const TvUnlinkModal: FC<TvUnlinkModalProps> = ({ isOpen, roomCode, onClos
         </div>
         {view === 'menu' ? (
           <div className="flex flex-col gap-3 py-1">
-            <button type="button" onClick={() => setView('admin_qr')} className="w-full py-4 px-4 rounded-2xl bg-gradient-to-r from-purple-600 via-pink-600 to-amber-500 hover:opacity-95 text-white font-black text-sm flex items-center justify-between shadow-xl active:scale-98 cursor-pointer border border-white/20">
+            <button
+              ref={adminQrBtnRef}
+              type="button"
+              tabIndex={0}
+              autoFocus
+              onClick={() => setView('admin_qr')}
+              className="w-full py-4 px-4 rounded-2xl bg-gradient-to-r from-purple-600 via-pink-600 to-amber-500 hover:opacity-95 focus:opacity-100 text-white font-black text-sm flex items-center justify-between shadow-xl active:scale-98 cursor-pointer border border-white/20 focus:border-white focus:ring-4 focus:ring-pink-400 focus:outline-none focus:scale-[1.02] transition-all"
+            >
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-black/30 flex items-center justify-center"><QrCode className="w-5 h-5 text-white" /></div>
                 <div className="text-left"><span className="block text-sm font-black">1. QR Admin</span><span className="block text-[10px] text-white/80 font-medium">Escanear para ser Administrador</span></div>
               </div>
               <span className="text-xs text-white/80">▶</span>
             </button>
-            <button type="button" onClick={handleExitApp} className="w-full py-4 px-4 rounded-2xl bg-zinc-800/90 hover:bg-rose-950/80 border border-zinc-700 hover:border-rose-500 text-rose-200 font-black text-sm flex items-center justify-between shadow-xl active:scale-98 cursor-pointer">
+            <button
+              type="button"
+              tabIndex={0}
+              onClick={handleExitApp}
+              className="w-full py-4 px-4 rounded-2xl bg-zinc-800/90 hover:bg-rose-950/80 border border-zinc-700 hover:border-rose-500 focus:border-rose-400 focus:ring-4 focus:ring-rose-500 focus:outline-none focus:scale-[1.02] text-rose-200 font-black text-sm flex items-center justify-between shadow-xl active:scale-98 cursor-pointer transition-all"
+            >
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-rose-500/20 flex items-center justify-center"><LogOut className="w-5 h-5 text-rose-400" /></div>
                 <div className="text-left"><span className="block text-sm font-black text-rose-300">2. Salir App</span><span className="block text-[10px] text-zinc-400 font-medium">Cerrar y salir de la aplicación</span></div>
@@ -54,16 +86,27 @@ export const TvUnlinkModal: FC<TvUnlinkModalProps> = ({ isOpen, roomCode, onClos
             <div className="bg-white p-3 rounded-2xl shadow-2xl border-4 border-purple-500/40">
               <QRCodeSVG value={adminUrl} size={180} level="M" includeMargin={false} />
             </div>
-            <div className="text-center">
-              <p className="text-xs font-black text-white">Escanear con tu Celular para ser Administrador</p>
-              <p className="text-[10px] text-zinc-400 font-mono mt-0.5">Sala: <b className="text-pink-400 uppercase">{roomCode}</b></p>
+            <div className="text-center space-y-1">
+              <p className="text-xs font-bold text-white">Escanea con tu Celular para ser Administrador</p>
+              <p className="text-[10px] text-zinc-400">Ingresa en tu celular el código que aparece aquí abajo:</p>
+              <div className="inline-block bg-zinc-950 px-4 py-1.5 rounded-xl border border-pink-500/50 shadow-md">
+                <span className="text-[9px] text-zinc-400 uppercase font-black block">Código de Sala</span>
+                <span className="text-xl font-black font-mono text-pink-400 tracking-widest">{roomCode}</span>
+              </div>
             </div>
             {onSwitchToHost && (
               <button type="button" onClick={() => { onClose(); onSwitchToHost(); }} className="w-full py-2 px-3 rounded-xl bg-purple-600/30 hover:bg-purple-600 border border-purple-500/40 text-purple-200 hover:text-white font-bold text-xs flex items-center justify-center gap-2 cursor-pointer">
                 <Smartphone className="w-4 h-4" /><span>Abrir Administrador en esta pantalla</span>
               </button>
             )}
-            <button type="button" onClick={() => setView('menu')} className="w-full mt-1 py-2 px-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold text-xs flex items-center justify-center gap-2 cursor-pointer">
+            <button
+              ref={backBtnRef}
+              type="button"
+              tabIndex={0}
+              autoFocus
+              onClick={() => setView('menu')}
+              className="w-full mt-1 py-2 px-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 focus:bg-pink-600 focus:text-white focus:ring-4 focus:ring-pink-500 focus:outline-none text-zinc-300 font-bold text-xs flex items-center justify-center gap-2 cursor-pointer transition-all"
+            >
               <ArrowLeft className="w-4 h-4" /><span>Volver a Opciones</span>
             </button>
           </div>

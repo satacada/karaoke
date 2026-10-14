@@ -4,6 +4,24 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.49.11] - 2026-10-14
+
+### 🚀 [ESPECIFICACIÓN / FEATURE]
+- **Línea de Tiempo Seleccionable con el Control Remoto (`TvNowPlayingHUD.tsx`, `TvView.tsx`):**
+  - La barra horizontal de avance de canción ahora es un elemento navegable y enfocable (`tabIndex={0}`, `id="tv-timeline-bar"`).
+  - Al estar seleccionada, muestra un anillo de foco brillante (`focus:ring-4 focus:ring-pink-500/80`), se expande visualmente y proyecta una etiqueta flotante animada (`OK: Pausar` / `OK: Reanudar`).
+  - Al presionar **OK**, **Enter**, **Espacio** o teclas de reproducción con la línea de tiempo seleccionada, conmuta de inmediato entre pausa y reproducción.
+  - Navegación bidireccional ágil con la cruceta del control: presionar flecha arriba salta a la tuerca; flecha abajo desde cualquier parte o desde la tuerca salta directamente a la línea de tiempo.
+- **Selección por Defecto de "1. QR Admin" al Abrir la Tuerca (`TvUnlinkModal.tsx`):**
+  - Al presionar la tuerca en la TV, la opción **`1. QR Admin`** adquiere automáticamente el foco (`autoFocus` y `adminQrBtnRef.focus()`) con anillo de alta visibilidad, permitiendo abrir el QR de inmediato con solo pulsar el botón **OK**.
+- **Validación y Enlace QR con Cuadro de Entrada Vacío (`HostQrValidationView.tsx`, `App.tsx`, `appUrl.ts`):**
+  - Al escanear el QR desde la TV (enlace a `/host?link=tv`), el celular del administrador muestra una pantalla de validación donde **el cuadro de texto no está prellenado** (inicia completamente vacío).
+  - La TV muestra debajo del QR el código de forma clara y destacada.
+  - El administrador lee el código de la TV, lo tipea en el celular y presiona **"Enlazar y Tomar Control"** para vincularse de inmediato y tomar el mando del reproductor en la TV.
+  - En `HostPairTvModal.tsx`, el campo `tvCode` también inicia vacío para consistencia en la vinculación manual.
+
+---
+
 ## [1.49.10] - 2026-10-14
 
 ### 🐛 [CORRECCIÓN / FIX]

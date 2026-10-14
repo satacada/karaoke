@@ -1,11 +1,6 @@
 import { useRef, useState, useCallback, useEffect, type FC } from 'react';
 import { AlertCircle, Sparkles, Settings } from 'lucide-react';
-import { useTvRealtime } from '../../hooks/useTvRealtime';
-import { useTvAutoDj } from '../../hooks/useTvAutoDj';
-import { useMediaSession } from '../../hooks/useMediaSession';
-import { useWakeLock } from '../../hooks/useWakeLock';
-import { useTvVoiceControl } from '../../hooks/useTvVoiceControl';
-import { useTvRemoteHandler } from '../../hooks/useTvRemoteHandler';
+import { useTvRealtime } from '../../hooks/useTvRealtime'; import { useTvAutoDj } from '../../hooks/useTvAutoDj'; import { useMediaSession } from '../../hooks/useMediaSession'; import { useWakeLock } from '../../hooks/useWakeLock'; import { useTvVoiceControl } from '../../hooks/useTvVoiceControl'; import { useTvRemoteHandler } from '../../hooks/useTvRemoteHandler';
 import { TvPlayer, type TvPlayerRef } from './TvPlayer';
 import { TvIdleScreen } from './TvIdleScreen';
 import { TvNowPlayingHUD } from './TvNowPlayingHUD';
@@ -26,7 +21,7 @@ export const TvView: FC<{ roomCode?: string; onUnlink?: () => void; onSwitchToHo
   const lastSyncRef = useRef<number>(0), handleNextSongRef = useRef<() => void>(() => {}), handleStartAutoDjRef = useRef<() => void>(() => {});
   const [currentTime, setCurrentTime] = useState(0), [duration, setDuration] = useState(0), [errorNotice, setErrorNotice] = useState<string | null>(null), [showUnlinkModal, setShowUnlinkModal] = useState(false), [isStartingAutoDj, setIsStartingAutoDj] = useState(false);
 
-  const { setIsPaused, isFlashing, banners, setBanners, rentalSession, tvTheme, tvScale, handleRemoteCommand } =
+  const { isPaused, setIsPaused, isFlashing, banners, setBanners, rentalSession, tvTheme, tvScale, handleRemoteCommand } =
     useTvRemoteHandler(roomCode, playerRef, handleNextSongRef, handleStartAutoDjRef, onUnlink);
 
   const { room, currentSong, nextSongs, isLoading, handleNextSong, refreshState } = useTvRealtime(roomCode, handleRemoteCommand);
@@ -67,9 +62,13 @@ export const TvView: FC<{ roomCode?: string; onUnlink?: () => void; onSwitchToHo
   useEffect(() => {
     const handleKey = (e: KeyboardEvent) => {
       if (['ContextMenu', 'Settings', 'Menu', 'F1', 'm', 'M', 'q', 'Q'].includes(e.key) || e.keyCode === 82) { e.preventDefault(); setShowUnlinkModal((p) => !p); }
+      else if (!showUnlinkModal && (!e.target || e.target === document.body)) {
+        if (e.key === 'ArrowUp') { e.preventDefault(); document.getElementById('tv-gear-btn')?.focus(); }
+        else if (e.key === 'ArrowDown') { e.preventDefault(); document.getElementById('tv-timeline-bar')?.focus(); }
+      }
     };
     window.addEventListener('keydown', handleKey); return () => window.removeEventListener('keydown', handleKey);
-  }, []);
+  }, [showUnlinkModal]);
 
   useEffect(() => { if (!isLoading && !currentSong && nextSongs.length > 0) handleNextSongRef.current(); }, [isLoading, currentSong, nextSongs.length]);
 
@@ -92,7 +91,7 @@ export const TvView: FC<{ roomCode?: string; onUnlink?: () => void; onSwitchToHo
       {errorNotice && <div className="absolute top-20 left-1/2 -translate-x-1/2 z-50 bg-rose-600/90 text-white px-5 py-2 rounded-2xl text-sm font-semibold flex items-center gap-2"><AlertCircle className="w-4 h-4 text-amber-300 animate-pulse" /><span>{errorNotice}</span></div>}
 
       {/* Tuerca Superior Derecha: Solo el ícono de la tuerca, accesible y enfocable por el control remoto */}
-      <button type="button" tabIndex={0} onClick={(e) => { e.stopPropagation(); setShowUnlinkModal(true); }} title="Ajustes y Salir" className="absolute top-4 right-4 z-[999] w-12 h-12 rounded-2xl bg-zinc-950/85 hover:bg-black border-2 border-white/40 hover:border-pink-500 focus:border-pink-500 focus:ring-4 focus:ring-pink-500 focus:outline-none focus:scale-110 text-white shadow-2xl backdrop-blur-md transition-all active:scale-95 cursor-pointer pointer-events-auto flex items-center justify-center group">
+      <button id="tv-gear-btn" type="button" tabIndex={0} onClick={(e) => { e.stopPropagation(); setShowUnlinkModal(true); }} onKeyDown={(e) => { if (e.key === 'ArrowDown') { e.preventDefault(); document.getElementById('tv-timeline-bar')?.focus(); } }} title="Ajustes y Salir" className="absolute top-4 right-4 z-[999] w-12 h-12 rounded-2xl bg-zinc-950/85 hover:bg-black border-2 border-white/40 hover:border-pink-500 focus:border-pink-500 focus:ring-4 focus:ring-pink-500 focus:outline-none focus:scale-110 text-white shadow-2xl backdrop-blur-md transition-all active:scale-95 cursor-pointer pointer-events-auto flex items-center justify-center group">
         <Settings className="w-6 h-6 text-pink-400 group-hover:rotate-45 transition-transform" />
       </button>
 
@@ -107,7 +106,7 @@ export const TvView: FC<{ roomCode?: string; onUnlink?: () => void; onSwitchToHo
       ) : (
         <>
           <TvThemeFrame theme={tvTheme}><TvPlayer ref={playerRef} videoId={currentSong.video_id} onEnded={handleNextSong} onError={handlePlayerError} onTimeUpdate={handleTimeUpdate} rentalSession={rentalSession} onPlayingStateChange={(pl) => { setIsPaused(!pl); if (room) updatePlaybackTick(room.id, pl, currentTime).catch(() => {}); }} /></TvThemeFrame>
-          <div className="absolute bottom-0 left-0 right-0 z-30 pointer-events-none" style={{ transform: `scale(${scaleFactor})`, transformOrigin: 'bottom center' }}><TvNowPlayingHUD song={currentSong} currentTime={currentTime} duration={duration} /></div>
+          <div className="absolute bottom-0 left-0 right-0 z-30 pointer-events-none" style={{ transform: `scale(${scaleFactor})`, transformOrigin: 'bottom center' }}><TvNowPlayingHUD song={currentSong} currentTime={currentTime} duration={duration} isPaused={isPaused} onTogglePlayPause={() => playerRef.current?.togglePlayPause()} /></div>
         </>
       )}
       <div className="absolute top-0 right-0 z-40 pointer-events-none" style={{ transform: `scale(${scaleFactor})`, transformOrigin: 'top right' }}><TvViewOverlays roomCode={roomCode} currentSong={currentSong} banners={banners} /></div>
