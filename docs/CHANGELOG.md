@@ -4,6 +4,18 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.49.15] - 2026-10-14
+
+### 🎨 [AFINAMIENTO / REFINAMIENTO]
+- **Siguiente Canción Solo al Iniciar (20s) y al Terminar (20s) (`TvNextQueueTicker.tsx`, `TvView.tsx`):**
+  - El título de la siguiente canción ahora solo aparece durante los primeros 20 segundos de la canción actual y durante los últimos 20 segundos antes de finalizar (`transition-opacity duration-700`).
+  - Durante el cuerpo central de la canción permanece 100% oculto, garantizando que no invada ni obstruya los subtítulos ni la letra que canta el usuario.
+- **Ajuste Tipográfico y Transparencia en "Powered by DT" (`TvNowPlayingHUD.tsx`, `TvIdleScreen.tsx`):**
+  - Se eliminó la transformación `uppercase` en el pie de la barra de progreso y en reposo para respetar rigurosamente la tipografía y mayúsculas/minúsculas exactas: `Powered by DT`.
+  - Se aumentó la transparencia a `text-white/20` (`text-zinc-400/40` en reposo) logrando un aspecto más sutil, discreto y elegante.
+
+---
+
 ## [1.49.14] - 2026-10-14
 
 ### 🎨 [AFINAMIENTO / REFINAMIENTO]

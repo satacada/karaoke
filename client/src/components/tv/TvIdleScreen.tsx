@@ -97,9 +97,9 @@ export const TvIdleScreen: FC<TvIdleScreenProps> = ({
           type="button"
           onClick={onOpenSettings}
           title="Configuración y Diagnóstico"
-          className="text-[clamp(9px,0.7vw,11px)] font-mono font-medium text-zinc-400/80 hover:text-white uppercase tracking-widest tv-text-outline-sm cursor-pointer transition-colors"
+          className="text-[clamp(9px,0.7vw,11px)] font-mono font-medium text-zinc-400/40 hover:text-white/80 tracking-wider tv-text-outline-sm cursor-pointer transition-colors"
         >
-          Powered by DTC • {APP_VERSION}
+          Powered by DT • {APP_VERSION}
         </button>
       </footer>
     </div>

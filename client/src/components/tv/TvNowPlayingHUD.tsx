@@ -99,8 +99,8 @@ export const TvNowPlayingHUD: FC<TvNowPlayingHUDProps> = ({
               <span>{isPaused ? 'OK: Reanudar' : 'OK: Pausar'}</span>
             </div>
           </button>
-          <span className="tracking-widest uppercase font-black text-white/50 text-[8px] tv-text-outline-sm shrink-0 whitespace-nowrap">
-            Powered by DTC
+          <span className="font-semibold text-white/20 text-[8px] tracking-wide tv-text-outline-sm shrink-0 whitespace-nowrap select-none">
+            Powered by DT
           </span>
         </div>
       </div>
