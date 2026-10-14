@@ -4,6 +4,16 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.49.14] - 2026-10-14
+
+### 🎨 [AFINAMIENTO / REFINAMIENTO]
+- **Ícono de Tuerca Flotante sin Botón Contenedor (`TvView.tsx`):**
+  - Se removió la caja/botón de fondo (`bg-zinc-950/85`, `border-2 border-white/40`) de la tuerca superior derecha.
+  - Ahora se renderiza únicamente el **contorno limpio de la tuerca rosada** (`text-pink-500`, `stroke-[2.2]`, `drop-shadow`), flotando sobre el video sin marcos ni fondos artificiales.
+  - Al interactuar con el control remoto, la tuerca misma se ilumina con resplandor neón rosado (`group-focus:drop-shadow-[0_0_14px_rgba(236,72,153,1)]`) y rota sutilmente, manteniendo la pantalla despejada.
+
+---
+
 ## [1.49.13] - 2026-10-14
 
 ### 🚀 [ESPECIFICACIÓN / FEATURE]
