@@ -1,14 +1,17 @@
 import { useState, useEffect, useRef, type FC } from 'react';
-import { X, Tv, QrCode, LogOut, ArrowLeft, Smartphone } from 'lucide-react';
+import { X, Tv, QrCode, LogOut, ArrowLeft, Smartphone, Mic, MicOff } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { getHostUrl } from '../../utils/appUrl';
 
 interface TvUnlinkModalProps {
   isOpen: boolean; roomCode: string; roomName?: string;
   onClose: () => void; onConfirmUnlink: () => void; onSwitchToHost?: () => void;
+  isVoiceSupported?: boolean; isListeningVoice?: boolean; onToggleVoice?: () => void;
 }
 
-export const TvUnlinkModal: FC<TvUnlinkModalProps> = ({ isOpen, roomCode, onClose, onSwitchToHost }) => {
+export const TvUnlinkModal: FC<TvUnlinkModalProps> = ({
+  isOpen, roomCode, onClose, onSwitchToHost, isVoiceSupported, isListeningVoice, onToggleVoice,
+}) => {
   const [view, setView] = useState<'menu' | 'admin_qr'>('menu');
   const adminQrBtnRef = useRef<HTMLButtonElement>(null);
   const backBtnRef = useRef<HTMLButtonElement>(null);
@@ -22,70 +25,56 @@ export const TvUnlinkModal: FC<TvUnlinkModalProps> = ({ isOpen, roomCode, onClos
   }, [isOpen]);
 
   useEffect(() => {
-    if (view === 'admin_qr') {
-      const t = setTimeout(() => backBtnRef.current?.focus(), 60);
-      return () => clearTimeout(t);
-    } else if (view === 'menu' && isOpen) {
-      const t = setTimeout(() => adminQrBtnRef.current?.focus(), 60);
-      return () => clearTimeout(t);
-    }
+    if (view === 'admin_qr') { const t = setTimeout(() => backBtnRef.current?.focus(), 60); return () => clearTimeout(t); }
+    else if (view === 'menu' && isOpen) { const t = setTimeout(() => adminQrBtnRef.current?.focus(), 60); return () => clearTimeout(t); }
   }, [view, isOpen]);
 
   if (!isOpen) return null;
-
   const adminUrl = getHostUrl(roomCode);
   const handleExitApp = () => {
-    try {
-      const cap = (window as unknown as { Capacitor?: { Plugins?: { App?: { exitApp: () => void } } } })?.Capacitor;
-      if (cap?.Plugins?.App?.exitApp) { cap.Plugins.App.exitApp(); return; }
-    } catch {}
+    try { const cap = (window as unknown as { Capacitor?: { Plugins?: { App?: { exitApp: () => void } } } })?.Capacitor; if (cap?.Plugins?.App?.exitApp) { cap.Plugins.App.exitApp(); return; } } catch {}
     window.close();
   };
 
   return (
     <div role="dialog" aria-modal="true" className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90 backdrop-blur-xl p-4 select-none animate-in fade-in duration-150 pointer-events-auto" onClick={onClose}>
-      <div className="w-full max-w-sm bg-zinc-900 border-2 border-zinc-700/80 rounded-3xl p-6 shadow-2xl space-y-4 pointer-events-auto relative text-white" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between pb-3 border-b border-zinc-800">
+      <div className="w-full max-w-sm bg-zinc-900 border-2 border-zinc-700/80 rounded-3xl p-5 shadow-2xl space-y-3 pointer-events-auto relative text-white" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between pb-2.5 border-b border-zinc-800">
           <div className="flex items-center gap-2">
             <Tv className="w-5 h-5 text-pink-400" /><h2 className="font-black text-sm tracking-wide text-white uppercase">{view === 'menu' ? 'Ajustes de Pantalla' : 'QR Administrador (DJ)'}</h2>
           </div>
           <button type="button" onClick={onClose} className="p-1.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white cursor-pointer"><X className="w-4 h-4" /></button>
         </div>
         {view === 'menu' ? (
-          <div className="flex flex-col gap-3 py-1">
-            <button
-              ref={adminQrBtnRef}
-              type="button"
-              tabIndex={0}
-              autoFocus
-              onClick={() => setView('admin_qr')}
-              className="w-full py-4 px-4 rounded-2xl bg-gradient-to-r from-purple-600 via-pink-600 to-amber-500 hover:opacity-95 focus:opacity-100 text-white font-black text-sm flex items-center justify-between shadow-xl active:scale-98 cursor-pointer border border-white/20 focus:border-white focus:ring-4 focus:ring-pink-400 focus:outline-none focus:scale-[1.02] transition-all"
-            >
+          <div className="flex flex-col gap-2.5 py-1">
+            <button ref={adminQrBtnRef} type="button" tabIndex={0} autoFocus onClick={() => setView('admin_qr')} className="w-full py-3 px-4 rounded-2xl bg-gradient-to-r from-purple-600 via-pink-600 to-amber-500 hover:opacity-95 focus:opacity-100 text-white font-black text-sm flex items-center justify-between shadow-xl active:scale-98 cursor-pointer border border-white/20 focus:border-white focus:ring-4 focus:ring-pink-400 focus:outline-none focus:scale-[1.02] transition-all">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-black/30 flex items-center justify-center"><QrCode className="w-5 h-5 text-white" /></div>
+                <div className="w-9 h-9 rounded-xl bg-black/30 flex items-center justify-center"><QrCode className="w-5 h-5 text-white" /></div>
                 <div className="text-left"><span className="block text-sm font-black">1. QR Admin</span><span className="block text-[10px] text-white/80 font-medium">Escanear para ser Administrador</span></div>
               </div>
               <span className="text-xs text-white/80">▶</span>
             </button>
-            <button
-              type="button"
-              tabIndex={0}
-              onClick={handleExitApp}
-              className="w-full py-4 px-4 rounded-2xl bg-zinc-800/90 hover:bg-rose-950/80 border border-zinc-700 hover:border-rose-500 focus:border-rose-400 focus:ring-4 focus:ring-rose-500 focus:outline-none focus:scale-[1.02] text-rose-200 font-black text-sm flex items-center justify-between shadow-xl active:scale-98 cursor-pointer transition-all"
-            >
+            {onToggleVoice && isVoiceSupported !== false && (
+              <button type="button" tabIndex={0} onClick={onToggleVoice} className={`w-full py-2.5 px-4 rounded-2xl border text-sm font-black flex items-center justify-between shadow-xl active:scale-98 cursor-pointer transition-all focus:outline-none focus:ring-4 focus:scale-[1.02] ${isListeningVoice ? 'bg-emerald-950/80 border-emerald-500 text-emerald-200 focus:ring-emerald-400' : 'bg-zinc-800/90 border-zinc-700 text-zinc-200 hover:text-white focus:ring-pink-400 hover:border-pink-500'}`}>
+                <div className="flex items-center gap-3">
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${isListeningVoice ? 'bg-emerald-500/20 text-emerald-400 animate-pulse' : 'bg-zinc-700/50 text-zinc-300'}`}>{isListeningVoice ? <Mic className="w-4 h-4 text-emerald-400" /> : <MicOff className="w-4 h-4" />}</div>
+                  <div className="text-left"><span className="block text-sm font-black">{isListeningVoice ? '2. Voz: Activada' : '2. Activar Voz'}</span><span className="block text-[10px] text-zinc-400 font-medium">Di "Pausa", "Continuar", "Siguiente"</span></div>
+                </div>
+                <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${isListeningVoice ? 'bg-emerald-500 text-zinc-950' : 'bg-zinc-700 text-zinc-300'}`}>{isListeningVoice ? 'ON' : 'OFF'}</span>
+              </button>
+            )}
+            <button type="button" tabIndex={0} onClick={handleExitApp} className="w-full py-2.5 px-4 rounded-2xl bg-zinc-800/90 hover:bg-rose-950/80 border border-zinc-700 hover:border-rose-500 focus:border-rose-400 focus:ring-4 focus:ring-rose-500 focus:outline-none focus:scale-[1.02] text-rose-200 font-black text-sm flex items-center justify-between shadow-xl active:scale-98 cursor-pointer transition-all">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-rose-500/20 flex items-center justify-center"><LogOut className="w-5 h-5 text-rose-400" /></div>
-                <div className="text-left"><span className="block text-sm font-black text-rose-300">2. Salir App</span><span className="block text-[10px] text-zinc-400 font-medium">Cerrar y salir de la aplicación</span></div>
+                <div className="w-9 h-9 rounded-xl bg-rose-500/20 flex items-center justify-center"><LogOut className="w-4 h-4 text-rose-400" /></div>
+                <div className="text-left"><span className="block text-sm font-black text-rose-300">{onToggleVoice ? '3. Salir App' : '2. Salir App'}</span><span className="block text-[10px] text-zinc-400 font-medium">Cerrar y salir de la aplicación</span></div>
               </div>
               <span className="text-xs text-rose-400">🚪</span>
             </button>
-            <p className="text-[10px] text-zinc-500 text-center font-mono mt-2">Sala TV: <b className="text-pink-400">{roomCode}</b></p>
+            <p className="text-[10px] text-zinc-500 text-center font-mono mt-0.5">Sala TV: <b className="text-pink-400">{roomCode}</b></p>
           </div>
         ) : (
           <div className="flex flex-col items-center gap-3 py-1">
-            <div className="bg-white p-3 rounded-2xl shadow-2xl border-4 border-purple-500/40">
-              <QRCodeSVG value={adminUrl} size={180} level="M" includeMargin={false} />
-            </div>
+            <div className="bg-white p-3 rounded-2xl shadow-2xl border-4 border-purple-500/40"><QRCodeSVG value={adminUrl} size={180} level="M" includeMargin={false} /></div>
             <div className="text-center space-y-1">
               <p className="text-xs font-bold text-white">Escanea con tu Celular para ser Administrador</p>
               <p className="text-[10px] text-zinc-400">Ingresa en tu celular el código que aparece aquí abajo:</p>
@@ -99,14 +88,7 @@ export const TvUnlinkModal: FC<TvUnlinkModalProps> = ({ isOpen, roomCode, onClos
                 <Smartphone className="w-4 h-4" /><span>Abrir Administrador en esta pantalla</span>
               </button>
             )}
-            <button
-              ref={backBtnRef}
-              type="button"
-              tabIndex={0}
-              autoFocus
-              onClick={() => setView('menu')}
-              className="w-full mt-1 py-2 px-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 focus:bg-pink-600 focus:text-white focus:ring-4 focus:ring-pink-500 focus:outline-none text-zinc-300 font-bold text-xs flex items-center justify-center gap-2 cursor-pointer transition-all"
-            >
+            <button ref={backBtnRef} type="button" tabIndex={0} autoFocus onClick={() => setView('menu')} className="w-full mt-1 py-2 px-3 rounded-xl bg-zinc-800 hover:bg-zinc-700 focus:bg-pink-600 focus:text-white focus:ring-4 focus:ring-pink-500 focus:outline-none text-zinc-300 font-bold text-xs flex items-center justify-center gap-2 cursor-pointer transition-all">
               <ArrowLeft className="w-4 h-4" /><span>Volver a Opciones</span>
             </button>
           </div>

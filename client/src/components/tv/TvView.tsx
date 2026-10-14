@@ -51,8 +51,7 @@ export const TvView: FC<{ roomCode?: string; onUnlink?: () => void; onSwitchToHo
   }, [room, roomCode, refreshState]);
 
   const { isListening, lastCommand, isSupported, startVoice } = useTvVoiceControl({
-    onPause: () => { playerRef.current?.pause(); setIsPaused(true); }, onPlay: () => { playerRef.current?.play(); setIsPaused(false); handleStartAutoDj(); },
-    onNext: () => handleNextSong(), onStartAutoDj: handleStartAutoDj, onStopAutoDj: handleStopAutoDj,
+    onPause: () => { playerRef.current?.pause(); setIsPaused(true); }, onPlay: () => { playerRef.current?.play(); setIsPaused(false); handleStartAutoDj(); }, onNext: () => handleNextSong(), onStartAutoDj: handleStartAutoDj, onStopAutoDj: handleStopAutoDj,
   });
 
   useEffect(() => {
@@ -60,21 +59,24 @@ export const TvView: FC<{ roomCode?: string; onUnlink?: () => void; onSwitchToHo
   }, [room?.promo_banners, roomCode]);
 
   useEffect(() => {
+    let t: number | undefined;
+    const resetBlur = () => { window.clearTimeout(t); if (currentSong && !isPaused && !showUnlinkModal) t = window.setTimeout(() => (document.activeElement as HTMLElement)?.blur(), 10000); };
+    resetBlur();
     const handleKey = (e: KeyboardEvent) => {
+      resetBlur();
       if (['ContextMenu', 'Settings', 'Menu', 'F1', 'm', 'M', 'q', 'Q'].includes(e.key) || e.keyCode === 82) { e.preventDefault(); setShowUnlinkModal((p) => !p); }
       else if (!showUnlinkModal && (!e.target || e.target === document.body)) {
         if (e.key === 'ArrowUp') { e.preventDefault(); document.getElementById('tv-gear-btn')?.focus(); }
         else if (e.key === 'ArrowDown') { e.preventDefault(); document.getElementById('tv-timeline-bar')?.focus(); }
       }
     };
-    window.addEventListener('keydown', handleKey); return () => window.removeEventListener('keydown', handleKey);
-  }, [showUnlinkModal]);
+    window.addEventListener('keydown', handleKey); return () => { window.clearTimeout(t); window.removeEventListener('keydown', handleKey); };
+  }, [showUnlinkModal, currentSong, isPaused]);
 
   useEffect(() => { if (!isLoading && !currentSong && nextSongs.length > 0) handleNextSongRef.current(); }, [isLoading, currentSong, nextSongs.length]);
 
   const handlePlayerError = useCallback(() => {
-    logError(roomCode, 'tv', 'yt_restricted_skip', `Video restringido en sala ${roomCode}`, { currentSongId: currentSong?.id, videoId: currentSong?.video_id });
-    setErrorNotice('Video restringido. Saltando...'); setTimeout(() => { setErrorNotice(null); handleNextSongRef.current(); }, 2000);
+    logError(roomCode, 'tv', 'yt_restricted_skip', `Video restringido en sala ${roomCode}`, { currentSongId: currentSong?.id, videoId: currentSong?.video_id }); setErrorNotice('Video restringido. Saltando...'); setTimeout(() => { setErrorNotice(null); handleNextSongRef.current(); }, 2000);
   }, [roomCode, currentSong]);
 
   const handleTimeUpdate = useCallback((curr: number, dur: number) => {
@@ -99,7 +101,7 @@ export const TvView: FC<{ roomCode?: string; onUnlink?: () => void; onSwitchToHo
         <TvRentalBadge rentalSession={rentalSession} className="absolute top-4 left-4 z-40 pointer-events-auto" />
         {currentSong && <TvNextQueueTicker queue={nextSongs} />}
       </div>
-      <TvVoiceHUD isSupported={isSupported} isListening={isListening} lastCommand={lastCommand} onToggleVoice={startVoice} />
+      <TvVoiceHUD lastCommand={lastCommand} />
 
       {!currentSong ? (
         <TvIdleScreen roomCode={roomCode} joinUrl={joinUrl} roomName={room?.name || 'Rockola Digital Live'} zoneName={room?.zone_name} status={room?.status} banners={banners} autoDjActive={Boolean(room?.auto_dj_enabled)} onStartAutoDj={handleStartAutoDj} isStartingAutoDj={isStartingAutoDj} onSwitchToHost={onSwitchToHost} onOpenSettings={() => setShowUnlinkModal(true)} />
@@ -112,7 +114,7 @@ export const TvView: FC<{ roomCode?: string; onUnlink?: () => void; onSwitchToHo
       <div className="absolute top-0 right-0 z-40 pointer-events-none" style={{ transform: `scale(${scaleFactor})`, transformOrigin: 'top right' }}><TvViewOverlays roomCode={roomCode} currentSong={currentSong} banners={banners} /></div>
       {currentSong && <div className="absolute bottom-3 right-3 z-40" style={{ transform: `scale(${scaleFactor})`, transformOrigin: 'bottom right' }}><TvFloatingQr roomCode={roomCode} joinUrl={joinUrl} onSwitchToHost={onSwitchToHost} onOpenSettings={() => setShowUnlinkModal(true)} dedication={parseSongMeta(currentSong).dedication ? { text: parseSongMeta(currentSong).dedication!, sender: currentSong.requested_by || 'Un invitado' } : null} /></div>}
       <TvFloatingReactions roomCode={roomCode} />
-      <TvUnlinkModal isOpen={showUnlinkModal} roomCode={roomCode} roomName={room?.zone_name || room?.name} onClose={() => setShowUnlinkModal(false)} onSwitchToHost={onSwitchToHost} onConfirmUnlink={() => { try { localStorage.removeItem('tv_paired_room'); } catch {} setShowUnlinkModal(false); onUnlink?.(); }} />
+      <TvUnlinkModal isOpen={showUnlinkModal} roomCode={roomCode} roomName={room?.zone_name || room?.name} onClose={() => setShowUnlinkModal(false)} onSwitchToHost={onSwitchToHost} onConfirmUnlink={() => { try { localStorage.removeItem('tv_paired_room'); } catch {} setShowUnlinkModal(false); onUnlink?.(); }} isVoiceSupported={isSupported} isListeningVoice={isListening} onToggleVoice={startVoice} />
     </div>
   );
 };

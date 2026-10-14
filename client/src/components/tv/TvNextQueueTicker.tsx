@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import { ListMusic, User, ArrowRight } from 'lucide-react';
+import { ListMusic } from 'lucide-react';
 import type { QueueItem } from '../../types';
 
 interface TvNextQueueTickerProps {
@@ -7,9 +7,9 @@ interface TvNextQueueTickerProps {
 }
 
 export const TvNextQueueTicker: FC<TvNextQueueTickerProps> = ({ queue }) => {
-  const upcoming = queue.slice(0, 3);
+  const nextSong = queue[0];
 
-  if (upcoming.length === 0) {
+  if (!nextSong) {
     return (
       <aside
         aria-label="Estado de la cola"
@@ -23,44 +23,18 @@ export const TvNextQueueTicker: FC<TvNextQueueTickerProps> = ({ queue }) => {
 
   return (
     <aside
-      aria-label="Próximas canciones en cola"
-      className="absolute top-3 left-3 z-40 flex flex-col gap-1 w-[clamp(14rem,24vw,20rem)] bg-transparent p-1 select-none pointer-events-none"
+      aria-label="Siguiente canción en cola"
+      className="absolute top-3 left-3 z-40 flex items-center gap-1.5 max-w-[clamp(14rem,26vw,22rem)] bg-transparent p-1 select-none pointer-events-none"
     >
-      <header className="flex items-center gap-1 text-[clamp(9px,0.7vw,11px)] font-black text-white/80 uppercase tracking-wider tv-text-outline">
-        <ListMusic className="w-3.5 h-3.5 text-pink-400 drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)] shrink-0" />
-        <span>A continuación ({queue.length})</span>
-      </header>
-
-      <ul className="flex flex-col gap-1 list-none p-0 m-0">
-        {upcoming.map((item, index) => (
-          <li
-            key={item.id}
-            className="flex items-center justify-between gap-1.5 py-0.5 bg-transparent"
-          >
-            <div className="flex items-center gap-1.5 min-w-0 flex-1">
-              <span className="flex items-center justify-center w-3.5 h-3.5 rounded-full bg-pink-600/70 text-white text-[9px] font-black font-mono shrink-0 shadow-sm">
-                {index + 1}
-              </span>
-              <div className="min-w-0 flex-1">
-                <p className="text-[clamp(11px,0.8vw,13px)] font-bold text-white/85 truncate leading-tight tv-text-outline">
-                  {item.title}
-                </p>
-                <div className="flex items-center gap-1 text-[clamp(9px,0.65vw,11px)] text-white/70 font-medium tv-text-outline-sm">
-                  <User className="w-2.5 h-2.5 text-pink-300 shrink-0 drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]" />
-                  <span className="truncate">
-                    {item.requested_by.includes('Auto-DJ') ? 'Auto-DJ' : item.requested_by} • {item.author}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-1 text-[clamp(9px,0.65vw,11px)] font-mono text-white/75 shrink-0 tv-text-outline-sm">
-              <ArrowRight className="w-2.5 h-2.5 text-pink-300 shrink-0 drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]" />
-              <span>{item.duration_text || '3:00'}</span>
-            </div>
-          </li>
-        ))}
-      </ul>
+      <ListMusic className="w-3.5 h-3.5 text-pink-400 drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)] shrink-0" />
+      <div className="min-w-0 flex-1">
+        <span className="text-[10px] font-black text-pink-300 uppercase tracking-wider block tv-text-outline leading-tight">
+          Siguiente:
+        </span>
+        <p className="text-[clamp(11px,0.85vw,13px)] font-bold text-white/85 truncate leading-tight tv-text-outline">
+          {nextSong.title}
+        </p>
+      </div>
     </aside>
   );
 };

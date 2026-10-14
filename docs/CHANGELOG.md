@@ -4,6 +4,28 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.49.13] - 2026-10-14
+
+### 🚀 [ESPECIFICACIÓN / FEATURE]
+- **Opción "Activar Voz" Trasladada al Menú de la Rueda/Tuerca (`TvUnlinkModal.tsx`, `TvVoiceHUD.tsx`):**
+  - Se eliminó por completo el botón flotante "Activar Voz" de la esquina superior derecha de la interfaz principal de la TV, dejando la pantalla completamente limpia.
+  - Se integró la opción interactiva **`2. Activar Voz`** dentro del modal de opciones de la rueda/tuerca (`TvUnlinkModal.tsx`), con indicador de estado `ON`/`OFF`, ícono de micrófono y animación de escucha.
+- **Desaparición Automática del Resalte Tras 10 Segundos de Inactividad (`TvView.tsx`):**
+  - Se incorporó un temporizador de reposo de 10 segundos para el control remoto: si una canción está sonando y el usuario deja de interactuar con el control por 10 segundos, el resalte/anillo de foco del último botón seleccionado (línea de tiempo o tuerca) se desvanece automáticamente (`blur()`).
+  - Al presionar cualquier tecla o flecha del control remoto, el resalte y la navegación reaparecen al instante.
+
+---
+
+## [1.49.12] - 2026-10-14
+
+### 🔧 [AFINAMIENTO / REFINAMIENTO]
+- **Cola de TV Minimalista: Solo la Siguiente Canción sin Números (`TvNextQueueTicker.tsx`):**
+  - Se simplificó la lista de canciones en espera en pantalla: en lugar de mostrar una lista vertical de 3 canciones ocupando espacio, ahora solo se muestra **la siguiente canción** (`Siguiente: [Título]`).
+  - Se eliminaron los números (ya no muestra badges de numeración `1`, `2`, `3`).
+  - Formato ultracompacto y limpio para evitar que el texto invada o tape los subtítulos y letras del video de karaoke.
+
+---
+
 ## [1.49.11] - 2026-10-14
 
 ### 🚀 [ESPECIFICACIÓN / FEATURE]
