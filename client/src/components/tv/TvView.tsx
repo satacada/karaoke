@@ -13,7 +13,7 @@ import { TvFloatingQr } from './TvFloatingQr';
 import { TvFloatingReactions } from './TvFloatingReactions';
 import { TvUnlinkModal } from './TvUnlinkModal';
 import { updatePlaybackTick } from '../../services/karaokeApi';
-import { purgeAutoDjSongs } from '../../services/autoDjService'; import { clearRamQueue } from '../../services/autoDjRamQueueService'; import { setLocalAutoDjActive, isLocalAutoDjActive } from '../../services/autoDjStateService'; import { logError } from '../../services/loggerService'; import { getJoinUrl } from '../../utils/appUrl'; import { parseSongMeta } from '../../utils/songMeta'; import { supabase } from '../../lib/supabaseClient';
+import { purgeAutoDjSongs } from '../../services/autoDjService'; import { clearRamQueue } from '../../services/autoDjRamQueueService'; import { setLocalAutoDjActive, isLocalAutoDjActive } from '../../services/autoDjStateService'; import { logError } from '../../services/loggerService'; import { getJoinUrl } from '../../utils/appUrl'; import { supabase } from '../../lib/supabaseClient';
 import type { TvScale } from '../../types'; const SCALE_MAP: Record<TvScale, number> = { compact: 0.85, normal: 1.0, large: 1.15, xl: 1.30 };
 
 export const TvView: FC<{ roomCode?: string; onUnlink?: () => void; onSwitchToHost?: () => void }> = ({ roomCode = 'FIESTA', onUnlink, onSwitchToHost }) => {
@@ -21,12 +21,13 @@ export const TvView: FC<{ roomCode?: string; onUnlink?: () => void; onSwitchToHo
   const lastSyncRef = useRef<number>(0), handleNextSongRef = useRef<() => void>(() => {}), handleStartAutoDjRef = useRef<() => void>(() => {});
   const [currentTime, setCurrentTime] = useState(0), [duration, setDuration] = useState(0), [errorNotice, setErrorNotice] = useState<string | null>(null), [showUnlinkModal, setShowUnlinkModal] = useState(false), [isStartingAutoDj, setIsStartingAutoDj] = useState(false);
 
-  const { isPaused, setIsPaused, isFlashing, banners, setBanners, rentalSession, tvTheme, tvScale, handleRemoteCommand } = useTvRemoteHandler(roomCode, playerRef, handleNextSongRef, handleStartAutoDjRef, onUnlink);
-
+  const { isPaused, setIsPaused, isFlashing, banners, setBanners, rentalSession, tvTheme, tvScale, handleRemoteCommand } = useTvRemoteHandler(roomCode, playerRef, handleNextSongRef, handleStartAutoDjRef, onUnlink, () => setShowUnlinkModal(false));
+  useEffect(() => {
+    const ch = supabase.channel(`tv-room-${roomCode}`).on('broadcast', { event: 'admin_linked' }, () => setShowUnlinkModal(false)).subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [roomCode]);
   const { room, currentSong, nextSongs, isLoading, handleNextSong, refreshState } = useTvRealtime(roomCode, handleRemoteCommand);
-  handleNextSongRef.current = handleNextSong;
-  useTvAutoDj(room, currentSong, nextSongs, refreshState, handleNextSong, roomCode);
-  useWakeLock(Boolean(currentSong));
+  handleNextSongRef.current = handleNextSong; useTvAutoDj(room, currentSong, nextSongs, refreshState, handleNextSong, roomCode); useWakeLock(Boolean(currentSong));
   useMediaSession(currentSong, room?.name || 'Rockola', room?.is_playing !== false, {
     onPlay: () => { playerRef.current?.play(); setIsPaused(false); }, onPause: () => { playerRef.current?.pause(); setIsPaused(true); }, onNext: () => handleNextSongRef.current(),
   });
@@ -94,12 +95,11 @@ export const TvView: FC<{ roomCode?: string; onUnlink?: () => void; onSwitchToHo
 
       {/* Tuerca Superior Derecha: Solo el contorno de la tuerca rosada más pequeña */}
       <button id="tv-gear-btn" type="button" tabIndex={0} onClick={(e) => { e.stopPropagation(); setShowUnlinkModal(true); }} onKeyDown={(e) => { if (e.key === 'ArrowDown') { e.preventDefault(); document.getElementById('tv-timeline-bar')?.focus(); } }} title="Ajustes y Salir" className="absolute top-4 right-4 z-[999] bg-transparent border-0 outline-none p-1 cursor-pointer pointer-events-auto flex items-center justify-center group transition-transform focus:outline-none">
-        <Settings className="w-5 h-5 text-pink-500 hover:text-pink-400 stroke-[2.2] drop-shadow-[0_2px_6px_rgba(0,0,0,0.9)] group-hover:rotate-45 group-focus:rotate-45 group-focus:scale-125 group-focus:text-pink-300 group-focus:drop-shadow-[0_0_12px_rgba(236,72,153,1)] transition-all" />
+        <Settings className="w-4 h-4 text-pink-500 hover:text-pink-400 fill-none stroke-[2] drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)] group-hover:rotate-45 group-focus:rotate-45 group-focus:scale-125 group-focus:text-yellow-400 group-focus:fill-yellow-400 group-focus:stroke-black group-focus:stroke-[2.5] group-focus:drop-shadow-[0_0_10px_rgba(250,204,21,1)] transition-all" />
       </button>
 
       <div className="absolute top-0 left-0 z-40 pointer-events-none" style={{ transform: `scale(${scaleFactor})`, transformOrigin: 'top left' }}>
-        <TvRentalBadge rentalSession={rentalSession} className="absolute top-4 left-4 z-40 pointer-events-auto" />
-        {currentSong && <TvNextQueueTicker queue={nextSongs} currentTime={currentTime} duration={duration} />}
+        <TvRentalBadge rentalSession={rentalSession} className="absolute top-4 left-4 z-40 pointer-events-auto" />{currentSong && <TvNextQueueTicker queue={nextSongs} currentTime={currentTime} duration={duration} />}
       </div>
       <TvVoiceHUD lastCommand={lastCommand} />
 
@@ -112,7 +112,7 @@ export const TvView: FC<{ roomCode?: string; onUnlink?: () => void; onSwitchToHo
         </>
       )}
       <div className="absolute top-0 right-0 z-40 pointer-events-none" style={{ transform: `scale(${scaleFactor})`, transformOrigin: 'top right' }}><TvViewOverlays roomCode={roomCode} currentSong={currentSong} banners={banners} /></div>
-      {currentSong && <div className="absolute bottom-3 right-3 z-40" style={{ transform: `scale(${scaleFactor})`, transformOrigin: 'bottom right' }}><TvFloatingQr roomCode={roomCode} joinUrl={joinUrl} onSwitchToHost={onSwitchToHost} onOpenSettings={() => setShowUnlinkModal(true)} dedication={parseSongMeta(currentSong).dedication ? { text: parseSongMeta(currentSong).dedication!, sender: currentSong.requested_by || 'Un invitado' } : null} /></div>}
+      {currentSong && <div className="absolute bottom-3 right-3 z-40" style={{ transform: `scale(${scaleFactor})`, transformOrigin: 'bottom right' }}><TvFloatingQr roomCode={roomCode} joinUrl={joinUrl} onSwitchToHost={onSwitchToHost} onOpenSettings={() => setShowUnlinkModal(true)} /></div>}
       <TvFloatingReactions roomCode={roomCode} />
       <TvUnlinkModal isOpen={showUnlinkModal} roomCode={roomCode} roomName={room?.zone_name || room?.name} onClose={() => setShowUnlinkModal(false)} onSwitchToHost={onSwitchToHost} onConfirmUnlink={() => { try { localStorage.removeItem('tv_paired_room'); } catch {} setShowUnlinkModal(false); onUnlink?.(); }} isVoiceSupported={isSupported} isListeningVoice={isListening} onToggleVoice={startVoice} />
     </div>

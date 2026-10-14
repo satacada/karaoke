@@ -4,6 +4,31 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.49.18] - 2026-10-14
+
+### 🚀 [ESPECIFICACIÓN / FEATURE]
+- **Corte Inmediato de Auto-DJ al Pedir un Cliente (`useTvRealtime.ts`):**
+  - Cuando una canción de relleno de Auto-DJ está en reproducción y un cliente solicita un tema desde su teléfono móvil (evento Realtime INSERT en `karaoke_queue` o ciclo de sincronización), Auto-DJ cede el paso de inmediato, cortando la pista de relleno e iniciando al instante la canción del cliente.
+- **Ocultamiento de Menú de Ajustes al Enlazar Administrador (`useTvRemoteHandler.ts`, `TvView.tsx`, `HostQrValidationView.tsx`):**
+  - Al ingresar el código de enlace en el celular del Administrador, la TV recibe el evento `admin_linked` en tiempo real y cierra automáticamente el modal/menú de la tuerca (`TvUnlinkModal`), proyectando limpiamente la música sin obstrucciones visuales.
+- **Contador de Reacciones en Vivo sobre el Código QR (`TvFloatingQr.tsx`):**
+  - Se incorporó un distintivo de reacciones en vivo encima del recuadro del código QR en la pantalla de la TV (`w-full` pill con corazón palpitante y contador numérico en tiempo real conectado al canal de broadcast de reacciones).
+- **Diversificación de Género Cumbia sin Repetición de Artistas (`autoDjCatalogBailables.ts`):**
+  - Se eliminó la repetición de Los Palmeras en múltiples rotaciones del catálogo de cumbia, distribuyendo artistas icónicos y diversos en cada rotación (Los Palmeras, Gilda, Ráfaga, Amar Azul, La Nueva Luna, Antonio Ríos, Damas Gratis, Tambó Tambó, Los Ángeles Azules, Leo Mattioli, Grupo Sombras, Mala Fama).
+
+### 🐛 [CORRECCIÓN / FIX]
+- **Eliminación de Doble Dedicatoria en Pantalla (`TvFloatingQr.tsx`):**
+  - Se removió la tarjeta de dedicatoria duplicada que se renderizaba simultáneamente dentro de `TvFloatingQr` y en el banner lateral superior (`TvSidebarOverlay`), evitando la aparición repetida de la frase dedicatoria ("dos cervezas mas").
+- **Protección de Interfaz para Clientes / Invitados (`App.tsx`):**
+  - Cuando un cliente ingresa a la aplicación vía escaneo de QR (`/join`) o se encuentra en modo cliente (`guest`), se ocultan estrictamente la barra selectora superior con las pestañas "Administrador" y "Código QR", y se previene cualquier acceso o botón de cambio a consola de administrador.
+
+### 🎨 [AFINAMIENTO / REFINAMIENTO]
+- **Resaltado y Reducción de la Tuerca con el Control Remoto (`TvView.tsx`):**
+  - Se redujo el tamaño de la tuerca a `w-4 h-4` (contorno rosado minimalista).
+  - Al seleccionarla con el control remoto físico del Smart TV (foco del botón), la tuerca cambia dinámicamente de rosado a amarillo con bordes negros destacados (`group-focus:text-yellow-400 group-focus:fill-yellow-400 group-focus:stroke-black group-focus:stroke-[2.5]`).
+
+---
+
 ## [1.49.17] - 2026-10-14
 
 ### 🚀 [ESPECIFICACIÓN / FEATURE]

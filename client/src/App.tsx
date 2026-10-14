@@ -38,15 +38,9 @@ export const App: FC = () => {
   const isGuestOnly = useMemo(() => {
     try {
       const p = new URLSearchParams(window.location.search);
-      const isGuestRoute = window.location.pathname.startsWith('/join') || p.get('mode') === 'guest';
-      const hasAuth =
-        sessionStorage.getItem(`host_auth_${roomCode || 'FIESTA'}`) === 'true' ||
-        localStorage.getItem(`host_auth_${roomCode || 'FIESTA'}`) === 'true' ||
-        localStorage.getItem('rockola_is_admin_device') === 'true';
-      const isNative = Boolean((window as unknown as { Capacitor?: unknown }).Capacitor);
-      return isGuestRoute && !hasAuth && !isNative;
+      return window.location.pathname.startsWith('/join') || p.get('mode') === 'guest';
     } catch { return false; }
-  }, [roomCode]);
+  }, []);
 
   useEffect(() => {
     const p = new URLSearchParams(window.location.search);
@@ -63,12 +57,12 @@ export const App: FC = () => {
 
   return (
     <div className="relative min-h-screen bg-zinc-950 text-zinc-100 flex flex-col w-full overflow-x-hidden">
-      {!isTv && !isGuestOnly && (
+      {!isTv && !isGuestOnly && currentMode !== 'guest' && (
         <nav aria-label="Selector de rol" className="fixed top-2 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1 bg-zinc-900/95 backdrop-blur-md border border-zinc-800/80 rounded-full p-1 shadow-2xl">
           <button type="button" onClick={() => handleSelectMode('host')} className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold transition-all ${currentMode === 'host' ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg' : 'text-zinc-400 hover:text-white'}`}>
             <Sliders className="w-3.5 h-3.5" /><span>Administrador</span>
           </button>
-          <button type="button" onClick={() => handleSelectMode('guest')} className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold transition-all ${currentMode === 'guest' ? 'bg-gradient-to-r from-pink-600 to-amber-600 text-white shadow-lg' : 'text-zinc-400 hover:text-white'}`}>
+          <button type="button" onClick={() => handleSelectMode('guest')} className="flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold transition-all text-zinc-400 hover:text-white">
             <Music className="w-3.5 h-3.5" /><span>Cliente</span>
           </button>
           <button type="button" onClick={() => handleSelectMode('tv')} className={`flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold transition-all ${currentMode === 'tv' ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg' : 'text-zinc-400 hover:text-white'}`}>
@@ -106,7 +100,7 @@ export const App: FC = () => {
       )}
 
       {currentMode === 'guest' && (
-        <GuestView roomCode={roomCode || 'FIESTA'} onSwitchToHost={!isGuestOnly ? () => handleSelectMode('host') : undefined} />
+        <GuestView roomCode={roomCode || 'FIESTA'} />
       )}
     </div>
   );

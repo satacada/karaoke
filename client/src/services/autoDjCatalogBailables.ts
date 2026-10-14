@@ -8,22 +8,22 @@ import type { FallbackTrack } from './autoDjFallbacks';
 
 export const BAILABLES_CATALOG: Record<string, FallbackTrack[]> = {
   cumbia_fiesta: [
-    // Rotación 0
+    // Rotación 0: Los Palmeras, Gilda, Ráfaga
     { videoId: 'UeFC_9oGqWg', title: 'Los Palmeras - El Bombón Asesino', author: 'Los Palmeras', durationSeconds: 205, durationText: '3:25', thumbnailUrl: 'https://i.ytimg.com/vi/UeFC_9oGqWg/hqdefault.jpg' },
     { videoId: '8iUkmnLc1ec', title: 'Gilda - No Me Arrepiento de Este Amor', author: 'Gilda', durationSeconds: 223, durationText: '3:43', thumbnailUrl: 'https://i.ytimg.com/vi/8iUkmnLc1ec/hq720.jpg' },
     { videoId: 'qW0bi_Uo6l4', title: 'Ráfaga - Una Cerveza', author: 'Rafaga', durationSeconds: 265, durationText: '4:25', thumbnailUrl: 'https://i.ytimg.com/vi/qW0bi_Uo6l4/hq720.jpg' },
-    // Rotación 1
+    // Rotación 1: Amar Azul, La Nueva Luna, Antonio Ríos
     { videoId: 'X48mxG8N6CM', title: 'Amar Azul - Yo Me Enamoré', author: 'Amar Azul', durationSeconds: 188, durationText: '3:08', thumbnailUrl: 'https://i.ytimg.com/vi/X48mxG8N6CM/hq720.jpg' },
-    { videoId: 'YzY9BKxr23Y', title: 'Los Palmeras - Pura Infidelidad', author: 'Los Palmeras', durationSeconds: 188, durationText: '3:08', thumbnailUrl: 'https://i.ytimg.com/vi/YzY9BKxr23Y/hqdefault.jpg' },
     { videoId: 'i_yZf_Xk4w0', title: 'La Nueva Luna - Iluminará', author: 'La Nueva Luna', durationSeconds: 215, durationText: '3:35', thumbnailUrl: 'https://i.ytimg.com/vi/i_yZf_Xk4w0/hqdefault.jpg' },
-    // Rotación 2
+    { videoId: 'nR8e2xK5j1A', title: 'Antonio Ríos - Nunca Me Faltes', author: 'Antonio Rios', durationSeconds: 195, durationText: '3:15', thumbnailUrl: 'https://i.ytimg.com/vi/nR8e2xK5j1A/hqdefault.jpg' },
+    // Rotación 2: Damas Gratis, Tambó Tambó, Los Ángeles Azules
     { videoId: 'WkR4Q7G9j48', title: 'Damas Gratis - Me Vas a Extrañar', author: 'Damas Gratis', durationSeconds: 228, durationText: '3:48', thumbnailUrl: 'https://i.ytimg.com/vi/WkR4Q7G9j48/hqdefault.jpg' },
-    { videoId: 'Z3q1dJzLg7M', title: 'Gilda - Se Me Ha Perdido Un Corazón', author: 'Gilda', durationSeconds: 210, durationText: '3:30', thumbnailUrl: 'https://i.ytimg.com/vi/Z3q1dJzLg7M/hqdefault.jpg' },
-    { videoId: 'rD9k1eX8z2M', title: 'Los Palmeras - Olvídala', author: 'Los Palmeras', durationSeconds: 232, durationText: '3:52', thumbnailUrl: 'https://i.ytimg.com/vi/rD9k1eX8z2M/hqdefault.jpg' },
-    // Rotación 3
+    { videoId: 'kQ8d3xZ1v5E', title: 'Tambó Tambó - El Campanero', author: 'Tambo Tambo', durationSeconds: 190, durationText: '3:10', thumbnailUrl: 'https://i.ytimg.com/vi/kQ8d3xZ1v5E/hqdefault.jpg' },
+    { videoId: 'nE8e2xK5j1A', title: 'Los Ángeles Azules - Nunca Es Suficiente', author: 'Angeles Azules', durationSeconds: 210, durationText: '3:30', thumbnailUrl: 'https://i.ytimg.com/vi/nE8e2xK5j1A/hqdefault.jpg' },
+    // Rotación 3: Leo Mattioli, Grupo Sombras, Mala Fama
     { videoId: 'lP7k1bK6j5A', title: 'Leo Mattioli - Le Pido a Dios', author: 'Leo Mattioli', durationSeconds: 240, durationText: '4:00', thumbnailUrl: 'https://i.ytimg.com/vi/lP7k1bK6j5A/hqdefault.jpg' },
-    { videoId: 'kQ8d3xZ1v5E', title: 'Grupo Sombras - La Ventanita', author: 'Grupo Sombras', durationSeconds: 195, durationText: '3:15', thumbnailUrl: 'https://i.ytimg.com/vi/kQ8d3xZ1v5E/hqdefault.jpg' },
-    { videoId: 'hJ4d1xK8e2A', title: 'Ráfaga - Mentirosa', author: 'Rafaga', durationSeconds: 204, durationText: '3:24', thumbnailUrl: 'https://i.ytimg.com/vi/hJ4d1xK8e2A/hqdefault.jpg' },
+    { videoId: 'pL8e2xK5j1A', title: 'Grupo Sombras - La Ventanita', author: 'Grupo Sombras', durationSeconds: 195, durationText: '3:15', thumbnailUrl: 'https://i.ytimg.com/vi/pL8e2xK5j1A/hqdefault.jpg' },
+    { videoId: 'mF8e2xK5j1A', title: 'Mala Fama - La Marca de la Gorra', author: 'Mala Fama', durationSeconds: 185, durationText: '3:05', thumbnailUrl: 'https://i.ytimg.com/vi/mF8e2xK5j1A/hqdefault.jpg' },
   ],
   cuarteto_cordobes: [
     // Rotación 0

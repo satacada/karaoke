@@ -21,6 +21,9 @@ export const HostQrValidationView: FC<HostQrValidationViewProps> = ({ onLinked, 
     setError(null);
 
     try {
+      const targetRoom = clean.startsWith('TV-') ? defaultRoomFallback : clean;
+      supabase.channel(`tv-room-${targetRoom}`).send({ type: 'broadcast', event: 'admin_linked', payload: {} }).catch(() => {});
+      supabase.channel(`room_commands_${targetRoom}`).send({ type: 'broadcast', event: 'admin_linked', payload: {} }).catch(() => {});
       if (clean.startsWith('TV-')) {
         const ch = supabase.channel(`tv-activation-${clean}`);
         await ch.send({

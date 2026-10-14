@@ -9,7 +9,8 @@ export function useTvRemoteHandler(
   playerRef: MutableRefObject<TvPlayerRef | null>,
   handleNextSongRef: MutableRefObject<() => void>,
   handleStartAutoDjRef: MutableRefObject<() => void>,
-  onUnlink?: () => void
+  onUnlink?: () => void,
+  onAdminLinked?: () => void
 ) {
   const [isPaused, setIsPaused] = useState(false);
   const [isFlashing, setIsFlashing] = useState(false);
@@ -43,6 +44,9 @@ export function useTvRemoteHandler(
       case 'seek':
         if (cmd.payload?.seconds !== undefined) playerRef.current?.seekTo(cmd.payload.seconds);
         break;
+      case 'admin_linked':
+        onAdminLinked?.();
+        break;
       case 'unlink_tv':
         try { localStorage.removeItem('tv_paired_room'); } catch {}
         onUnlink?.();
@@ -58,6 +62,8 @@ export function useTvRemoteHandler(
         if (cmd.payload?.action === 'unlink_tv') {
           try { localStorage.removeItem('tv_paired_room'); } catch {}
           onUnlink?.();
+        } else if (cmd.payload?.action === 'admin_linked') {
+          onAdminLinked?.();
         } else if (cmd.payload?.action === 'set_tv_theme' && cmd.payload.theme) {
           const t = cmd.payload.theme as TvTheme;
           setTvTheme(t);
@@ -82,7 +88,7 @@ export function useTvRemoteHandler(
         logWarn(roomCode, 'tv', 'command_unknown', `Comando desconocido: ${cmd.command}`);
         break;
     }
-  }, [roomCode, playerRef, handleNextSongRef, handleStartAutoDjRef, onUnlink]);
+  }, [roomCode, playerRef, handleNextSongRef, handleStartAutoDjRef, onUnlink, onAdminLinked]);
 
   return { isPaused, setIsPaused, isFlashing, banners, setBanners, rentalSession, tvTheme, tvScale, handleRemoteCommand };
 }
