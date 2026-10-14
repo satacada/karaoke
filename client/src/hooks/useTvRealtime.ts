@@ -1,8 +1,8 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { supabase } from '../lib/supabaseClient'; import type { KaraokeRoom, QueueItem, RemoteCommand } from '../types';
-import { getRoomByCode, getQueueForRoom, advanceNextSong, markCommandExecuted } from '../services/karaokeApi';
+import { getRoomByCode, getQueueForRoom, advanceNextSong, markCommandExecuted, markSongFinished } from '../services/karaokeApi';
 import { isLocalAutoDjActive, setLocalAutoDjActive, getLocalAutoDjGenre, fetchRemoteAutoDjSettings } from '../services/autoDjStateService';
-import { getRamQueue, dequeueRamSong, fetchDailySeedRamTrack, replenishRamQueue, clearRamQueue, setRamQueue } from '../services/autoDjRamQueueService';
+import { getRamQueue, dequeueRamSong, fetchDiverseRamTrack, replenishRamQueue, clearRamQueue, setRamQueue } from '../services/autoDjRamQueueService';
 import { getRoomChannelName } from '../utils/channelUtils'; import { logInfo } from '../services/loggerService';
 
 export function useTvRealtime(roomCode: string, onRemoteCommand?: (command: RemoteCommand) => void) {
@@ -28,18 +28,21 @@ export function useTvRealtime(roomCode: string, onRemoteCommand?: (command: Remo
 
   const handleNextSong = useCallback(async () => {
     const activeRoom = roomRef.current; if (!activeRoom) return null;
+    const finishedSong = currentSongRef.current;
+    if (finishedSong?.id) await markSongFinished(activeRoom.id, finishedSong.id);
     let next = await advanceNextSong(activeRoom.id);
     if (next) {
-      ramSongRef.current = null; await refreshState(activeRoom.id);
+      ramSongRef.current = null; setCurrentSong(next); await refreshState(activeRoom.id);
       const q = await getQueueForRoom(activeRoom.id);
       broadcastSync(activeRoom.id, next, q.filter((x) => x.status === 'queued'));
       return next;
     }
     if (activeRoom.auto_dj_enabled || isLocalAutoDjActive(activeRoom.room_code)) {
       const g = activeRoom.auto_dj_genre || getLocalAutoDjGenre(activeRoom.room_code) || 'cumbia_fiesta';
-      let ramSong = dequeueRamSong() || await fetchDailySeedRamTrack(activeRoom.id, g);
+      const curVid = finishedSong?.video_id;
+      let ramSong = dequeueRamSong(curVid) || await fetchDiverseRamTrack(activeRoom.id, g, curVid ? [curVid] : []);
       ramSongRef.current = ramSong; setCurrentSong(ramSong);
-      const nxt = await replenishRamQueue(activeRoom.id, g, 3);
+      const nxt = await replenishRamQueue(activeRoom.id, g, 3, ramSong.video_id);
       setNextSongs(nxt); broadcastSync(activeRoom.id, ramSong, nxt);
       return ramSong;
     }
@@ -90,7 +93,7 @@ export function useTvRealtime(roomCode: string, onRemoteCommand?: (command: Remo
           setLocalAutoDjActive(roomCode, Boolean(payload.enabled), payload.genre);
           setRoom((p) => p ? { ...p, auto_dj_enabled: payload.enabled, auto_dj_genre: payload.genre } : p);
           if (payload.genre) {
-            clearRamQueue(); const seed = await fetchDailySeedRamTrack(roomId, payload.genre);
+            clearRamQueue(); const seed = await fetchDiverseRamTrack(roomId, payload.genre);
             ramSongRef.current = seed; setCurrentSong(seed); const q = await replenishRamQueue(roomId, payload.genre, 3);
             setNextSongs(q); broadcastSync(roomId, seed, q);
           }

@@ -46,6 +46,15 @@ export async function advanceNextSong(roomId: string): Promise<QueueItem | null>
   return data as QueueItem;
 }
 
+export async function markSongFinished(roomId: string, songId?: string): Promise<void> {
+  try {
+    if (songId && !songId.startsWith('ram_')) {
+      await supabase.from('karaoke_queue').update({ status: 'finished', finished_at: new Date().toISOString() }).eq('id', songId);
+    }
+    await supabase.from('karaoke_queue').update({ status: 'finished', finished_at: new Date().toISOString() }).eq('room_id', roomId).eq('status', 'playing');
+  } catch {}
+}
+
 export async function markCommandExecuted(commandId: string): Promise<void> {
   await supabase
     .from('karaoke_commands')

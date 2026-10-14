@@ -54,6 +54,7 @@ export const TvPlayer = forwardRef<TvPlayerRef, TvPlayerProps>(function TvPlayer
       if (playerRef.current?.getCurrentTime) {
         const c = playerRef.current.getCurrentTime() || 0; const d = playerRef.current.getDuration() || 0;
         onTimeUpdateRef.current?.(c, d);
+        if (d > 8 && c < d - 4 && hasEndedRef.current) hasEndedRef.current = false;
         if (d > 8 && c >= d - 1.8 && !hasEndedRef.current) { hasEndedRef.current = true; onEndedRef.current(); }
       }
     }, 500);
@@ -62,7 +63,7 @@ export const TvPlayer = forwardRef<TvPlayerRef, TvPlayerProps>(function TvPlayer
 
   useEffect(() => {
     hasEndedRef.current = false;
-    if (isReadyRef.current && playerRef.current && currentVideoRef.current !== videoId) {
+    if (isReadyRef.current && playerRef.current) {
       currentVideoRef.current = videoId; logInfo('TV', 'tv', 'yt_load_video', `Cargando video: ${videoId}`);
       playerRef.current.loadVideoById(videoId);
     }
@@ -87,7 +88,7 @@ export const TvPlayer = forwardRef<TvPlayerRef, TvPlayerProps>(function TvPlayer
           onStateChange: (evt) => {
             try { evt.target.unloadModule?.('captions'); } catch {}
             if (evt.data === 0 && !hasEndedRef.current) { hasEndedRef.current = true; onEndedRef.current(); }
-            else if (evt.data === 1) { setIsAutoplayBlocked(false); onPlayingRef.current?.(true); }
+            else if (evt.data === 1) { hasEndedRef.current = false; setIsAutoplayBlocked(false); onPlayingRef.current?.(true); }
             else if (evt.data === 2) { onPlayingRef.current?.(false); }
           },
           onError: (evt) => { logError('TV', 'tv', 'yt_error', `YT Error: ${YT_ERRORS[evt.data] || evt.data}`, { errorCode: evt.data, videoId }); onErrorRef.current?.(evt.data); },

@@ -13,7 +13,7 @@ import { TvFloatingQr } from './TvFloatingQr';
 import { TvFloatingReactions } from './TvFloatingReactions';
 import { TvUnlinkModal } from './TvUnlinkModal';
 import { updatePlaybackTick } from '../../services/karaokeApi';
-import { purgeAutoDjSongs } from '../../services/autoDjService'; import { clearRamQueue } from '../../services/autoDjRamQueueService'; import { setLocalAutoDjActive } from '../../services/autoDjStateService'; import { logError } from '../../services/loggerService'; import { getJoinUrl } from '../../utils/appUrl'; import { parseSongMeta } from '../../utils/songMeta'; import { supabase } from '../../lib/supabaseClient';
+import { purgeAutoDjSongs } from '../../services/autoDjService'; import { clearRamQueue } from '../../services/autoDjRamQueueService'; import { setLocalAutoDjActive, isLocalAutoDjActive } from '../../services/autoDjStateService'; import { logError } from '../../services/loggerService'; import { getJoinUrl } from '../../utils/appUrl'; import { parseSongMeta } from '../../utils/songMeta'; import { supabase } from '../../lib/supabaseClient';
 import type { TvScale } from '../../types'; const SCALE_MAP: Record<TvScale, number> = { compact: 0.85, normal: 1.0, large: 1.15, xl: 1.30 };
 
 export const TvView: FC<{ roomCode?: string; onUnlink?: () => void; onSwitchToHost?: () => void }> = ({ roomCode = 'FIESTA', onUnlink, onSwitchToHost }) => {
@@ -21,8 +21,7 @@ export const TvView: FC<{ roomCode?: string; onUnlink?: () => void; onSwitchToHo
   const lastSyncRef = useRef<number>(0), handleNextSongRef = useRef<() => void>(() => {}), handleStartAutoDjRef = useRef<() => void>(() => {});
   const [currentTime, setCurrentTime] = useState(0), [duration, setDuration] = useState(0), [errorNotice, setErrorNotice] = useState<string | null>(null), [showUnlinkModal, setShowUnlinkModal] = useState(false), [isStartingAutoDj, setIsStartingAutoDj] = useState(false);
 
-  const { isPaused, setIsPaused, isFlashing, banners, setBanners, rentalSession, tvTheme, tvScale, handleRemoteCommand } =
-    useTvRemoteHandler(roomCode, playerRef, handleNextSongRef, handleStartAutoDjRef, onUnlink);
+  const { isPaused, setIsPaused, isFlashing, banners, setBanners, rentalSession, tvTheme, tvScale, handleRemoteCommand } = useTvRemoteHandler(roomCode, playerRef, handleNextSongRef, handleStartAutoDjRef, onUnlink);
 
   const { room, currentSong, nextSongs, isLoading, handleNextSong, refreshState } = useTvRealtime(roomCode, handleRemoteCommand);
   handleNextSongRef.current = handleNextSong;
@@ -72,8 +71,9 @@ export const TvView: FC<{ roomCode?: string; onUnlink?: () => void; onSwitchToHo
     };
     window.addEventListener('keydown', handleKey); return () => { window.clearTimeout(t); window.removeEventListener('keydown', handleKey); };
   }, [showUnlinkModal, currentSong, isPaused]);
-
-  useEffect(() => { if (!isLoading && !currentSong && nextSongs.length > 0) handleNextSongRef.current(); }, [isLoading, currentSong, nextSongs.length]);
+  useEffect(() => {
+    if (!isLoading && !currentSong && nextSongs.length > 0 && (nextSongs.some((s) => !s.id.startsWith('ram_')) || room?.auto_dj_enabled || isLocalAutoDjActive(roomCode))) handleNextSongRef.current();
+  }, [isLoading, currentSong, nextSongs.length, room?.auto_dj_enabled, roomCode]);
 
   const handlePlayerError = useCallback(() => {
     logError(roomCode, 'tv', 'yt_restricted_skip', `Video restringido en sala ${roomCode}`, { currentSongId: currentSong?.id, videoId: currentSong?.video_id }); setErrorNotice('Video restringido. Saltando...'); setTimeout(() => { setErrorNotice(null); handleNextSongRef.current(); }, 2000);

@@ -4,5 +4,5 @@
 // Regla Clean-by-Design: <= 120 líneas
 // ==============================================================================
 
-export const APP_VERSION = 'v1.49.15';
-export const APP_BUILD_DATE = '2026-10-14 01:31';
+export const APP_VERSION = 'v1.49.16';
+export const APP_BUILD_DATE = '2026-10-14 07:55';

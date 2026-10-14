@@ -4,6 +4,23 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.49.16] - 2026-10-14
+
+### 🐛 [CORRECCIÓN / FIX]
+- **Solución al Bucle de Repetición Constante del Mismo Tema (`TvPlayer.tsx`, `useTvRealtime.ts`, `autoDjRamQueueService.ts`, `karaokeApi.ts`):**
+  - **Causa Raíz:** Al llegar al umbral final de la pista (`c >= d - 1.8`, aprox. 1:34 en pistas cortas de prueba), se disparaba el avance pero:
+    1. Si no había canciones en cola de invitados, Auto-DJ volvía a consultar la semilla diaria devolviendo exactamente el mismo `videoId`.
+    2. En el reproductor de YouTube, `currentVideoRef.current !== videoId` impedía recargar la pista cuando se mantenía el mismo ID, o dejaba el reproductor en el segundo final, haciendo que `hasEndedRef` volviera a disparar `onEnded` en bucle continuo de 500ms.
+    3. Si la canción en base de datos quedaba en estado `playing`, el polling periódico (`refreshState`) la resucitaba de inmediato.
+  - **Correcciones Implementadas:**
+    - `markSongFinished` en `karaokeApi.ts`: Al terminar una canción se marca explícitamente como `finished` en Supabase para evitar resurrecciones por polling.
+    - `dequeueRamSong(excludedVideoId)` y `fetchDiverseRamTrack` en `autoDjRamQueueService.ts`: Garantiza que el próximo tema Auto-DJ sea **estrictamente diferente** al tema que acaba de sonar, evitando duplicados consecutivos.
+    - `replenishRamQueue` ahora excluye el tema actualmente en reproducción del buffer de próximas canciones.
+    - `TvPlayer.tsx`: Se resetea `hasEndedRef.current = false` al reproducir (`evt.data === 1`) o durante el avance, y se permite cargar cualquier cambio de canción sin quedar trabado en el umbral final.
+    - `TvView.tsx`: La TV solo avanza automáticamente si existen temas reales de invitados o si el modo Auto-DJ está formalmente activo, volviendo a reposo de forma limpia en lugar de loopear.
+
+---
+
 ## [1.49.15] - 2026-10-14
 
 ### 🎨 [AFINAMIENTO / REFINAMIENTO]

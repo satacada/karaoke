@@ -26,10 +26,12 @@ export function setRamQueue(queue: QueueItem[]): void {
   try { sessionStorage.setItem(RAM_KEY, JSON.stringify(queue)); } catch {}
 }
 
-export function dequeueRamSong(): QueueItem | null {
+export function dequeueRamSong(excludedVideoId?: string): QueueItem | null {
   const current = getRamQueue();
   if (current.length === 0) return null;
-  const next = current.shift() || null;
+  const idx = excludedVideoId ? current.findIndex((s) => s.video_id !== excludedVideoId) : 0;
+  if (idx === -1) { clearRamQueue(); return null; }
+  const [next] = current.splice(idx, 1);
   setRamQueue(current);
   return next;
 }
@@ -50,37 +52,40 @@ export function trackToRamItem(track: SearchResultItem, roomId: string, _genre =
   };
 }
 
-export async function fetchDailySeedRamTrack(roomId: string, genre: string): Promise<QueueItem> {
+export async function fetchDiverseRamTrack(roomId: string, genre: string, excludedIds: string[] = []): Promise<QueueItem> {
   const seed = getDailySeedForGenre(genre);
   try {
     const results = await searchVideos(seed.query, 'official');
-    if (results && results.length > 0) {
-      const best = results.find((v) => v.durationSeconds >= 120 && v.durationSeconds <= 390) || results[0];
+    const valid = results?.filter((v) => !excludedIds.includes(v.videoId));
+    if (valid && valid.length > 0) {
+      const best = valid.find((v) => v.durationSeconds >= 120 && v.durationSeconds <= 390) || valid[0];
       return trackToRamItem(best, roomId, genre);
     }
   } catch {}
-  const fallback = getFallbackTrack(genre);
+  const fallback = getFallbackTrack(genre, [], excludedIds);
   return trackToRamItem(fallback, roomId, genre);
 }
 
-export async function replenishRamQueue(roomId: string, genre: string, targetBuffer = 3): Promise<QueueItem[]> {
+export async function fetchDailySeedRamTrack(roomId: string, genre: string): Promise<QueueItem> {
+  return fetchDiverseRamTrack(roomId, genre, []);
+}
+
+export async function replenishRamQueue(roomId: string, genre: string, targetBuffer = 3, currentlyPlayingId?: string): Promise<QueueItem[]> {
   let current = getRamQueue();
   const needed = Math.max(0, targetBuffer - current.length);
   if (needed === 0) return current;
 
-  // Pre-cargar de inmediato canciones del género para visualización instantánea (TV y Celular)
   for (let i = 0; i < needed; i++) {
-    const excludedIds = current.map((c) => c.video_id);
+    const excludedIds = [...current.map((c) => c.video_id), ...(currentlyPlayingId ? [currentlyPlayingId] : [])];
     const recentAuthors = current.map((c) => c.author);
     const fb = getFallbackTrack(genre, recentAuthors, excludedIds);
     current.push(trackToRamItem(fb, roomId, genre));
   }
   setRamQueue(current);
 
-  // En segundo plano enriquecer con búsqueda de YouTube si está disponible
   const recentArtists = current.map((c) => c.author);
   fetchNextAutoDjTrack(genre, recentArtists).then((track) => {
-    if (track) {
+    if (track && track.videoId !== currentlyPlayingId) {
       const q = getRamQueue();
       if (q.length > 0 && !q.some((x) => x.video_id === track.videoId)) {
         q[q.length - 1] = trackToRamItem(track, roomId, genre);
