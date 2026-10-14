@@ -4,6 +4,17 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.49.9] - 2026-10-13
+
+### 🔧 [AFINAMIENTO / REFINAMIENTO]
+- **Tuerca Superior Derecha Minimalista sin Palabras (`TvView.tsx`):**
+  - Se eliminó el texto "AJUSTES / QR", dejando únicamente el botón circular/cuadrado con el ícono de la tuerca (`Settings`).
+  - Capa de interacción elevada a `z-[999]` con área de toque amplia (48x48px) para garantizar que reciba clics de mouse, toques de pantalla o eventos de puntero de TV sin ser bloqueado por ningún reproductor u overlay.
+- **Acceso Directo al Modal de 2 Opciones:**
+  - Al presionar la tuerca, se abre inmediatamente el diálogo con las dos opciones: `1. QR Admin` y `2. Salir App`.
+
+---
+
 ## [1.49.8] - 2026-10-13
 
 ### 🔧 [AFINAMIENTO / REFINAMIENTO]
