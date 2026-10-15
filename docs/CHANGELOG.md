@@ -4,6 +4,27 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.49.25] - 2026-10-15
+
+### 🚀 [ESPECIFICACIÓN / FEATURE]
+- **Sistema Dual de Colas y Prioridad por Aportes Económicos / Pujas (`GuestMyQueue.tsx`, `GuestPartyQueue.tsx`, `GuestSongConfirmModal.tsx`, `GuestBoostModal.tsx`, `GuestModals.tsx`, `karaokeApi.ts`, `songMeta.ts`):**
+  - En la pestaña **Mi Turno** (y en **Cola Rockola**), las canciones pedidas por los clientes se organizan de forma transparente en dos listas diferenciadas:
+    1. **⭐ Cola Prioritaria (Canciones Pagadas)**:
+       - Tienen prioridad absoluta y se reproducen **antes que todas las canciones gratuitas**.
+       - El orden entre ellas se define por el **monto pagado de mayor a menor**: quien aporta más toca primero. Ante montos iguales, se respeta el orden de llegada (FIFO).
+       - En cada tarjeta de canción se muestra visiblemente el **monto aportado** (ej: `$1.500 ARS`, `$1.000 ARS`, `$500 ARS`).
+       - En la parte superior de la sección se indica el mayor aporte vigente y la condición para quedar primero: *"Para poner tu tema de #1 debes aportar más de $X ARS"*.
+    2. **🎵 Cola Regular (Canciones Solicitadas sin Pagar)**:
+       - Se reproducen **a continuación de los temas pagados**, respetando fielmente el orden en que los clientes hicieron sus pedidos (FIFO).
+       - Los clientes con temas en esta lista cuentan con el botón **"⚡ Prioridad"** para subir su canción a la cola prioritaria mediante un aporte.
+  - **Algoritmo de Prioridad Dinámica Desatendido (`recalculateRoomQueuePriorities`):**
+    - Se compacta y reordena automáticamente el campo `priority_order` en la base de datos cada vez que entra un pedido o se eleva la prioridad de un tema.
+    - Totalmente sincronizado con el reproductor TV y la función de base de datos `fn_advance_next_song`.
+  - **Modal de Aporte Dinámico (`GuestBoostModal.tsx` y `GuestSongConfirmModal.tsx`):**
+    - Permite al usuario elegir el monto que desea aportar o superar el récord actual para asegurarse el turno #1.
+
+---
+
 ## [1.49.24] - 2026-10-15
 
 ### 🐛 [CORRECCIÓN / FIX]

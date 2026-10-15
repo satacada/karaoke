@@ -41,7 +41,7 @@ export interface QueueItem {
   id: string; room_id: string; guest_id: string | null; video_id: string; title: string; author: string;
   thumbnail_url: string | null; duration_seconds: number; duration_text: string; requested_by: string;
   priority_order: number; status: QueueStatus; requested_at: string; started_at: string | null; finished_at: string | null;
-  dedication?: string | null; is_vip?: boolean; likes_count?: number; liked_by?: string[];
+  dedication?: string | null; is_vip?: boolean; vip_amount?: number; likes_count?: number; liked_by?: string[];
 }
 
 export interface KaraokeGuest {

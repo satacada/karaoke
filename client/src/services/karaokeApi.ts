@@ -1,5 +1,5 @@
 import { supabase } from '../lib/supabaseClient';
-import { encodeSongThumbnail } from '../utils/songMeta';
+import { encodeSongThumbnail, parseSongMeta } from '../utils/songMeta';
 import { getPublicBaseUrl } from '../utils/appUrl';
 import { getRoomChannelName } from '../utils/channelUtils';
 import { isVideoRestricted, isVideoEmbeddable } from './videoRestrictionService';
@@ -187,6 +187,55 @@ export async function registerGuest(
   return data as KaraokeGuest;
 }
 
+export async function recalculateRoomQueuePriorities(roomId: string): Promise<void> {
+  const { data: queued } = await supabase
+    .from('karaoke_queue')
+    .select('*')
+    .eq('room_id', roomId)
+    .eq('status', 'queued');
+
+  if (!queued || queued.length === 0) return;
+
+  const items = queued.map((q) => {
+    const meta = parseSongMeta(q as QueueItem);
+    const isAutoDj = q.requested_by?.includes('Auto-DJ');
+    return {
+      raw: q,
+      meta,
+      isVip: meta.isVip && !isAutoDj,
+      vipAmount: meta.vipAmount || 0,
+      isAutoDj,
+      requestedAt: new Date(q.requested_at).getTime() || 0,
+    };
+  });
+
+  items.sort((a, b) => {
+    if (a.isAutoDj && !b.isAutoDj) return 1;
+    if (!a.isAutoDj && b.isAutoDj) return -1;
+    if (a.isAutoDj && b.isAutoDj) return a.raw.priority_order - b.raw.priority_order;
+
+    if (a.isVip && !b.isVip) return -1;
+    if (!a.isVip && b.isVip) return 1;
+
+    if (a.isVip && b.isVip) {
+      if (b.vipAmount !== a.vipAmount) return b.vipAmount - a.vipAmount;
+      return a.requestedAt - b.requestedAt;
+    }
+
+    return a.requestedAt - b.requestedAt;
+  });
+
+  for (let i = 0; i < items.length; i++) {
+    const desiredOrder = i + 1;
+    if (items[i].raw.priority_order !== desiredOrder) {
+      await supabase
+        .from('karaoke_queue')
+        .update({ priority_order: desiredOrder })
+        .eq('id', items[i].raw.id);
+    }
+  }
+}
+
 export async function addSongToQueue(params: {
   roomId: string;
   guestId?: string | null;
@@ -199,93 +248,12 @@ export async function addSongToQueue(params: {
   requestedBy: string;
   dedication?: string | null;
   isVip?: boolean;
+  vipAmount?: number;
 }): Promise<QueueItem | null> {
-  let targetPriority = 1;
-
-  if (params.isVip) {
-    const { data: queued } = await supabase
-      .from('karaoke_queue')
-      .select('id, priority_order, thumbnail_url')
-      .eq('room_id', params.roomId)
-      .eq('status', 'queued')
-      .order('priority_order', { ascending: true });
-
-    let existingVipCount = 0;
-    if (queued) {
-      for (const q of queued) {
-        if (q.thumbnail_url?.includes('vip=1')) existingVipCount++;
-      }
-    }
-    targetPriority = Math.min(existingVipCount + 1, 3);
-
-    if (queued && queued.length > 0) {
-      for (let i = queued.length - 1; i >= 0; i--) {
-        if (queued[i].priority_order >= targetPriority) {
-          await supabase
-            .from('karaoke_queue')
-            .update({ priority_order: queued[i].priority_order + 1 })
-            .eq('id', queued[i].id);
-        }
-      }
-    }
-  } else {
-    // Si es un tema de invitado real (no Auto-DJ), tiene prioridad sobre los temas de Auto-DJ existentes
-    const isAutoDjRequest = params.requestedBy?.includes('Auto-DJ');
-    if (!isAutoDjRequest) {
-      // Buscar canciones en cola que sean de invitados reales
-      const { data: queueList } = await supabase
-        .from('karaoke_queue')
-        .select('id, priority_order, requested_by')
-        .eq('room_id', params.roomId)
-        .eq('status', 'queued')
-        .order('priority_order', { ascending: true });
-
-      const guestSongs = queueList?.filter((q) => !q.requested_by?.includes('Auto-DJ')) || [];
-      const autoDjSongs = queueList?.filter((q) => q.requested_by?.includes('Auto-DJ')) || [];
-
-      if (autoDjSongs.length > 0) {
-        // Colocar el tema del invitado después de los temas de otros invitados, pero ANTES de los temas de Auto-DJ
-        const lastGuestPriority = guestSongs.length > 0 ? guestSongs[guestSongs.length - 1].priority_order : 0;
-        targetPriority = lastGuestPriority + 1;
-
-        // Desplazar hacia abajo las canciones de Auto-DJ
-        for (let i = autoDjSongs.length - 1; i >= 0; i--) {
-          if (autoDjSongs[i].priority_order >= targetPriority) {
-            await supabase
-              .from('karaoke_queue')
-              .update({ priority_order: autoDjSongs[i].priority_order + 1 })
-              .eq('id', autoDjSongs[i].id);
-          }
-        }
-      } else {
-        const { data: maxItem } = await supabase
-          .from('karaoke_queue')
-          .select('priority_order')
-          .eq('room_id', params.roomId)
-          .eq('status', 'queued')
-          .order('priority_order', { ascending: false })
-          .limit(1)
-          .maybeSingle();
-
-        targetPriority = (maxItem?.priority_order ?? 0) + 1;
-      }
-    } else {
-      const { data: maxItem } = await supabase
-        .from('karaoke_queue')
-        .select('priority_order')
-        .eq('room_id', params.roomId)
-        .eq('status', 'queued')
-        .order('priority_order', { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      targetPriority = (maxItem?.priority_order ?? 0) + 1;
-    }
-  }
-
   const encodedThumbnail = encodeSongThumbnail(params.thumbnailUrl, {
     dedication: params.dedication,
     isVip: params.isVip,
+    vipAmount: params.vipAmount,
   });
 
   const { data, error } = await supabase
@@ -301,7 +269,7 @@ export async function addSongToQueue(params: {
         duration_seconds: params.durationSeconds,
         duration_text: params.durationText,
         requested_by: params.requestedBy,
-        priority_order: targetPriority,
+        priority_order: 9999,
         status: 'queued',
       },
     ])
@@ -309,7 +277,42 @@ export async function addSongToQueue(params: {
     .single();
 
   if (error || !data) return null;
-  return data as QueueItem;
+
+  await recalculateRoomQueuePriorities(params.roomId);
+
+  const { data: updated } = await supabase
+    .from('karaoke_queue')
+    .select('*')
+    .eq('id', data.id)
+    .single();
+
+  return (updated || data) as QueueItem;
+}
+
+export async function boostSongToVip(songId: string, vipAmount: number): Promise<boolean> {
+  const { data: song } = await supabase
+    .from('karaoke_queue')
+    .select('*')
+    .eq('id', songId)
+    .single();
+
+  if (!song) return false;
+
+  const currentMeta = parseSongMeta(song as QueueItem);
+  const newThumbnail = encodeSongThumbnail(currentMeta.cleanThumbnail, {
+    dedication: currentMeta.dedication,
+    isVip: true,
+    vipAmount,
+  });
+
+  const { error } = await supabase
+    .from('karaoke_queue')
+    .update({ thumbnail_url: newThumbnail })
+    .eq('id', songId);
+
+  if (error) return false;
+  await recalculateRoomQueuePriorities(song.room_id);
+  return true;
 }
 
 export async function searchVideos(

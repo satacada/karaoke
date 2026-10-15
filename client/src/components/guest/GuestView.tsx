@@ -1,6 +1,7 @@
-import { useState, useEffect, useCallback, useMemo, useRef, type FC } from 'react';
+import { useState, useEffect, useCallback, useMemo, type FC } from 'react';
 import { Lock, Music } from 'lucide-react';
-import { addSongToQueue, deleteQueueItem, replaceGuestSong, swapGuestSongs, searchVideos, registerGuest } from '../../services/karaokeApi';
+import { addSongToQueue, deleteQueueItem, replaceGuestSong, searchVideos, registerGuest, boostSongToVip } from '../../services/karaokeApi';
+import { parseSongMeta } from '../../utils/songMeta';
 import { useGuestPresence } from '../../hooks/useGuestPresence';
 import { useGuestRealtime } from '../../hooks/useGuestRealtime';
 import { canRequestVip } from '../../utils/deviceId';
@@ -12,17 +13,13 @@ export const GuestView: FC<{ roomCode?: string; onSwitchToHost?: () => void }> =
   const [activeTab, setActiveTab] = useState<'party-queue' | 'search' | 'my-turn'>('party-queue');
   const [query, setQuery] = useState(() => { try { return sessionStorage.getItem('guest_last_query') || ''; } catch { return ''; } });
   const [filter, setFilter] = useState<SearchFilterType>('all'); const [results, setResults] = useState<SearchResultItem[]>([]); const [isSearching, setIsSearching] = useState(false); const [toast, setToast] = useState<string | null>(null); const [geoBlockedDist, setGeoBlockedDist] = useState<number | undefined>();
-  const [songToCancel, setSongToCancel] = useState<QueueItem | null>(null); const [songToReplace, setSongToReplace] = useState<QueueItem | null>(null); const [songToConfirm, setSongToConfirm] = useState<SearchResultItem | null>(null); const [pendingVipItem, setPendingVipItem] = useState<{ item: SearchResultItem; dedication: string | null } | null>(null);
-  const [lastReqTime, setLastReqTime] = useState(0); const isSwappingRef = useRef(false);
+  const [songToCancel, setSongToCancel] = useState<QueueItem | null>(null); const [songToReplace, setSongToReplace] = useState<QueueItem | null>(null); const [songToConfirm, setSongToConfirm] = useState<SearchResultItem | null>(null); const [songToBoost, setSongToBoost] = useState<QueueItem | null>(null);
+  const [pendingVipItem, setPendingVipItem] = useState<{ item: SearchResultItem; dedication: string | null; amount?: number; isBoost?: boolean; boostSongId?: string } | null>(null);
+  const [lastReqTime, setLastReqTime] = useState(0);
   const [theme, setTheme] = useState<'dark' | 'blue' | 'neon' | 'light'>(() => (localStorage.getItem('guest_theme') as 'dark' | 'blue' | 'neon' | 'light') || 'blue'); const [fontSize, setFontSize] = useState<'normal' | 'large' | 'xl'>(() => (localStorage.getItem('guest_font_size') as 'normal' | 'large' | 'xl') || 'normal');
 
   const { session, status: presenceStatus, saveSession, verifyPresence } = useGuestPresence();
   const showToast = useCallback((msg: string) => { setToast(msg); setTimeout(() => setToast(null), 3000); }, []);
-  const handleSwap = useCallback(async (id1: string, id2: string) => {
-    if (isSwappingRef.current) return; isSwappingRef.current = true;
-    try { if (await swapGuestSongs(id1, id2)) { if (room) await refreshQueue(room.id); showToast('¡Orden invertido! ↕️'); } }
-    finally { setTimeout(() => { isSwappingRef.current = false; }, 400); }
-  }, [room, refreshQueue, showToast]);
 
   const executeSearch = useCallback((searchTerm?: string, activeFilter?: SearchFilterType) => {
     const q = (searchTerm !== undefined ? searchTerm : query).trim();
@@ -39,10 +36,6 @@ export const GuestView: FC<{ roomCode?: string; onSwitchToHost?: () => void }> =
     return () => clearTimeout(t);
   }, [query, filter, executeSearch]);
 
-  useEffect(() => {
-    if (activeTab === 'search' && query.trim() && results.length === 0 && !isSearching) executeSearch(query, filter);
-  }, [activeTab, query, results.length, isSearching, executeSearch, filter]);
-
   const guestNameNorm = session?.guestName.trim().toLowerCase() || '';
   const currentSong = queue.find((q) => q.status === 'playing') || tvCurrentSong || null;
   const queuedSongs = queue.filter((q) => q.status === 'queued');
@@ -56,27 +49,27 @@ export const GuestView: FC<{ roomCode?: string; onSwitchToHost?: () => void }> =
   }, [queuedSongs, guestNameNorm, isSingingNow, mySongs.length]);
 
   const vipAllowed = useMemo(() => canRequestVip(queue, session?.guestName || '').allowed, [queue, session?.guestName]);
+  const highestVipAmount = useMemo(() => Math.max(0, ...queuedSongs.map((s) => parseSongMeta(s).vipAmount)), [queuedSongs]);
 
   const handleSelectSong = async (item: SearchResultItem) => {
     if (!room || !session) return;
-    if (room.is_queue_locked) return showToast('⏱️ ¡Última Ronda! Pedidos cerrados para terminar a horario.');
-    if (mySongs.length >= 3) return showToast('Máximo 3 canciones por persona (Fair Play)');
+    if (room.is_queue_locked) return showToast('⏱️ ¡Última Ronda! Pedidos cerrados.');
+    if (mySongs.length >= 3) return showToast('Máximo 3 canciones por persona');
     if (Date.now() - lastReqTime < 15000) return showToast('Espera 15 segundos entre pedidos');
     const check = await verifyPresence();
     if (!check.allowed && check.reason === 'distance') return setGeoBlockedDist(check.distanceMeters);
     setSongToConfirm(item);
   };
 
-  const executeAddSong = async (item: SearchResultItem, dedication: string | null, isVip: boolean) => {
+  const executeAddSong = async (item: SearchResultItem, dedication: string | null, isVip: boolean, vipAmount?: number) => {
     if (!room || !session) return; setLastReqTime(Date.now());
-    await addSongToQueue({ roomId: room.id, videoId: item.videoId, title: item.title, author: item.author, thumbnailUrl: item.thumbnailUrl || (item as unknown as { thumbnail?: string }).thumbnail, durationSeconds: item.durationSeconds, durationText: item.durationText, requestedBy: session.guestName, dedication: dedication || undefined, isVip });
-    await refreshQueue(room.id);
-    showToast(isVip ? '¡Pase VIP confirmado! Tu tema es el siguiente ⚡' : '¡Canción agregada a la fila! 🎤'); setActiveTab('my-turn');
+    await addSongToQueue({ roomId: room.id, videoId: item.videoId, title: item.title, author: item.author, thumbnailUrl: item.thumbnailUrl || (item as unknown as { thumbnail?: string }).thumbnail, durationSeconds: item.durationSeconds, durationText: item.durationText, requestedBy: session.guestName, dedication: dedication || undefined, isVip, vipAmount });
+    await refreshQueue(room.id); showToast(isVip ? '¡Pase VIP confirmado! Tu tema es prioritario ⚡' : '¡Canción agregada a la fila! 🎤'); setActiveTab('my-turn');
   };
 
-  const handleConfirmSong = (dedication: string | null, isVip: boolean) => {
+  const handleConfirmSong = (dedication: string | null, isVip: boolean, vipAmount?: number) => {
     if (!songToConfirm) return; const item = songToConfirm; setSongToConfirm(null);
-    if (isVip) setPendingVipItem({ item, dedication }); else executeAddSong(item, dedication, false);
+    if (isVip) setPendingVipItem({ item, dedication, amount: vipAmount }); else executeAddSong(item, dedication, false);
   };
 
   const handleTabChange = (tab: 'search' | 'my-turn' | 'party-queue') => { setActiveTab(tab); if (room && (tab === 'my-turn' || tab === 'party-queue')) refreshQueue(room.id); };
@@ -92,24 +85,19 @@ export const GuestView: FC<{ roomCode?: string; onSwitchToHost?: () => void }> =
             {activeTab === 'search' && (
               <div className="space-y-3">
                 <div className="bg-gradient-to-r from-emerald-950/70 via-zinc-900 to-zinc-900 border border-emerald-500/30 rounded-2xl p-2.5 flex items-center gap-2.5 shadow-sm">
-                  <div className="w-8 h-8 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center shrink-0">
-                    <Music className="w-4 h-4 text-emerald-400" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <h2 className="text-xs font-black text-white leading-tight">Pide tu tema</h2>
-                    <p className="text-[11px] text-zinc-300 leading-snug">Busca el tema o artista que vas a cantar y pídelo a la fila.</p>
-                  </div>
+                  <div className="w-8 h-8 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center shrink-0"><Music className="w-4 h-4 text-emerald-400" /></div>
+                  <div className="min-w-0 flex-1"><h2 className="text-xs font-black text-white leading-tight">Pide tu tema</h2><p className="text-[11px] text-zinc-300 leading-snug">Busca el tema o artista que vas a cantar y pídelo a la fila.</p></div>
                 </div>
                 {room?.is_queue_locked && <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-2xl flex items-center gap-2 text-amber-300 text-xs"><Lock className="w-4 h-4 shrink-0" /><span><b>¡Última Ronda!</b> Pedidos cerrados para terminar a horario.</span></div>}
                 <GuestSearchBar query={query} onQueryChange={handleQueryChange} onSearch={() => executeSearch(query, filter)} selectedFilter={filter} onFilterChange={(f) => { setFilter(f); executeSearch(query, f); }} isLoading={isSearching} />
                 <div className="space-y-2">{results.map((s) => <GuestSearchResultCard key={s.videoId} item={s} onSelectSong={handleSelectSong} />)}</div>
               </div>
             )}
-            {activeTab === 'my-turn' && <GuestMyQueue mySongs={mySongs} currentSong={currentSong} guestName={session.guestName} turnStatus={turnStatus} onCancelSong={setSongToCancel} onReplaceSong={setSongToReplace} onSwapSongs={handleSwap} onGoToSearch={() => setActiveTab('search')} />}
+            {activeTab === 'my-turn' && <GuestMyQueue mySongs={mySongs} allQueuedSongs={queuedSongs} currentSong={currentSong} guestName={session.guestName} turnStatus={turnStatus} highestVipAmount={highestVipAmount} onCancelSong={setSongToCancel} onReplaceSong={setSongToReplace} onBoostSong={setSongToBoost} onGoToSearch={() => setActiveTab('search')} />}
             {activeTab === 'party-queue' && <GuestPartyQueue currentSong={currentSong} queuedSongs={queuedSongs} nextAutoDjSongs={tvNextSongs} turnStatus={turnStatus} currentGuestName={session.guestName} />}
           </main>
           <GuestLiveReactionsBar roomCode={roomCode} guestName={session.guestName} />
-          <GuestModals songToConfirm={songToConfirm} pendingVipItem={pendingVipItem} songToCancel={songToCancel} songToReplace={songToReplace} geoBlockedDist={geoBlockedDist} guestName={session.guestName} canRequestVip={vipAllowed} vipPriceArs={room?.vip_price_ars} onConfirmSong={handleConfirmSong} onConfirmVipPayment={() => { if (pendingVipItem) { executeAddSong(pendingVipItem.item, pendingVipItem.dedication, true); setPendingVipItem(null); } }} onCloseConfirm={() => setSongToConfirm(null)} onCloseMp={() => setPendingVipItem(null)} onConfirmCancel={async () => { if (songToCancel) { await deleteQueueItem(songToCancel.id); setSongToCancel(null); if (room) await refreshQueue(room.id); showToast('Canción cancelada'); } }} onCloseCancel={() => setSongToCancel(null)} onReplace={async (sid, item) => { if (await replaceGuestSong(sid, { videoId: item.videoId, title: item.title, author: item.author, thumbnailUrl: item.thumbnailUrl, durationSeconds: item.durationSeconds, durationText: item.durationText })) { if (room) await refreshQueue(room.id); showToast('¡Canción cambiada en tu turno! 🔄'); } }} onCloseReplace={() => setSongToReplace(null)} onCloseGeoBlocked={() => setGeoBlockedDist(undefined)} />
+          <GuestModals songToConfirm={songToConfirm} pendingVipItem={pendingVipItem} songToCancel={songToCancel} songToReplace={songToReplace} songToBoost={songToBoost} geoBlockedDist={geoBlockedDist} guestName={session.guestName} canRequestVip={vipAllowed} highestVipAmount={highestVipAmount} vipPriceArs={room?.vip_price_ars} onConfirmSong={handleConfirmSong} onConfirmVipPayment={async () => { if (pendingVipItem?.isBoost && pendingVipItem.boostSongId) { await boostSongToVip(pendingVipItem.boostSongId, pendingVipItem.amount || 500); if (room) await refreshQueue(room.id); showToast('¡Tu canción subió a la Cola Prioritaria! ⚡'); setPendingVipItem(null); } else if (pendingVipItem) { executeAddSong(pendingVipItem.item, pendingVipItem.dedication, true, pendingVipItem.amount); setPendingVipItem(null); } }} onProceedBoostPayment={(amt) => { if (songToBoost) { setPendingVipItem({ item: { videoId: songToBoost.video_id, title: songToBoost.title, author: songToBoost.author, durationSeconds: songToBoost.duration_seconds, durationText: songToBoost.duration_text, thumbnailUrl: songToBoost.thumbnail_url || '' }, dedication: null, amount: amt, isBoost: true, boostSongId: songToBoost.id }); setSongToBoost(null); } }} onCloseConfirm={() => setSongToConfirm(null)} onCloseMp={() => setPendingVipItem(null)} onCloseBoost={() => setSongToBoost(null)} onConfirmCancel={async () => { if (songToCancel) { await deleteQueueItem(songToCancel.id); setSongToCancel(null); if (room) await refreshQueue(room.id); showToast('Canción cancelada'); } }} onCloseCancel={() => setSongToCancel(null)} onReplace={async (sid, item) => { if (await replaceGuestSong(sid, { videoId: item.videoId, title: item.title, author: item.author, thumbnailUrl: item.thumbnailUrl, durationSeconds: item.durationSeconds, durationText: item.durationText })) { if (room) await refreshQueue(room.id); showToast('¡Canción cambiada en tu turno! 🔄'); } }} onCloseReplace={() => setSongToReplace(null)} onCloseGeoBlocked={() => setGeoBlockedDist(undefined)} />
         </>
       )}
     </div>
