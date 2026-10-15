@@ -1,21 +1,17 @@
 import { useState, useEffect, useCallback, useMemo, useRef, type FC } from 'react';
-import { Lock } from 'lucide-react';
+import { Lock, Music } from 'lucide-react';
 import { addSongToQueue, deleteQueueItem, replaceGuestSong, swapGuestSongs, searchVideos, registerGuest } from '../../services/karaokeApi';
 import { useGuestPresence } from '../../hooks/useGuestPresence';
 import { useGuestRealtime } from '../../hooks/useGuestRealtime';
 import { canRequestVip } from '../../utils/deviceId';
-import { GuestWelcomeModal } from './GuestWelcomeModal'; import { GuestHeader } from './GuestHeader';
-import { GuestSearchBar } from './GuestSearchBar'; import { GuestSearchResultCard } from './GuestSearchResultCard';
-import { GuestMyQueue } from './GuestMyQueue'; import { GuestPartyQueue } from './GuestPartyQueue';
-import { GuestLiveReactionsBar } from './GuestLiveReactionsBar'; import { GuestModals } from './GuestModals';
+import { GuestWelcomeModal } from './GuestWelcomeModal'; import { GuestHeader } from './GuestHeader'; import { GuestSearchBar } from './GuestSearchBar'; import { GuestSearchResultCard } from './GuestSearchResultCard'; import { GuestMyQueue } from './GuestMyQueue'; import { GuestPartyQueue } from './GuestPartyQueue'; import { GuestLiveReactionsBar } from './GuestLiveReactionsBar'; import { GuestModals } from './GuestModals';
 import type { QueueItem, SearchResultItem, SearchFilterType, GuestTurnStatus } from '../../types';
 
 export const GuestView: FC<{ roomCode?: string; onSwitchToHost?: () => void }> = ({ roomCode = 'FIESTA', onSwitchToHost }) => {
   const { room, queue, tvCurrentSong, tvNextSongs, refreshQueue } = useGuestRealtime(roomCode);
-  const [activeTab, setActiveTab] = useState<'search' | 'my-turn' | 'party-queue'>('search');
+  const [activeTab, setActiveTab] = useState<'party-queue' | 'search' | 'my-turn'>('party-queue');
   const [query, setQuery] = useState(() => { try { return sessionStorage.getItem('guest_last_query') || ''; } catch { return ''; } });
-  const [filter, setFilter] = useState<SearchFilterType>('all'); const [results, setResults] = useState<SearchResultItem[]>([]);
-  const [isSearching, setIsSearching] = useState(false); const [toast, setToast] = useState<string | null>(null); const [geoBlockedDist, setGeoBlockedDist] = useState<number | undefined>();
+  const [filter, setFilter] = useState<SearchFilterType>('all'); const [results, setResults] = useState<SearchResultItem[]>([]); const [isSearching, setIsSearching] = useState(false); const [toast, setToast] = useState<string | null>(null); const [geoBlockedDist, setGeoBlockedDist] = useState<number | undefined>();
   const [songToCancel, setSongToCancel] = useState<QueueItem | null>(null); const [songToReplace, setSongToReplace] = useState<QueueItem | null>(null); const [songToConfirm, setSongToConfirm] = useState<SearchResultItem | null>(null); const [pendingVipItem, setPendingVipItem] = useState<{ item: SearchResultItem; dedication: string | null } | null>(null);
   const [lastReqTime, setLastReqTime] = useState(0); const isSwappingRef = useRef(false);
   const [theme, setTheme] = useState<'dark' | 'blue' | 'neon' | 'light'>(() => (localStorage.getItem('guest_theme') as 'dark' | 'blue' | 'neon' | 'light') || 'dark'); const [fontSize, setFontSize] = useState<'normal' | 'large' | 'xl'>(() => (localStorage.getItem('guest_font_size') as 'normal' | 'large' | 'xl') || 'normal');
@@ -97,7 +93,16 @@ export const GuestView: FC<{ roomCode?: string; onSwitchToHost?: () => void }> =
           <main className="flex-1 px-2.5 py-3 w-full min-w-0 overflow-x-hidden">
             {toast && <div className="fixed bottom-16 left-1/2 -translate-x-1/2 z-50 bg-emerald-500 text-zinc-950 px-4 py-2 rounded-full font-bold text-xs shadow-xl">{toast}</div>}
             {activeTab === 'search' && (
-              <div className="space-y-4">
+              <div className="space-y-3">
+                <div className="bg-gradient-to-r from-emerald-950/70 via-zinc-900 to-zinc-900 border border-emerald-500/30 rounded-2xl p-2.5 flex items-center gap-2.5 shadow-sm">
+                  <div className="w-8 h-8 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center shrink-0">
+                    <Music className="w-4 h-4 text-emerald-400" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <h2 className="text-xs font-black text-white leading-tight">Pide tu tema</h2>
+                    <p className="text-[11px] text-zinc-300 leading-snug">Busca el tema o artista que vas a cantar y pídelo a la fila.</p>
+                  </div>
+                </div>
                 {room?.is_queue_locked && <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-2xl flex items-center gap-2 text-amber-300 text-xs"><Lock className="w-4 h-4 shrink-0" /><span><b>¡Última Ronda!</b> Pedidos cerrados para terminar a horario.</span></div>}
                 <GuestSearchBar query={query} onQueryChange={handleQueryChange} onSearch={() => executeSearch(query, filter)} selectedFilter={filter} onFilterChange={(f) => { setFilter(f); executeSearch(query, f); }} isLoading={isSearching} />
                 <div className="space-y-2">{results.map((s) => <GuestSearchResultCard key={s.videoId} item={s} onSelectSong={handleSelectSong} />)}</div>

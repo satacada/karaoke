@@ -70,24 +70,31 @@ export const GuestHeader: FC<GuestHeaderProps> = ({
       <nav className="grid grid-cols-3 gap-1 bg-zinc-900 p-1 rounded-xl border border-zinc-800">
         <button
           type="button"
+          onClick={() => onSelectTab('party-queue')}
+          className={`flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold transition-all ${
+            activeTab === 'party-queue' ? 'bg-emerald-500 text-zinc-950 shadow font-bold' : 'text-zinc-400 hover:text-white'
+          }`}
+        >
+          <ListMusic className="w-3.5 h-3.5" />
+          <span>Cola Rockola</span>
+        </button>
+
+        <button
+          type="button"
           onClick={() => onSelectTab('search')}
           className={`flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold transition-all ${
-            activeTab === 'search'
-              ? 'bg-emerald-500 text-zinc-950 shadow font-bold'
-              : 'text-zinc-400 hover:text-white'
+            activeTab === 'search' ? 'bg-emerald-500 text-zinc-950 shadow font-bold' : 'text-zinc-400 hover:text-white'
           }`}
         >
           <Search className="w-3.5 h-3.5" />
-          <span>Buscar</span>
+          <span>Pedir</span>
         </button>
 
         <button
           type="button"
           onClick={() => onSelectTab('my-turn')}
           className={`relative flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold transition-all ${
-            activeTab === 'my-turn'
-              ? 'bg-emerald-500 text-zinc-950 shadow font-bold'
-              : 'text-zinc-400 hover:text-white'
+            activeTab === 'my-turn' ? 'bg-emerald-500 text-zinc-950 shadow font-bold' : 'text-zinc-400 hover:text-white'
           }`}
         >
           <Clock className="w-3.5 h-3.5" />
@@ -99,19 +106,6 @@ export const GuestHeader: FC<GuestHeaderProps> = ({
               {mySongsCount}
             </span>
           )}
-        </button>
-
-        <button
-          type="button"
-          onClick={() => onSelectTab('party-queue')}
-          className={`flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold transition-all ${
-            activeTab === 'party-queue'
-              ? 'bg-emerald-500 text-zinc-950 shadow font-bold'
-              : 'text-zinc-400 hover:text-white'
-          }`}
-        >
-          <ListMusic className="w-3.5 h-3.5" />
-          <span>Cola Rockola</span>
         </button>
       </nav>
     </header>

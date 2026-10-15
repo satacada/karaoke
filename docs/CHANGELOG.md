@@ -4,6 +4,24 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.49.23] - 2026-10-15
+
+### 🚀 [ESPECIFICACIÓN / FEATURE]
+- **Reordenamiento de Pestañas e Inicio Predeterminado en Cliente (`GuestHeader.tsx`, `GuestView.tsx`, `GuestMyQueue.tsx`):**
+  - Se reordenó la navegación principal del cliente móvil:
+    1. **Cola Rockola** (`party-queue`): Vista completa de la fila de reproducción y temas en curso.
+    2. **Pedir** (`search`): Búsqueda de canciones (reemplaza a la anterior etiqueta "Buscar").
+    3. **Mi Turno** (`my-turn`): Gestión de turnos y canciones personales.
+  - Al abrir el aplicativo en modo cliente, se inicia directamente con la pestaña **"Cola Rockola"** seleccionada por defecto.
+  - En la pestaña **"Pedir"**, se incorporó un banner informativo destacado indicando con claridad al usuario: *"Pide tu tema: Busca el tema o artista que vas a cantar y pídelo a la fila"*.
+
+- **Exclusión Total de Videos Restringidos en el Buscador del Cliente (`search.js`, `karaokeApi.ts`, `videoRestrictionService.ts`):**
+  - Doble capa de validación preventiva:
+    1. En el backend (`client/api/search.js`), se verifica la disponibilidad e inserción de cada video con YouTube oEmbed en tiempo real, descartando automáticamente videos con inserción desactivada (`401`), privados/bloqueados (`403`) o inexistentes (`404`).
+    2. En el cliente (`karaokeApi.ts`), se filtran los resultados contra la lista negra persistente local y se revalida `isVideoEmbeddable()`, garantizando que **ningún video restringido aparezca en los resultados de búsqueda de los clientes**.
+
+---
+
 ## [1.49.22] - 2026-10-15
 
 ### 🚀 [ESPECIFICACIÓN / FEATURE]

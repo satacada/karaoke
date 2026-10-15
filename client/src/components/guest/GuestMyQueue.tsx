@@ -104,7 +104,7 @@ export const GuestMyQueue: FC<GuestMyQueueProps> = ({
           <div className="w-12 h-12 bg-zinc-900 rounded-full flex items-center justify-center mx-auto text-zinc-600"><Music className="w-6 h-6" /></div>
           <h4 className="text-sm font-bold text-white">No tienes canciones en la fila</h4>
           <p className="text-xs text-zinc-500 max-w-xs mx-auto">Busca cualquier canción o karaoke en YouTube y agrégala a la lista.</p>
-          <button type="button" onClick={onGoToSearch} className="mt-2 inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 text-xs font-bold rounded-xl shadow-lg active:scale-95">Buscar una canción</button>
+          <button type="button" onClick={onGoToSearch} className="mt-2 inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 text-xs font-bold rounded-xl shadow-lg active:scale-95">Pedir una canción</button>
         </div>
       ) : null}
     </div>

@@ -1,4 +1,4 @@
-﻿import yts from 'yt-search';
+import yts from 'yt-search';
 import { getGenreArtists } from './genreDefinitions.js';
 
 function normalizeVideo(v) {
@@ -93,7 +93,22 @@ export default async function handler(req, res) {
       rawVideos = vids.filter((v) => v.seconds > 30 && v.seconds <= 900);
     }
 
-    const results = rawVideos.slice(0, 20).map(normalizeVideo);
+    const candidateResults = rawVideos.slice(0, 25).map(normalizeVideo);
+    const checks = await Promise.all(
+      candidateResults.map(async (v) => {
+        try {
+          const c = new AbortController();
+          const t = setTimeout(() => c.abort(), 1200);
+          const r = await fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${v.videoId}&format=json`, { signal: c.signal });
+          clearTimeout(t);
+          if (r.status === 401 || r.status === 403 || r.status === 404) return null;
+          return v;
+        } catch {
+          return v;
+        }
+      })
+    );
+    const results = checks.filter(Boolean).slice(0, 20);
     res.setHeader('Cache-Control', 's-maxage=900, stale-while-revalidate=3600');
     return res.status(200).json({ results });
   } catch (err) {
