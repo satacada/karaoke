@@ -4,6 +4,31 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.49.20] - 2026-10-15
+
+### 🚀 [ESPECIFICACIÓN / FEATURE]
+- **Sincronización en Tiempo Real de Pantalla TV en Móviles de Clientes (`useGuestRealtime.ts`, `GuestView.tsx`):**
+  - El cliente visualiza en tiempo real en su teléfono qué canción está sonando en la TV (sea tema pedido por invitado o pista de Auto-DJ).
+  - Al conectarse a la sala, la aplicación del cliente envía `request_tv_state` y escucha el canal unificado de la sala (`room-channel-${roomId}`) recibiendo `tv_sync_state`.
+- **Destacado de Canción Actual y Cuenta Regresiva de Turno (`GuestPartyQueue.tsx`, `GuestMyQueue.tsx`):**
+  - La canción actual se resalta con borde brillante, disco giratorio e información completa del tema.
+  - Si el usuario tiene pedidos en fila, se le indica explícitamente: *"Faltan X temas para tu pedido"* (o *"Falta 1 tema..."*, *"¡Tu pedido es el siguiente!"*, *"¡Tu pedido está sonando ahora!"*).
+- **Visualización de las 3 Próximas Canciones en Auto-DJ (`GuestPartyQueue.tsx`):**
+  - Cuando está en DJ Automático y no hay pedidos de invitados, el cliente ve la lista de los 3 temas que continúan a continuación en el ambiente.
+- **Búsqueda Dinámica en YouTube y Cero Repetición en Auto-DJ (`autoDjRamQueueService.ts`, `autoDjService.ts`, `autoDjStations.ts`):**
+  - Las canciones precargadas iniciales no vuelven a repetirse ni dan vueltas.
+  - Aprovechando el tiempo de colchón de las 3 canciones del buffer, el sistema busca temas nuevos aleatoriamente en YouTube para ese género con queries y modificadores variados, encolándolos dinámicamente y registrándolos en el historial de sesión para evitar cualquier tema en duro o repetición.
+- **Detección Interna y Eliminación de Mensaje de Video Restringido (`videoRestrictionService.ts`, `TvView.tsx`, `karaokeApi.ts`):**
+  - Se eliminó el cartel emergente de error en pantalla *"Video restringido. Saltando..."*.
+  - Se creó el servicio `videoRestrictionService` que consulta oEmbed y mantiene la lista negra de videos con restricción de inserción para evitarlos antes de encolarlos en Auto-DJ o búsquedas. En caso de fallo en el player, avanza instantáneamente de forma silenciosa e interna.
+
+### 🎨 [AFINAMIENTO / REFINAMIENTO]
+- **Transparencia Total en Reacciones y Controles Flotantes del QR (`TvFloatingQr.tsx`):**
+  - Se retiró cualquier marco y fondo opaco a la sección de reacciones sobre el QR (`bg-transparent border-0 shadow-none`), dejándolas semi-transparentes sobre el video para no tapar la reproducción.
+  - Los botones auxiliares alrededor del QR adoptan fondos traslúcidos, manteniendo únicamente el código QR blanco, nítido y claro para el escaneo instantáneo con la cámara.
+
+---
+
 ## [1.49.19] - 2026-10-15
 
 ### 🚀 [ESPECIFICACIÓN / FEATURE]

@@ -2,6 +2,7 @@ import { supabase } from '../lib/supabaseClient';
 import { encodeSongThumbnail } from '../utils/songMeta';
 import { getPublicBaseUrl } from '../utils/appUrl';
 import { getRoomChannelName } from '../utils/channelUtils';
+import { isVideoRestricted } from './videoRestrictionService';
 import type {
   KaraokeRoom,
   QueueItem,
@@ -320,7 +321,8 @@ export async function searchVideos(
     const res = await fetch(`${baseUrl}/api/search?q=${encodeURIComponent(query)}&filter=${filter}`);
     if (!res.ok) return [];
     const json = await res.json();
-    return (json.results || []) as SearchResultItem[];
+    const list = (json.results || []) as SearchResultItem[];
+    return list.filter((item) => !isVideoRestricted(item.videoId));
   } catch (err) {
     console.error('Error searching videos:', err);
     return [];

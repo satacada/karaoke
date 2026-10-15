@@ -1,11 +1,14 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { getRoomByCode, getQueueForRoom } from '../services/karaokeApi';
+import { getRoomChannelName } from '../utils/channelUtils';
 import type { KaraokeRoom, QueueItem } from '../types';
 
 export function useGuestRealtime(roomCode: string = 'FIESTA') {
   const [room, setRoom] = useState<KaraokeRoom | null>(null);
   const [queue, setQueue] = useState<QueueItem[]>([]);
+  const [tvCurrentSong, setTvCurrentSong] = useState<QueueItem | null>(null);
+  const [tvNextSongs, setTvNextSongs] = useState<QueueItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const roomRef = useRef<KaraokeRoom | null>(null);
   roomRef.current = room;
@@ -34,12 +37,18 @@ export function useGuestRealtime(roomCode: string = 'FIESTA') {
   const roomId = room?.id;
   useEffect(() => {
     if (!roomId) return;
-    const uid = Math.random().toString(36).slice(2, 7);
+    const channelName = getRoomChannelName(roomId);
     const channel = supabase
-      .channel(`guest-rt-${roomId}-${uid}`)
+      .channel(channelName)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'karaoke_queue', filter: `room_id=eq.${roomId}` }, () => refreshQueue(roomId))
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'karaoke_rooms', filter: `id=eq.${roomId}` }, (p) => setRoom(p.new as KaraokeRoom))
+      .on('broadcast', { event: 'tv_sync_state' }, ({ payload }) => {
+        if (payload?.currentSong !== undefined) setTvCurrentSong(payload.currentSong);
+        if (payload?.nextSongs !== undefined) setTvNextSongs(payload.nextSongs || []);
+      })
       .subscribe();
+
+    supabase.channel(channelName).send({ type: 'broadcast', event: 'request_tv_state', payload: {} }).catch(() => {});
 
     const pollTimer = setInterval(() => {
       if (typeof document !== 'undefined' && !document.hidden) refreshQueue(roomId);
@@ -59,5 +68,5 @@ export function useGuestRealtime(roomCode: string = 'FIESTA') {
     };
   }, [roomId, refreshQueue]);
 
-  return { room, queue, setRoom, setQueue, refreshQueue, isLoading };
+  return { room, queue, tvCurrentSong, tvNextSongs, setRoom, setQueue, refreshQueue, isLoading };
 }

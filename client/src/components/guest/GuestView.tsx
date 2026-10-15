@@ -11,7 +11,7 @@ import { GuestLiveReactionsBar } from './GuestLiveReactionsBar'; import { GuestM
 import type { QueueItem, SearchResultItem, SearchFilterType, GuestTurnStatus } from '../../types';
 
 export const GuestView: FC<{ roomCode?: string; onSwitchToHost?: () => void }> = ({ roomCode = 'FIESTA', onSwitchToHost }) => {
-  const { room, queue, refreshQueue } = useGuestRealtime(roomCode);
+  const { room, queue, tvCurrentSong, tvNextSongs, refreshQueue } = useGuestRealtime(roomCode);
   const [activeTab, setActiveTab] = useState<'search' | 'my-turn' | 'party-queue'>('search');
   const [query, setQuery] = useState(() => { try { return sessionStorage.getItem('guest_last_query') || ''; } catch { return ''; } });
   const [filter, setFilter] = useState<SearchFilterType>('all'); const [results, setResults] = useState<SearchResultItem[]>([]);
@@ -48,7 +48,7 @@ export const GuestView: FC<{ roomCode?: string; onSwitchToHost?: () => void }> =
   }, [activeTab, query, results.length, isSearching, executeSearch, filter]);
 
   const guestNameNorm = session?.guestName.trim().toLowerCase() || '';
-  const currentSong = queue.find((q) => q.status === 'playing') || null;
+  const currentSong = queue.find((q) => q.status === 'playing') || tvCurrentSong || null;
   const queuedSongs = queue.filter((q) => q.status === 'queued');
   const mySongs = queuedSongs.filter((q) => (q.requested_by || '').trim().toLowerCase() === guestNameNorm);
   const isSingingNow = Boolean(currentSong && (currentSong.requested_by || '').trim().toLowerCase() === guestNameNorm);
@@ -104,7 +104,7 @@ export const GuestView: FC<{ roomCode?: string; onSwitchToHost?: () => void }> =
               </div>
             )}
             {activeTab === 'my-turn' && <GuestMyQueue mySongs={mySongs} currentSong={currentSong} guestName={session.guestName} turnStatus={turnStatus} onCancelSong={setSongToCancel} onReplaceSong={setSongToReplace} onSwapSongs={handleSwap} onGoToSearch={() => setActiveTab('search')} />}
-            {activeTab === 'party-queue' && <GuestPartyQueue currentSong={currentSong} queuedSongs={queuedSongs} currentGuestName={session.guestName} />}
+            {activeTab === 'party-queue' && <GuestPartyQueue currentSong={currentSong} queuedSongs={queuedSongs} nextAutoDjSongs={tvNextSongs} turnStatus={turnStatus} currentGuestName={session.guestName} />}
           </main>
           <GuestLiveReactionsBar roomCode={roomCode} guestName={session.guestName} />
           <GuestModals songToConfirm={songToConfirm} pendingVipItem={pendingVipItem} songToCancel={songToCancel} songToReplace={songToReplace} geoBlockedDist={geoBlockedDist} guestName={session.guestName} canRequestVip={vipAllowed} vipPriceArs={room?.vip_price_ars} onConfirmSong={handleConfirmSong} onConfirmVipPayment={() => { if (pendingVipItem) { executeAddSong(pendingVipItem.item, pendingVipItem.dedication, true); setPendingVipItem(null); } }} onCloseConfirm={() => setSongToConfirm(null)} onCloseMp={() => setPendingVipItem(null)} onConfirmCancel={async () => { if (songToCancel) { await deleteQueueItem(songToCancel.id); setSongToCancel(null); if (room) await refreshQueue(room.id); showToast('Canción cancelada'); } }} onCloseCancel={() => setSongToCancel(null)} onReplace={async (sid, item) => { if (await replaceGuestSong(sid, { videoId: item.videoId, title: item.title, author: item.author, thumbnailUrl: item.thumbnailUrl, durationSeconds: item.durationSeconds, durationText: item.durationText })) { if (room) await refreshQueue(room.id); showToast('¡Canción cambiada en tu turno! 🔄'); } }} onCloseReplace={() => setSongToReplace(null)} onCloseGeoBlocked={() => setGeoBlockedDist(undefined)} />

@@ -40,7 +40,9 @@ export function getStationArtistQuery(stationId: string, recentArtists: string[]
   const normRecent = recentArtists.map((a) => normalizeArtist(a));
   const pool = station.artists.filter((a) => !normRecent.slice(0, 4).some((r) => r === normalizeArtist(a) || r.includes(normalizeArtist(a))));
   const chosen = (pool.length > 0 ? pool : station.artists)[Math.floor(Math.random() * (pool.length || station.artists.length))] || station.artists[0];
-  return `${chosen} exitos oficial video`;
+  const mods = ['exitos', 'canciones', 'en vivo', 'grandes exitos', 'lo mejor', 'musica'];
+  const mod = mods[Math.floor(Math.random() * mods.length)];
+  return `${chosen} ${mod} oficial`;
 }
 
 export function parseAutoDjGenre(genre?: string, recentArtists: string[] = []): { isSeed: boolean; displayName: string; query: string } {

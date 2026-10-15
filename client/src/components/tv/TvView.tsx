@@ -1,5 +1,5 @@
 import { useRef, useState, useCallback, useEffect, type FC } from 'react';
-import { AlertCircle, Sparkles, Settings } from 'lucide-react';
+import { Sparkles, Settings } from 'lucide-react'; import { recordRestrictedVideoId } from '../../services/videoRestrictionService';
 import { useTvRealtime } from '../../hooks/useTvRealtime'; import { useTvAutoDj } from '../../hooks/useTvAutoDj'; import { useMediaSession } from '../../hooks/useMediaSession'; import { useWakeLock } from '../../hooks/useWakeLock'; import { useTvVoiceControl } from '../../hooks/useTvVoiceControl'; import { useTvRemoteHandler } from '../../hooks/useTvRemoteHandler';
 import { TvPlayer, type TvPlayerRef } from './TvPlayer';
 import { TvIdleScreen } from './TvIdleScreen';
@@ -19,7 +19,7 @@ import type { TvScale } from '../../types'; const SCALE_MAP: Record<TvScale, num
 export const TvView: FC<{ roomCode?: string; onUnlink?: () => void; onSwitchToHost?: () => void }> = ({ roomCode = 'FIESTA', onUnlink, onSwitchToHost }) => {
   const playerRef = useRef<TvPlayerRef>(null);
   const lastSyncRef = useRef<number>(0), handleNextSongRef = useRef<() => void>(() => {}), handleStartAutoDjRef = useRef<() => void>(() => {});
-  const [currentTime, setCurrentTime] = useState(0), [duration, setDuration] = useState(0), [errorNotice, setErrorNotice] = useState<string | null>(null), [showUnlinkModal, setShowUnlinkModal] = useState(false), [isStartingAutoDj, setIsStartingAutoDj] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0), [duration, setDuration] = useState(0), [showUnlinkModal, setShowUnlinkModal] = useState(false), [isStartingAutoDj, setIsStartingAutoDj] = useState(false);
 
   const { isPaused, setIsPaused, isFlashing, banners, setBanners, rentalSession, tvTheme, tvScale, handleRemoteCommand } = useTvRemoteHandler(roomCode, playerRef, handleNextSongRef, handleStartAutoDjRef, onUnlink, () => setShowUnlinkModal(false));
   useEffect(() => {
@@ -77,7 +77,8 @@ export const TvView: FC<{ roomCode?: string; onUnlink?: () => void; onSwitchToHo
   }, [isLoading, currentSong, nextSongs.length, room?.auto_dj_enabled, roomCode]);
 
   const handlePlayerError = useCallback(() => {
-    logError(roomCode, 'tv', 'yt_restricted_skip', `Video restringido en sala ${roomCode}`, { currentSongId: currentSong?.id, videoId: currentSong?.video_id }); setErrorNotice('Video restringido. Saltando...'); setTimeout(() => { setErrorNotice(null); handleNextSongRef.current(); }, 2000);
+    if (currentSong?.video_id) recordRestrictedVideoId(currentSong.video_id);
+    logError(roomCode, 'tv', 'yt_restricted_skip', `Video no disponible`, { currentSongId: currentSong?.id, videoId: currentSong?.video_id }); handleNextSongRef.current();
   }, [roomCode, currentSong]);
 
   const handleTimeUpdate = useCallback((curr: number, dur: number) => {
@@ -91,7 +92,6 @@ export const TvView: FC<{ roomCode?: string; onUnlink?: () => void; onSwitchToHo
   return (
     <div className="relative w-full h-screen bg-black overflow-hidden select-none">
       {isFlashing && (<div className="absolute inset-0 border-8 border-emerald-400 pointer-events-none z-50 flex items-center justify-center bg-emerald-950/20 animate-pulse"><span className="px-6 py-3 rounded-2xl bg-emerald-500 text-zinc-950 font-black text-xl shadow-2xl flex items-center gap-2"><Sparkles className="w-6 h-6" />⚡ PANTALLA: {room?.zone_name || room?.name}</span></div>)}
-      {errorNotice && <div className="absolute top-20 left-1/2 -translate-x-1/2 z-50 bg-rose-600/90 text-white px-5 py-2 rounded-2xl text-sm font-semibold flex items-center gap-2"><AlertCircle className="w-4 h-4 text-amber-300 animate-pulse" /><span>{errorNotice}</span></div>}
 
       {/* Tuerca Superior Derecha: Solo el contorno de la tuerca rosada más pequeña */}
       <button id="tv-gear-btn" type="button" tabIndex={0} onClick={(e) => { e.stopPropagation(); setShowUnlinkModal(true); }} onKeyDown={(e) => { if (e.key === 'ArrowDown') { e.preventDefault(); document.getElementById('tv-timeline-bar')?.focus(); } }} title="Ajustes y Salir" className="absolute top-4 right-4 z-[999] bg-transparent border-0 outline-none p-1 cursor-pointer pointer-events-auto flex items-center justify-center group transition-transform focus:outline-none">
