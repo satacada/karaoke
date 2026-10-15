@@ -4,6 +4,25 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.49.21] - 2026-10-15
+
+### 🚀 [ESPECIFICACIÓN / FEATURE]
+- **Intervalo No Invasivo para HUD y Próxima Canción en TV (`tvPlaybackInterval.ts`, `TvNextQueueTicker.tsx`, `TvNowPlayingHUD.tsx`):**
+  - Se implementó la utilidad `isTvHudIntervalActive`:
+    - Visible durante los primeros 15 segundos al iniciar la canción (presentación).
+    - Intervalo periódico no invasivo de 10 segundos cada 45 segundos durante la reproducción.
+    - Visible durante los últimos 20 segundos antes de finalizar (preparación del siguiente cantante).
+    - Visible en todo momento si la reproducción se encuentra pausada.
+  - **Parte superior:** Muestra sutilmente en una tarjeta translúcida `Siguiente: [Título de la siguiente canción]` y artista, ocultándose suavemente con transición fade out (`transition-opacity duration-700`) para no tapar los subtítulos ni letras del video.
+  - **Parte inferior (línea de tiempo):** Con ese mismo criterio de intervalo no invasivo, muestra el nombre de la canción que actualmente se está tocando (`song.title`), artista, solicitante y tiempos de avance sobre la barra de progreso, atenuando el fondo a transparente cuando no está en el intervalo.
+
+### 🐛 [CORRECCIÓN / FIX]
+- **Continuidad de Pista en Auto-DJ al Pedir un Cliente (`useTvRealtime.ts`):**
+  - Se eliminó el corte abrupto de la canción de Auto-DJ. Cuando un cliente solicita un tema desde su teléfono, su pedido se coloca ordenadamente detrás de la canción en reproducción (`nextSongs[0]`).
+  - La canción actual de Auto-DJ continúa reproduciéndose con total normalidad hasta finalizar; al terminar naturalmente, el sistema avanza de inmediato a la canción solicitada por el cliente.
+
+---
+
 ## [1.49.20] - 2026-10-15
 
 ### 🚀 [ESPECIFICACIÓN / FEATURE]

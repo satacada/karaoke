@@ -99,7 +99,7 @@ export const TvView: FC<{ roomCode?: string; onUnlink?: () => void; onSwitchToHo
       </button>
 
       <div className="absolute top-0 left-0 z-40 pointer-events-none" style={{ transform: `scale(${scaleFactor})`, transformOrigin: 'top left' }}>
-        <TvRentalBadge rentalSession={rentalSession} className="absolute top-4 left-4 z-40 pointer-events-auto" />{currentSong && <TvNextQueueTicker queue={nextSongs} currentTime={currentTime} duration={duration} />}
+        <TvRentalBadge rentalSession={rentalSession} className="absolute top-4 left-4 z-40 pointer-events-auto" />{currentSong && <TvNextQueueTicker queue={nextSongs} currentTime={currentTime} duration={duration} isPaused={isPaused} hasRental={Boolean(rentalSession?.enabled)} />}
       </div>
       <TvVoiceHUD lastCommand={lastCommand} />
 

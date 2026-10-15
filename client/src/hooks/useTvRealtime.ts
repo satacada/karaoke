@@ -17,11 +17,12 @@ export function useTvRealtime(roomCode: string, onRemoteCommand?: (command: Remo
   const refreshState = useCallback(async (currentRoomId?: string) => {
     const targetId = currentRoomId || roomRef.current?.id; if (!targetId) return;
     const queue = await getQueueForRoom(targetId);
-    const hasClient = queue.some((q) => q.status === 'queued' && !q.id.startsWith('ram_') && !q.requested_by?.includes('Auto-DJ'));
-    const isCurAutoDj = currentSongRef.current?.id.startsWith('ram_') || currentSongRef.current?.requested_by?.includes('Auto-DJ');
-    if (hasClient && isCurAutoDj) { await handleNextSongRef.current(); return; }
-    setCurrentSong(queue.find((q) => q.status === 'playing') || ramSongRef.current);
-    setNextSongs([...queue.filter((q) => q.status === 'queued'), ...getRamQueue()]);
+    const playing = queue.find((q) => q.status === 'playing') || ramSongRef.current;
+    setCurrentSong(playing);
+    const queuedClient = queue.filter((q) => q.status === 'queued');
+    const nxt = [...queuedClient, ...getRamQueue()];
+    setNextSongs(nxt);
+    broadcastSync(targetId, playing, nxt);
   }, []);
 
   const broadcastSync = (roomId: string, cur: QueueItem | null, nxt: QueueItem[]) => {
@@ -70,9 +71,7 @@ export function useTvRealtime(roomCode: string, onRemoteCommand?: (command: Remo
   useEffect(() => {
     if (!roomId) return;
     const ch = supabase.channel(getRoomChannelName(roomId))
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'karaoke_queue', filter: `room_id=eq.${roomId}` }, (p) => {
-        const isCurAutoDj = currentSongRef.current?.id.startsWith('ram_') || currentSongRef.current?.requested_by?.includes('Auto-DJ');
-        if (isCurAutoDj && p.eventType === 'INSERT' && !(p.new as QueueItem).id.startsWith('ram_') && !(p.new as QueueItem).requested_by?.includes('Auto-DJ')) { handleNextSongRef.current(); return; }
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'karaoke_queue', filter: `room_id=eq.${roomId}` }, () => {
         refreshState(roomId);
       })
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'karaoke_commands', filter: `room_id=eq.${roomId}` }, async (p) => {

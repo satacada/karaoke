@@ -1,6 +1,7 @@
 import type { FC } from 'react';
 import { Disc3, Music2, Clock, Play, Pause } from 'lucide-react';
 import type { QueueItem } from '../../types';
+import { isTvHudIntervalActive } from '../../utils/tvPlaybackInterval';
 
 interface TvNowPlayingHUDProps {
   song: QueueItem;
@@ -25,17 +26,19 @@ export const TvNowPlayingHUD: FC<TvNowPlayingHUDProps> = ({
 }) => {
   const effectiveDuration = duration > 0 ? duration : song.duration_seconds || 180;
   const progressPercent = Math.min(100, Math.max(0, (currentTime / effectiveDuration) * 100));
-
-  // El título solo aparece los primeros 15 segundos y luego desaparece
-  const isTitleVisible = currentTime <= 15;
+  const isVisible = isTvHudIntervalActive(currentTime, duration, isPaused);
 
   return (
-    <div className="absolute bottom-0 left-0 right-0 z-30 bg-gradient-to-t from-black/90 via-black/40 to-transparent px-[clamp(0.75rem,2vw,1.5rem)] pt-3 pb-1.5 pointer-events-none select-none">
+    <div
+      className={`absolute bottom-0 left-0 right-0 z-30 px-[clamp(0.75rem,2vw,1.5rem)] pt-3 pb-1.5 pointer-events-none select-none transition-all duration-700 ease-in-out ${
+        isVisible ? 'bg-gradient-to-t from-black/90 via-black/40 to-transparent' : 'bg-transparent'
+      }`}
+    >
       <div className="max-w-7xl mx-auto flex flex-col gap-1">
-        {/* Título a la izquierda y Tiempo a su derecha: Solo los primeros 15s */}
+        {/* Título de la canción actual: sincronizado con el intervalo no invasivo */}
         <div
           className={`flex items-end justify-between gap-3 pr-36 sm:pr-44 min-w-0 transition-opacity duration-700 ease-in-out ${
-            isTitleVisible ? 'opacity-100' : 'opacity-0'
+            isVisible ? 'opacity-100' : 'opacity-0'
           }`}
         >
           <div className="flex items-center gap-2 min-w-0 flex-1">
@@ -88,7 +91,11 @@ export const TvNowPlayingHUD: FC<TvNowPlayingHUDProps> = ({
             title={isPaused ? 'Línea de tiempo pausada - Presiona OK para reproducir' : 'Línea de tiempo activa - Presiona OK para pausar'}
             className="flex-1 group/bar relative py-1 focus:outline-none pointer-events-auto cursor-pointer"
           >
-            <div className="w-full bg-black/80 h-2 group-focus/bar:h-3 rounded-full overflow-hidden border border-white/20 group-focus/bar:border-pink-400 group-focus/bar:ring-4 group-focus/bar:ring-pink-500/80 shadow-md transition-all">
+            <div
+              className={`w-full bg-black/80 h-2 group-focus/bar:h-3 rounded-full overflow-hidden border border-white/20 group-focus/bar:border-pink-400 group-focus/bar:ring-4 group-focus/bar:ring-pink-500/80 shadow-md transition-all ${
+                isVisible ? 'opacity-100' : 'opacity-40 hover:opacity-100 group-focus/bar:opacity-100'
+              }`}
+            >
               <div
                 className="h-full bg-gradient-to-r from-purple-500 via-pink-500 to-amber-400 rounded-full transition-all duration-300 ease-linear shadow-sm"
                 style={{ width: `${progressPercent}%` }}
