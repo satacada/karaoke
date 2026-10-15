@@ -60,8 +60,8 @@ export const TvView: FC<{ roomCode?: string; onUnlink?: () => void; onSwitchToHo
 
   useEffect(() => {
     let t: number | undefined;
-    const resetBlur = () => { window.clearTimeout(t); if (currentSong && !isPaused && !showUnlinkModal) t = window.setTimeout(() => (document.activeElement as HTMLElement)?.blur(), 10000); };
-    resetBlur();
+    const resetBlur = () => { window.clearTimeout(t); if (currentSong && !isPaused && !showUnlinkModal) t = window.setTimeout(() => (document.activeElement as HTMLElement)?.blur(), 3000); };
+    resetBlur(); (document.activeElement as HTMLElement)?.blur();
     const handleKey = (e: KeyboardEvent) => {
       resetBlur();
       if (['ContextMenu', 'Settings', 'Menu', 'F1', 'm', 'M', 'q', 'Q'].includes(e.key) || e.keyCode === 82) { e.preventDefault(); setShowUnlinkModal((p) => !p); }

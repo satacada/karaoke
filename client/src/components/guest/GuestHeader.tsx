@@ -9,7 +9,7 @@ interface GuestHeaderProps {
 }
 
 export const GuestHeader: FC<GuestHeaderProps> = ({
-  roomCode, guestName, activeTab, onSelectTab, mySongsCount, isSingingNow, isWithinGracePeriod, remainingGraceMinutes, currentTheme = 'dark', onToggleTheme, currentFontSize = 'normal', onToggleFontSize, onSwitchToHost,
+  roomCode, guestName, activeTab, onSelectTab, mySongsCount, isSingingNow, isWithinGracePeriod, remainingGraceMinutes, currentTheme = 'blue', onToggleTheme, currentFontSize = 'normal', onToggleFontSize, onSwitchToHost,
 }) => {
   const { canInstall, isInstalled, installApp } = usePwaInstall();
   return (

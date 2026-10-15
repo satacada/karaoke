@@ -50,10 +50,15 @@ export const TvPlayer = forwardRef<TvPlayerRef, TvPlayerProps>(function TvPlayer
   }, [togglePlayPause]);
 
   useEffect(() => {
+    let lastTime = 0;
     const timer = window.setInterval(() => {
       if (playerRef.current?.getCurrentTime) {
         const c = playerRef.current.getCurrentTime() || 0; const d = playerRef.current.getDuration() || 0;
+        const st = playerRef.current.getPlayerState?.();
         onTimeUpdateRef.current?.(c, d);
+        if (st === 1 || (c > 0 && Math.abs(c - lastTime) > 0.05)) onPlayingRef.current?.(true);
+        else if (st === 2) onPlayingRef.current?.(false);
+        lastTime = c;
         if (d > 8 && c < d - 4 && hasEndedRef.current) hasEndedRef.current = false;
         if (d > 8 && c >= d - 1.8 && !hasEndedRef.current) { hasEndedRef.current = true; onEndedRef.current(); }
       }
@@ -66,6 +71,7 @@ export const TvPlayer = forwardRef<TvPlayerRef, TvPlayerProps>(function TvPlayer
     if (isReadyRef.current && playerRef.current) {
       currentVideoRef.current = videoId; logInfo('TV', 'tv', 'yt_load_video', `Cargando video: ${videoId}`);
       playerRef.current.loadVideoById(videoId);
+      onPlayingRef.current?.(true);
     }
   }, [videoId]);
 

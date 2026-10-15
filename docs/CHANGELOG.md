@@ -4,6 +4,22 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.49.24] - 2026-10-15
+
+### 🐛 [CORRECCIÓN / FIX]
+- **Eliminación Definitiva del Ícono de Pausa Persistente en Pantalla TV (`TvNowPlayingHUD.tsx`, `TvPlayer.tsx`, `TvView.tsx`):**
+  - Se corrigió la causa raíz por la cual durante la reproducción de temas (ej. "Boys Don't Cry") aparecía la imagen/ícono de pausa flotante en pantalla:
+    1. En `TvNowPlayingHUD.tsx`, la barra de progreso inferior tenía una etiqueta flotante con `group-focus/bar:flex` que contenía `<Pause />` y `"OK: Pausar"`. Al recibir foco del control remoto, mouse o teclado, este badge pulsante se quedaba proyectado permanentemente sobre el video en reproducción. Se removió completamente esta superposición en reproducción activa; la señal de pausa ahora solo se despliega cuando el reproductor se encuentra efectivamente detenido.
+    2. En `TvPlayer.tsx`, durante la carga con `loadVideoById`, YouTube puede emitir transitoriamente un estado de pausa inicial que dejaba `isPaused` congelado en `true` si el evento de reproducción tardaba en dispararse. Se incorporó una verificación continua en el ticker de 500ms que, ante cualquier avance del contador de tiempo (`Math.abs(c - lastTime) > 0.05 && c > 0`), confirma la reproducción activa y desactiva el estado de pausa.
+    3. En `TvView.tsx`, se ejecuta desenfoque forzado (`blur()`) del elemento activo al cargar o cambiar de canción para evitar focos residuales en la interfaz.
+
+### 🚀 [ESPECIFICACIÓN / FEATURE]
+- **Tema Visual Azul por Defecto en la Interfaz de Clientes (`GuestView.tsx`, `GuestHeader.tsx`):**
+  - Se estableció el tema **"Azul"** (`blue`) como la apariencia predeterminada para todos los clientes e invitados que entran a realizar pedidos en la Rockola (`localStorage.getItem('guest_theme') || 'blue'`).
+  - Se actualizó el valor de respaldo en `GuestHeader.tsx` a `currentTheme = 'blue'`, ofreciendo una experiencia moderna, elegante y coherente desde el primer ingreso.
+
+---
+
 ## [1.49.23] - 2026-10-15
 
 ### 🚀 [ESPECIFICACIÓN / FEATURE]

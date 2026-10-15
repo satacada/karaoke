@@ -14,7 +14,7 @@ export const GuestView: FC<{ roomCode?: string; onSwitchToHost?: () => void }> =
   const [filter, setFilter] = useState<SearchFilterType>('all'); const [results, setResults] = useState<SearchResultItem[]>([]); const [isSearching, setIsSearching] = useState(false); const [toast, setToast] = useState<string | null>(null); const [geoBlockedDist, setGeoBlockedDist] = useState<number | undefined>();
   const [songToCancel, setSongToCancel] = useState<QueueItem | null>(null); const [songToReplace, setSongToReplace] = useState<QueueItem | null>(null); const [songToConfirm, setSongToConfirm] = useState<SearchResultItem | null>(null); const [pendingVipItem, setPendingVipItem] = useState<{ item: SearchResultItem; dedication: string | null } | null>(null);
   const [lastReqTime, setLastReqTime] = useState(0); const isSwappingRef = useRef(false);
-  const [theme, setTheme] = useState<'dark' | 'blue' | 'neon' | 'light'>(() => (localStorage.getItem('guest_theme') as 'dark' | 'blue' | 'neon' | 'light') || 'dark'); const [fontSize, setFontSize] = useState<'normal' | 'large' | 'xl'>(() => (localStorage.getItem('guest_font_size') as 'normal' | 'large' | 'xl') || 'normal');
+  const [theme, setTheme] = useState<'dark' | 'blue' | 'neon' | 'light'>(() => (localStorage.getItem('guest_theme') as 'dark' | 'blue' | 'neon' | 'light') || 'blue'); const [fontSize, setFontSize] = useState<'normal' | 'large' | 'xl'>(() => (localStorage.getItem('guest_font_size') as 'normal' | 'large' | 'xl') || 'normal');
 
   const { session, status: presenceStatus, saveSession, verifyPresence } = useGuestPresence();
   const showToast = useCallback((msg: string) => { setToast(msg); setTimeout(() => setToast(null), 3000); }, []);
@@ -79,10 +79,7 @@ export const GuestView: FC<{ roomCode?: string; onSwitchToHost?: () => void }> =
     if (isVip) setPendingVipItem({ item, dedication }); else executeAddSong(item, dedication, false);
   };
 
-  const handleTabChange = (tab: 'search' | 'my-turn' | 'party-queue') => {
-    setActiveTab(tab);
-    if (room && (tab === 'my-turn' || tab === 'party-queue')) refreshQueue(room.id);
-  };
+  const handleTabChange = (tab: 'search' | 'my-turn' | 'party-queue') => { setActiveTab(tab); if (room && (tab === 'my-turn' || tab === 'party-queue')) refreshQueue(room.id); };
 
   return (
     <div className={`theme-${theme} font-scale-${fontSize} min-h-screen bg-zinc-950 text-zinc-100 flex flex-col w-full max-w-md mx-auto relative pb-16 overflow-x-hidden transition-colors duration-200`}>
