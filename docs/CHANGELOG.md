@@ -4,6 +4,20 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.49.27] - 2026-10-15
+
+### 🚀 [ESPECIFICACIÓN / FEATURE]
+- **Eliminación del Botón Amarillo de Confirmación Asumida y Apertura Obligatoria de Mercado Pago (`GuestMercadoPagoModal.tsx`):**
+  - **Causa Raíz Atendida:** Existía un botón inferior amarillo ("Confirmar Pago de $500 / Ya transferí") que permitía a cualquier usuario declarar que había pagado sin haber abierto Mercado Pago ni haber transferido dinero.
+  - **Regla Estricta Implementada:**
+    1. **Eliminación Total del Botón Amarillo:** No se asume ningún pago ficticio.
+    2. **Acción Única Directa por Medio de Pago:**
+       - En Mercado Pago: El botón único es **`Pagar $X y Abrir Mercado Pago ⚡`**, el cual copia el Alias oficial (`david.taboa`) e invoca inmediatamente la aplicación de Mercado Pago en el celular del cliente vía Intent nativo / esquema de pago.
+       - En Transferencia: El botón es **`Copiar Alias y Transferir $X ⚡`** para transferir desde MODO, Cuenta DNI, Ualá o bancos.
+       - En Barra: El botón es **`Abonar $X en Barra al Mozo/DJ 💵`**, transparentando el pago físico en el local.
+
+---
+
 ## [1.49.26] - 2026-10-15
 
 ### 🐛 [CORRECCIÓN / FIX]

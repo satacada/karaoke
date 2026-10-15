@@ -1,5 +1,5 @@
 import { useState, type FC } from 'react';
-import { Zap, Copy, Check, ExternalLink, X, ShieldCheck, Smartphone, Building2, Banknote } from 'lucide-react';
+import { Zap, Copy, Check, X, Smartphone, Building2, Banknote } from 'lucide-react';
 import { MERCADO_PAGO_ALIAS, VIP_PRICE_ARS } from '../../utils/deviceId';
 
 interface GuestMercadoPagoModalProps {
@@ -22,11 +22,15 @@ export const GuestMercadoPagoModal: FC<GuestMercadoPagoModalProps> = ({
     setCopied(true); setTimeout(() => setCopied(false), 2500);
   };
 
-  const handleOpenMpApp = () => {
+  const handlePayWithMp = () => {
+    try { navigator.clipboard?.writeText(MERCADO_PAGO_ALIAS); } catch {}
     const isAndroid = /android/i.test(navigator.userAgent || '');
-    window.location.href = isAndroid
-      ? 'intent://#Intent;package=com.mercadopago.wallet;scheme=mercadopago;end;'
-      : 'mercadopago://';
+    if (isAndroid) {
+      window.location.href = 'intent://home#Intent;scheme=mercadopago;package=com.mercadopago.wallet;end;';
+    } else {
+      window.location.href = 'mercadopago://home';
+    }
+    onConfirmPayment();
   };
 
   return (
@@ -35,7 +39,7 @@ export const GuestMercadoPagoModal: FC<GuestMercadoPagoModalProps> = ({
         <div className="flex items-center justify-between pb-2 border-b border-zinc-800">
           <div className="flex items-center gap-2">
             <Zap className="w-5 h-5 text-amber-400 fill-amber-400" />
-            <h3 className="text-sm font-black text-amber-300 uppercase tracking-wider">Prioridad & Medios de Pago</h3>
+            <h3 className="text-sm font-black text-amber-300 uppercase tracking-wider">Abonar Prioridad</h3>
           </div>
           <button onClick={onClose} className="p-1 text-zinc-400 hover:text-white rounded-lg"><X className="w-5 h-5" /></button>
         </div>
@@ -59,42 +63,54 @@ export const GuestMercadoPagoModal: FC<GuestMercadoPagoModalProps> = ({
         </div>
 
         {method === 'mp' && (
-          <div className="space-y-2">
-            <button type="button" onClick={handleOpenMpApp} className="w-full py-2.5 rounded-2xl bg-sky-500 hover:bg-sky-400 text-zinc-950 font-black text-xs flex items-center justify-center gap-2 shadow-lg shadow-sky-950/50 active:scale-95 transition-all">
-              <ExternalLink className="w-4 h-4" /><span>Abrir App Mercado Pago</span>
-            </button>
+          <div className="space-y-2.5 pt-1">
             <div className="flex items-center justify-between bg-zinc-950 border border-zinc-800 rounded-2xl p-2">
-              <span className="font-mono text-[11px] font-bold text-sky-400 select-all">{MERCADO_PAGO_ALIAS}</span>
-              <button type="button" onClick={handleCopy} className={`px-2.5 py-1 rounded-xl text-[10px] font-bold flex items-center gap-1 ${copied ? 'bg-emerald-500 text-zinc-950' : 'bg-zinc-800 text-zinc-200'}`}>
+              <div className="min-w-0">
+                <span className="text-[9px] text-zinc-400 block font-bold">Alias oficial MP:</span>
+                <span className="font-mono text-xs font-bold text-sky-400 select-all truncate block">{MERCADO_PAGO_ALIAS}</span>
+              </div>
+              <button type="button" onClick={handleCopy} className={`px-2.5 py-1 rounded-xl text-[10px] font-bold flex items-center gap-1 shrink-0 ${copied ? 'bg-emerald-500 text-zinc-950' : 'bg-zinc-800 text-zinc-200'}`}>
                 {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}<span>{copied ? 'Listo' : 'Copiar'}</span>
               </button>
             </div>
+            <button type="button" onClick={handlePayWithMp} className="w-full py-3 rounded-2xl bg-sky-500 hover:bg-sky-400 text-zinc-950 font-black text-xs flex items-center justify-center gap-2 shadow-lg shadow-sky-950/50 active:scale-95 transition-all">
+              <Smartphone className="w-4 h-4 fill-zinc-950" />
+              <span>Pagar ${priceArs} y Abrir Mercado Pago ⚡</span>
+            </button>
           </div>
         )}
 
         {method === 'transfer' && (
-          <div className="space-y-2">
+          <div className="space-y-2.5 pt-1">
             <p className="text-[11px] text-zinc-300 leading-tight">Transfiere desde <b>MODO, Cuenta DNI, Ualá</b> o cualquier app bancaria:</p>
             <div className="flex items-center justify-between bg-zinc-950 border border-zinc-800 rounded-2xl p-2">
-              <span className="font-mono text-[11px] font-bold text-purple-400 select-all">{MERCADO_PAGO_ALIAS}</span>
-              <button type="button" onClick={handleCopy} className={`px-2.5 py-1 rounded-xl text-[10px] font-bold flex items-center gap-1 ${copied ? 'bg-emerald-500 text-zinc-950' : 'bg-zinc-800 text-zinc-200'}`}>
+              <div className="min-w-0">
+                <span className="text-[9px] text-zinc-400 block font-bold">Alias CBU/CVU:</span>
+                <span className="font-mono text-xs font-bold text-purple-400 select-all truncate block">{MERCADO_PAGO_ALIAS}</span>
+              </div>
+              <button type="button" onClick={handleCopy} className={`px-2.5 py-1 rounded-xl text-[10px] font-bold flex items-center gap-1 shrink-0 ${copied ? 'bg-emerald-500 text-zinc-950' : 'bg-zinc-800 text-zinc-200'}`}>
                 {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}<span>{copied ? 'Listo' : 'Copiar'}</span>
               </button>
             </div>
+            <button type="button" onClick={() => { handleCopy(); onConfirmPayment(); }} className="w-full py-3 rounded-2xl bg-purple-600 hover:bg-purple-500 text-white font-black text-xs flex items-center justify-center gap-2 shadow-lg active:scale-95 transition-all">
+              <Building2 className="w-4 h-4" />
+              <span>Copiar Alias y Transferir ${priceArs} ⚡</span>
+            </button>
           </div>
         )}
 
         {method === 'cash' && (
-          <div className="p-3 bg-zinc-950 rounded-2xl border border-emerald-500/30 text-center space-y-1">
-            <p className="text-xs font-bold text-emerald-400">Pago en Efectivo / Barra</p>
-            <p className="text-[11px] text-zinc-300">Abona <b>${priceArs} ARS</b> en la barra o al mozo/DJ para activar tu turno prioritario.</p>
+          <div className="space-y-2.5 pt-1">
+            <div className="p-3 bg-zinc-950 rounded-2xl border border-emerald-500/30 text-center space-y-1">
+              <p className="text-xs font-bold text-emerald-400">Pago en Efectivo / Barra</p>
+              <p className="text-[11px] text-zinc-300">Abona <b>${priceArs} ARS</b> en la barra o al mozo/DJ para activar tu turno prioritario.</p>
+            </div>
+            <button type="button" onClick={onConfirmPayment} className="w-full py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs flex items-center justify-center gap-2 shadow-lg active:scale-95 transition-all">
+              <Banknote className="w-4 h-4" />
+              <span>Abonar ${priceArs} en Barra al Mozo/DJ 💵</span>
+            </button>
           </div>
         )}
-
-        <button type="button" onClick={onConfirmPayment} className="w-full py-3 rounded-2xl bg-gradient-to-r from-amber-400 to-amber-500 hover:brightness-110 text-zinc-950 font-black text-xs shadow-lg shadow-amber-500/20 flex items-center justify-center gap-2 active:scale-95 transition-all">
-          <ShieldCheck className="w-4 h-4" />
-          <span>{method === 'cash' ? `Confirmar Pago en Barra ($${priceArs}) ⚡` : `Confirmar Pago de $${priceArs} ⚡`}</span>
-        </button>
       </div>
     </div>
   );
