@@ -30,7 +30,12 @@ export const TvDedicationBanner: FC<TvDedicationBannerProps> = ({ currentSong })
     setRequestedBy(currentSong.requested_by || 'Un invitado');
     setIsVisible(true);
 
+    const timer = setTimeout(() => {
+      setIsVisible(false);
+    }, 20000);
+
     return () => {
+      clearTimeout(timer);
       setIsVisible(false);
     };
   }, [currentSong?.id]);

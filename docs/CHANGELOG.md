@@ -4,6 +4,17 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.49.19] - 2026-10-15
+
+### 🚀 [ESPECIFICACIÓN / FEATURE]
+- **Desaparición Automática de Dedicatoria a los 20 Segundos (`TvDedicationBanner.tsx`):**
+  - Al iniciar una canción solicitada por un invitado con dedicatoria, el banner flotante se muestra durante exactamente 20 segundos y luego se oculta automáticamente de la pantalla de reproducción para no obstruir el contenido del video.
+- **Visualización Completa de Iconos de Reacciones sin Texto (`TvFloatingQr.tsx`):**
+  - En la parte superior del código QR se presentan individualmente todos los iconos de reacciones disponibles (`👏`, `🔥`, `❤️`, `🍻`) acompañados de su contador numérico respectivo en tiempo real.
+  - Se eliminaron por completo palabras o etiquetas de texto (como "reacciones"), manteniendo un diseño 100% numérico, limpio y minimalista.
+
+---
+
 ## [1.49.18] - 2026-10-14
 
 ### 🚀 [ESPECIFICACIÓN / FEATURE]

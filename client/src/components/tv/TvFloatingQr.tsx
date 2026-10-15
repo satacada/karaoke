@@ -1,6 +1,6 @@
 import { useState, useEffect, type FC } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
-import { WifiOff, Monitor, Heart } from 'lucide-react';
+import { WifiOff, Monitor } from 'lucide-react';
 import { supabase } from '../../lib/supabaseClient';
 import { getHostUrl } from '../../utils/appUrl';
 
@@ -12,26 +12,39 @@ interface TvFloatingQrProps {
   onOpenSettings?: () => void;
 }
 
+const REACTION_ICONS = ['👏', '🔥', '❤️', '🍻'] as const;
+
 export const TvFloatingQr: FC<TvFloatingQrProps> = ({ roomCode, joinUrl, hostUrl, onSwitchToHost, onOpenSettings }) => {
   const [qrMode, setQrMode] = useState<'guest' | 'host'>('guest');
-  const [reactionCount, setReactionCount] = useState<number>(0);
+  const [reactionCounts, setReactionCounts] = useState<Record<string, number>>({
+    '👏': 0,
+    '🔥': 0,
+    '❤️': 0,
+    '🍻': 0,
+  });
   const activeUrl = qrMode === 'guest' ? joinUrl : (hostUrl || getHostUrl(roomCode));
 
   useEffect(() => {
     const ch = supabase.channel(`room_reactions_${roomCode}`)
       .on('broadcast', { event: 'reaction' }, ({ payload }) => {
         if (!payload?.emoji) return;
-        setReactionCount((prev) => prev + 1);
+        setReactionCounts((prev) => ({
+          ...prev,
+          [payload.emoji]: (prev[payload.emoji] || 0) + 1,
+        }));
       }).subscribe();
     return () => { supabase.removeChannel(ch); };
   }, [roomCode]);
 
   return (
     <div className="relative flex flex-col items-center gap-1.5 pointer-events-auto max-w-[160px] shrink-0">
-      <div className="w-full flex items-center justify-center gap-1.5 py-1 px-2.5 rounded-full bg-zinc-950/90 border border-pink-500/50 shadow-[0_0_12px_rgba(236,72,153,0.3)] backdrop-blur-md text-white">
-        <Heart className="w-3.5 h-3.5 text-pink-500 fill-pink-500 animate-pulse" />
-        <span className="text-[11px] font-black text-white">{reactionCount}</span>
-        <span className="text-[9px] font-bold text-pink-300 uppercase tracking-wider">Reacciones</span>
+      <div className="w-full flex items-center justify-around px-2 py-1 rounded-xl bg-zinc-950/90 border border-purple-500/40 shadow-lg backdrop-blur-md">
+        {REACTION_ICONS.map((emoji) => (
+          <div key={emoji} className="flex items-center gap-1">
+            <span className="text-sm select-none">{emoji}</span>
+            <span className="text-[11px] font-mono font-black text-white">{reactionCounts[emoji] || 0}</span>
+          </div>
+        ))}
       </div>
       <div aria-label="Código QR interactivo de Rockola" className="flex flex-col items-center bg-zinc-950/85 backdrop-blur-md border border-purple-500/40 shadow-xl rounded-2xl p-2 transition-all duration-300 w-full">
         <div className="flex items-center gap-1 w-full mb-1">
