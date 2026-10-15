@@ -4,6 +4,20 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.49.22] - 2026-10-15
+
+### 🚀 [ESPECIFICACIÓN / FEATURE]
+- **Instalación PWA Directa para Administrador y Clientes (`usePwaInstall.ts`, `HostHeader.tsx`, `GuestHeader.tsx`, `manifest.json`, `sw.js`):**
+  - Se habilitó la instalación de la aplicación como PWA / Web APK tanto en el panel del Administrador como en la interfaz móvil del Cliente.
+  - El hook `usePwaInstall` captura el evento `beforeinstallprompt` y presenta botones discretos e intuitivos ("📲 Instalar") en la barra de control para que cualquier usuario o DJ pueda anclar la aplicación en la pantalla de inicio de su teléfono.
+  - Se implementó el Service Worker (`public/sw.js`) con estrategia network-first para activos propios, permitiendo la instalación completa en navegadores móviles compatibles.
+
+- **Actualización Automática Desatendida Sin Consultar (`autoUpdateService.ts`, `public/version.json`, `App.tsx`):**
+  - Cuando se publica una nueva versión en el servidor o Vercel, la aplicación la detecta en segundo plano (verificación periódica cada 60s, al abrir la app o al retomar el foco mediante `visibilitychange`).
+  - **Zero Diálogos ni Consultas:** La actualización se aplica inmediatamente de forma automática y transparente (`window.location.reload()` y activación forzada de Service Worker mediante `skipWaiting()` y `clients.claim()`), garantizando que tanto el Administrador como los Clientes siempre utilicen la versión más reciente sin interrupciones ni molestias.
+
+---
+
 ## [1.49.21] - 2026-10-15
 
 ### 🚀 [ESPECIFICACIÓN / FEATURE]

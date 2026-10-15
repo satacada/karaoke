@@ -5,6 +5,7 @@ import { HostView } from './components/host/HostView';
 import { GuestView } from './components/guest/GuestView';
 import { HostQrValidationView } from './components/host/HostQrValidationView';
 import { isTvDevice } from './utils/deviceDetector';
+import { initAutoUpdate } from './services/autoUpdateService';
 import { Sliders, Music, QrCode } from 'lucide-react';
 
 export function getInitialMode(isTv: boolean): 'tv' | 'host' | 'guest' {
@@ -43,12 +44,14 @@ export const App: FC = () => {
   }, []);
 
   useEffect(() => {
+    const unbindAutoUpdate = initAutoUpdate();
     const p = new URLSearchParams(window.location.search);
     const qRoom = p.get('room');
     if (qRoom) {
       const r = qRoom.toUpperCase(); setRoomCode(r);
       try { localStorage.setItem('tv_paired_room', r); } catch {}
     }
+    return () => { unbindAutoUpdate(); };
   }, []);
 
   const handleSelectMode = (mode: 'tv' | 'host' | 'guest') => { setCurrentMode(mode); try { sessionStorage.setItem('rockola_app_mode', mode); } catch {} };

@@ -13,11 +13,6 @@
     <title>🎶 Rockola Digital Live</title>
     <script>
       try {
-        if ('serviceWorker' in navigator) {
-          navigator.serviceWorker.getRegistrations().then(function(regs) {
-            for (var i = 0; i < regs.length; i++) regs[i].unregister();
-          });
-        }
         localStorage.removeItem('rockola_hide_mode_nav');
         var isMob = /mobile|iphone|ipod|ipad|android.*mobile/i.test(navigator.userAgent);
         if (isMob) {

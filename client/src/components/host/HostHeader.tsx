@@ -1,27 +1,20 @@
 import type { FC } from 'react';
-import { RotateCcw, Users, Settings, Megaphone, Lock, LockOpen, Disc3, Sun, Moon, Sparkles, Droplets, Clock, Music, QrCode, Crown, Type, SlidersHorizontal, ShieldCheck, Terminal } from 'lucide-react';
-
+import { RotateCcw, Users, Settings, Megaphone, Lock, LockOpen, Disc3, Sun, Moon, Sparkles, Droplets, Clock, Music, QrCode, Crown, Type, SlidersHorizontal, ShieldCheck, Terminal, Download } from 'lucide-react';
 import { APP_VERSION } from '../../version';
+import { usePwaInstall } from '../../hooks/usePwaInstall';
 
 interface HostHeaderProps {
-  roomCode: string; zoneName?: string; isOwner?: boolean; isSuperAdmin?: boolean;
-  isQueueLocked?: boolean; isAutoDjActive?: boolean; userName?: string | null; ownerEmail?: string | null;
-  currentTheme?: 'dark' | 'blue' | 'neon' | 'light'; onToggleTheme?: () => void;
-  currentFontSize?: 'normal' | 'large' | 'xl'; onToggleFontSize?: () => void; onLogout?: () => void;
-  onOpenGuests: () => void; onOpenReset: () => void; onOpenSettings: () => void;
-  onOpenSuperAdmin?: () => void; onOpenBanners?: () => void; onOpenAutoDj?: () => void;
-  onToggleQueueLock?: () => void; onOpenMasterHub?: () => void; onSwitchToTv?: () => void;
-  onSwitchToGuest?: () => void; onOpenRental?: () => void; isRentalActive?: boolean;
-  onOpenDiagnostics?: () => void;
+  roomCode: string; zoneName?: string; isOwner?: boolean; isSuperAdmin?: boolean; isQueueLocked?: boolean; isAutoDjActive?: boolean; userName?: string | null; ownerEmail?: string | null;
+  currentTheme?: 'dark' | 'blue' | 'neon' | 'light'; onToggleTheme?: () => void; currentFontSize?: 'normal' | 'large' | 'xl'; onToggleFontSize?: () => void; onLogout?: () => void;
+  onOpenGuests: () => void; onOpenReset: () => void; onOpenSettings: () => void; onOpenSuperAdmin?: () => void; onOpenBanners?: () => void; onOpenAutoDj?: () => void;
+  onToggleQueueLock?: () => void; onOpenMasterHub?: () => void; onSwitchToTv?: () => void; onSwitchToGuest?: () => void; onOpenRental?: () => void; isRentalActive?: boolean; onOpenDiagnostics?: () => void;
 }
 
 export const HostHeader: FC<HostHeaderProps> = ({
-  roomCode, zoneName, isOwner, isSuperAdmin, isQueueLocked, isAutoDjActive = false,
-  userName, ownerEmail, currentTheme = 'dark', onToggleTheme, currentFontSize = 'normal', onToggleFontSize, onLogout,
-  onOpenGuests, onOpenReset, onOpenSettings, onOpenSuperAdmin, onOpenBanners,
-  onOpenAutoDj, onToggleQueueLock, onOpenMasterHub, onSwitchToTv, onSwitchToGuest, onOpenRental, isRentalActive = false,
-  onOpenDiagnostics,
+  roomCode, zoneName, isOwner, isSuperAdmin, isQueueLocked, isAutoDjActive = false, userName, ownerEmail, currentTheme = 'dark', onToggleTheme, currentFontSize = 'normal', onToggleFontSize, onLogout,
+  onOpenGuests, onOpenReset, onOpenSettings, onOpenSuperAdmin, onOpenBanners, onOpenAutoDj, onToggleQueueLock, onOpenMasterHub, onSwitchToTv, onSwitchToGuest, onOpenRental, isRentalActive = false, onOpenDiagnostics,
 }) => {
+  const { canInstall, isInstalled, installApp } = usePwaInstall();
   return (
     <header className="py-2 border-b border-zinc-800/80 mb-3 space-y-2">
       {userName && (
@@ -50,6 +43,11 @@ export const HostHeader: FC<HostHeaderProps> = ({
               <span className="inline-flex items-center gap-0.5 text-[9px] bg-purple-900/60 text-purple-300 border border-purple-700/50 px-1.5 py-0.2 rounded-full font-bold">
                 <Crown className="w-2.5 h-2.5 text-amber-400" /> Dueño
               </span>
+            )}
+            {canInstall && !isInstalled && (
+              <button type="button" onClick={installApp} title="Instalar App en tu celular" className="inline-flex items-center gap-0.5 text-[9px] bg-pink-900/60 text-pink-300 border border-pink-700/50 px-1.5 py-0.2 rounded-full font-bold hover:bg-pink-800 transition-colors cursor-pointer">
+                <Download className="w-2.5 h-2.5 text-pink-400" /> Instalar
+              </button>
             )}
           </div>
           <h1 className="text-lg font-black text-white font-mono flex items-center gap-1.5 truncate">

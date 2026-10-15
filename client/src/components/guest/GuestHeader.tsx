@@ -1,20 +1,17 @@
 import type { FC } from 'react';
-import { Search, Clock, ListMusic, UserCheck, Sun, Moon, Sparkles, Droplets, Type, Sliders } from 'lucide-react';
+import { Search, Clock, ListMusic, UserCheck, Sun, Moon, Sparkles, Droplets, Type, Sliders, Download } from 'lucide-react';
+import { usePwaInstall } from '../../hooks/usePwaInstall';
 
 interface GuestHeaderProps {
-  roomCode: string; guestName: string; activeTab: 'search' | 'my-turn' | 'party-queue';
-  onSelectTab: (tab: 'search' | 'my-turn' | 'party-queue') => void;
+  roomCode: string; guestName: string; activeTab: 'search' | 'my-turn' | 'party-queue'; onSelectTab: (tab: 'search' | 'my-turn' | 'party-queue') => void;
   mySongsCount: number; isSingingNow: boolean; isWithinGracePeriod: boolean; remainingGraceMinutes: number;
-  currentTheme?: 'dark' | 'blue' | 'light' | 'neon'; onToggleTheme?: () => void;
-  currentFontSize?: 'normal' | 'large' | 'xl'; onToggleFontSize?: () => void;
-  onSwitchToHost?: () => void;
+  currentTheme?: 'dark' | 'blue' | 'light' | 'neon'; onToggleTheme?: () => void; currentFontSize?: 'normal' | 'large' | 'xl'; onToggleFontSize?: () => void; onSwitchToHost?: () => void;
 }
 
 export const GuestHeader: FC<GuestHeaderProps> = ({
-  roomCode, guestName, activeTab, onSelectTab, mySongsCount, isSingingNow,
-  isWithinGracePeriod, remainingGraceMinutes, currentTheme = 'dark', onToggleTheme,
-  currentFontSize = 'normal', onToggleFontSize, onSwitchToHost,
+  roomCode, guestName, activeTab, onSelectTab, mySongsCount, isSingingNow, isWithinGracePeriod, remainingGraceMinutes, currentTheme = 'dark', onToggleTheme, currentFontSize = 'normal', onToggleFontSize, onSwitchToHost,
 }) => {
+  const { canInstall, isInstalled, installApp } = usePwaInstall();
   return (
     <header className="sticky top-0 z-40 bg-zinc-950/90 backdrop-blur-md border-b border-zinc-800/80 px-4 pt-3 pb-2 space-y-2.5">
       <div className="flex items-center justify-between">
@@ -41,6 +38,11 @@ export const GuestHeader: FC<GuestHeaderProps> = ({
         </div>
 
         <div className="flex items-center gap-1.5">
+          {canInstall && !isInstalled && (
+            <button type="button" onClick={installApp} className="flex items-center gap-1 px-2 py-1 rounded-xl border border-emerald-500/40 bg-emerald-950/30 text-emerald-300 text-xs hover:bg-emerald-900/40 transition-all active:scale-95 font-bold shadow-sm" title="Instalar App en tu celular" aria-label="Instalar App">
+              <Download className="w-3.5 h-3.5 text-emerald-400" /><span className="text-[10px] font-bold">Instalar</span>
+            </button>
+          )}
           {onSwitchToHost && (
             <button type="button" onClick={onSwitchToHost} className="flex items-center gap-1 px-2 py-1 rounded-xl border border-purple-500/40 bg-purple-950/30 text-purple-300 text-xs hover:bg-purple-900/40 transition-all active:scale-95 font-bold shadow-sm" title="Volver a Consola de Administrador" aria-label="Volver a Administrador">
               <Sliders className="w-3.5 h-3.5 text-purple-400" /><span className="text-[10px] font-bold">Admin</span>
