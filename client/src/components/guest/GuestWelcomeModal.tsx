@@ -1,5 +1,6 @@
 import { useState, type FC, type FormEvent } from 'react';
 import { Disc3, Sparkles, MapPin } from 'lucide-react';
+import { APP_VERSION } from '../../version';
 
 interface GuestWelcomeModalProps {
   isOpen: boolean;
@@ -80,6 +81,7 @@ export const GuestWelcomeModal: FC<GuestWelcomeModalProps> = ({ isOpen, roomCode
             <Sparkles className="w-4 h-4 text-zinc-950 fill-zinc-950" />
             <span>{isGettingLocation ? 'Conectando...' : '¡Empezar a pedir temas!'}</span>
           </button>
+          <p className="text-[10px] text-zinc-500 font-mono mt-2">Rockola Digital {APP_VERSION}</p>
         </form>
       </div>
     </div>

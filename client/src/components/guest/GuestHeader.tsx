@@ -1,6 +1,7 @@
 import type { FC } from 'react';
 import { Search, Clock, ListMusic, UserCheck, Sun, Moon, Sparkles, Droplets, Type, Sliders, Download } from 'lucide-react';
 import { usePwaInstall } from '../../hooks/usePwaInstall';
+import { APP_VERSION } from '../../version';
 
 interface GuestHeaderProps {
   roomCode: string; guestName: string; activeTab: 'search' | 'my-turn' | 'party-queue'; onSelectTab: (tab: 'search' | 'my-turn' | 'party-queue') => void;
@@ -22,9 +23,8 @@ export const GuestHeader: FC<GuestHeaderProps> = ({
           <div>
             <div className="flex items-center gap-1.5">
               <span className="text-sm font-bold text-white leading-tight">{guestName}</span>
-              <span className="text-[10px] bg-zinc-800 text-zinc-400 font-mono px-1.5 py-0.5 rounded">
-                {roomCode}
-              </span>
+              <span className="text-[10px] bg-zinc-800 text-zinc-400 font-mono px-1.5 py-0.5 rounded">{roomCode}</span>
+              <span className="text-[9px] bg-zinc-900 border border-zinc-800 text-zinc-400 font-mono px-1.5 py-0.2 rounded font-bold">{APP_VERSION}</span>
             </div>
             <div className="flex items-center gap-1 text-[10px] text-emerald-400">
               <UserCheck className="w-3 h-3" />

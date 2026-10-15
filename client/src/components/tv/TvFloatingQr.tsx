@@ -3,6 +3,7 @@ import { QRCodeSVG } from 'qrcode.react';
 import { WifiOff, Monitor } from 'lucide-react';
 import { supabase } from '../../lib/supabaseClient';
 import { getHostUrl } from '../../utils/appUrl';
+import { APP_VERSION } from '../../version';
 
 interface TvFloatingQrProps {
   roomCode: string;
@@ -70,14 +71,18 @@ export const TvFloatingQr: FC<TvFloatingQrProps> = ({ roomCode, joinUrl, hostUrl
         </div>
 
         {qrMode === 'guest' ? (
-          <footer className="mt-1 flex items-center justify-center gap-1 px-1.5 py-0.5 rounded-full bg-black/40 border-0 text-[8px] text-zinc-300/80 font-bold leading-none w-full drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
-            <WifiOff className="w-2.5 h-2.5 text-amber-400/90 shrink-0" /><span>Datos 4G/5G</span>
+          <footer className="mt-1 flex items-center justify-between px-2 py-0.5 rounded-full bg-black/40 border-0 text-[8px] text-zinc-300/80 font-bold leading-none w-full drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
+            <span className="flex items-center gap-1"><WifiOff className="w-2.5 h-2.5 text-amber-400/90 shrink-0" /><span>4G/5G</span></span>
+            <span className="font-mono text-[8px] text-zinc-400 font-bold">{APP_VERSION}</span>
           </footer>
         ) : (
           onSwitchToHost && (
-            <button type="button" onClick={onSwitchToHost} className="mt-1 flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-purple-600/90 hover:bg-purple-500 text-white font-bold text-[clamp(8px,0.65vw,10px)] transition-all shadow-md cursor-pointer">
-              <Monitor className="w-3 h-3" /><span>Abrir en TV</span>
-            </button>
+            <div className="mt-1 flex flex-col items-center gap-0.5 w-full">
+              <button type="button" onClick={onSwitchToHost} className="w-full flex items-center justify-center gap-1.5 px-2.5 py-1 rounded-xl bg-purple-600/90 hover:bg-purple-500 text-white font-bold text-[clamp(8px,0.65vw,10px)] transition-all shadow-md cursor-pointer">
+                <Monitor className="w-3 h-3" /><span>Abrir en TV</span>
+              </button>
+              <span className="font-mono text-[8px] text-zinc-400 font-bold">{APP_VERSION}</span>
+            </div>
           )
         )}
       </div>

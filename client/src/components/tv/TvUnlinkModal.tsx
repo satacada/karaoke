@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, type FC } from 'react';
 import { X, Tv, QrCode, LogOut, ArrowLeft, Smartphone, Mic, MicOff } from 'lucide-react';
 import { QRCodeSVG } from 'qrcode.react';
 import { getHostUrl } from '../../utils/appUrl';
+import { APP_VERSION } from '../../version';
 
 interface TvUnlinkModalProps {
   isOpen: boolean; roomCode: string; roomName?: string;
@@ -70,7 +71,7 @@ export const TvUnlinkModal: FC<TvUnlinkModalProps> = ({
               </div>
               <span className="text-xs text-rose-400">🚪</span>
             </button>
-            <p className="text-[10px] text-zinc-500 text-center font-mono mt-0.5">Sala TV: <b className="text-pink-400">{roomCode}</b></p>
+            <p className="text-[10px] text-zinc-500 text-center font-mono mt-0.5">Sala TV: <b className="text-pink-400">{roomCode}</b> • <span className="text-zinc-400">{APP_VERSION}</span></p>
           </div>
         ) : (
           <div className="flex flex-col items-center gap-3 py-1">
