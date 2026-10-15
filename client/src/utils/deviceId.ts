@@ -1,4 +1,4 @@
-﻿// ==============================================================================
+// ==============================================================================
 // UTILIDAD: IDENTIFICADOR ÚNICO DE DISPOSITIVO (DEVICE ID) Y CONTROL DE VIP
 // Archivo: client/src/utils/deviceId.ts
 // Regla Clean-by-Design: <= 120 líneas
@@ -9,7 +9,7 @@ import { parseSongMeta } from './songMeta';
 
 const DEVICE_STORAGE_KEY = 'rockola_device_id';
 export const MAX_CONSECUTIVE_VIP_PER_DEVICE = 3;
-export const VIP_PRICE_ARS = 500;
+export const VIP_PRICE_ARS = 100;
 export const MERCADO_PAGO_ALIAS = 'david.taboa';
 
 /**

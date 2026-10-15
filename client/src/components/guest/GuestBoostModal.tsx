@@ -10,7 +10,7 @@ interface GuestBoostModalProps {
 export const GuestBoostModal: FC<GuestBoostModalProps> = ({
   isOpen, song, highestVipAmount, onProceedToPayment, onClose,
 }) => {
-  const minToBeat = highestVipAmount > 0 ? highestVipAmount + 100 : 500;
+  const minToBeat = highestVipAmount > 0 ? highestVipAmount + 50 : 100;
   const [amount, setAmount] = useState(minToBeat);
 
   if (!isOpen || !song) return null;
@@ -37,7 +37,7 @@ export const GuestBoostModal: FC<GuestBoostModalProps> = ({
             <span className="text-amber-400 font-mono text-sm font-black">${amount} ARS</span>
           </label>
           <div className="grid grid-cols-4 gap-1.5">
-            {[500, 1000, 2000, minToBeat].filter((v, i, a) => a.indexOf(v) === i).map((opt) => (
+            {[100, 200, 500, minToBeat].filter((v, i, a) => a.indexOf(v) === i).map((opt) => (
               <button
                 key={opt}
                 type="button"

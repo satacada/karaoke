@@ -12,8 +12,8 @@ export const GuestSongConfirmModal: FC<GuestSongConfirmModalProps> = ({
   isOpen, song, guestName, canRequestVip = true, highestVipAmount = 0, onConfirm, onClose,
 }) => {
   const [dedication, setDedication] = useState(''); const [isVip, setIsVip] = useState(false);
-  const minToBeat = highestVipAmount > 0 ? highestVipAmount + 100 : 500;
-  const [vipAmount, setVipAmount] = useState(500);
+  const minToBeat = highestVipAmount > 0 ? highestVipAmount + 50 : 100;
+  const [vipAmount, setVipAmount] = useState(100);
 
   if (!isOpen || !song) return null;
   const validation = validateDedication(dedication);
@@ -54,7 +54,7 @@ export const GuestSongConfirmModal: FC<GuestSongConfirmModalProps> = ({
           {isVip && (
             <div className="space-y-1.5 p-2.5 bg-amber-500/10 border border-amber-500/30 rounded-2xl">
               <div className="flex justify-between items-center text-[11px] font-bold text-amber-300"><span>Aporte para Prioridad:</span><span className="font-mono text-xs text-amber-400 font-black">${vipAmount} ARS</span></div>
-              <div className="flex gap-1.5">{[500, 1000, 2000, minToBeat].filter((v, i, a) => a.indexOf(v) === i).map((opt) => (
+              <div className="flex gap-1.5">{[100, 200, 500, minToBeat].filter((v, i, a) => a.indexOf(v) === i).map((opt) => (
                 <button key={opt} type="button" onClick={() => setVipAmount(opt)} className={`flex-1 py-1 rounded-lg text-[10px] font-bold border transition-all ${vipAmount === opt ? 'bg-amber-400 text-zinc-950 border-amber-300 font-black' : 'bg-zinc-900 border-zinc-700 text-zinc-300'}`}>${opt}</button>
               ))}</div>
               <p className="text-[10px] text-amber-200/90">{vipAmount > highestVipAmount ? `⚡ Superas el mayor aporte ($${highestVipAmount}) y tocarás #1.` : `⚠️ Mayor aporte actual: $${highestVipAmount}. Para ser #1 debes superarlo.`}</p>
