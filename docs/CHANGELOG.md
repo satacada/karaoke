@@ -4,6 +4,27 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.49.26] - 2026-10-15
+
+### 🐛 [CORRECCIÓN / FIX]
+- **Eliminación Definitiva del Botón / Prompt de Pausa en el Centro de la Pantalla TV (`TvPlayer.tsx`, `TvNowPlayingHUD.tsx`):**
+  - **Causa Raíz Identificada:** En `TvPlayer.tsx`, existía un temporizador agresivo de 2500ms tras `onReady` que evaluaba si el estado del reproductor era diferente a 1. Debido al tiempo de bufferizado de videos en YouTube (estado 3 o -1), se activaba forzadamente `isAutoplayBlocked = true`, lo que proyectaba el modal `<TvAutoplayBlockedPrompt />` justo en el centro geométrico de la pantalla con el botón de reproducción/pausa. Aún peor: cuando el video arrancaba y el segundero avanzaba, el ticker de 500ms no reseteaba `isAutoplayBlocked`, manteniéndolo visible durante toda la canción (reportado en "Boys Don't Cry").
+  - **Corrección Aplicada:**
+    1. Se eliminó el timeout agresivo de 2.5s; ahora solo se activa si tras 8 segundos nunca ha arrancado (`!hasStartedRef.current`) y el estado es estrictamente no iniciado (`-1`).
+    2. El ticker de 500ms desactiva de inmediato `setIsAutoplayBlocked(false)` en cuanto el tiempo avanza (`c > 0`) o el estado es 1.
+    3. Al cargar una nueva canción (`loadVideoById`), se limpia inmediatamente `isAutoplayBlocked = false`.
+    4. En `TvNowPlayingHUD.tsx`, se retiró definitivamente el badge centrado `-top-8 left-1/2` que indicaba "PAUSADO" sobre la barra de progreso para erradicar cualquier elemento flotante sobre el video.
+
+### 🚀 [ESPECIFICACIÓN / FEATURE]
+- **Apertura Directa de App Nativa Mercado Pago y Múltiples Medios de Pago (`GuestMercadoPagoModal.tsx`):**
+  - **Apertura Nativa sin Navegador Web:** Se eliminó la redirección forzada por `setTimeout` hacia el explorador web (`https://www.mercadopago.com.ar`). La apertura ahora invoca directamente el Intent nativo de la app en Android (`intent://#Intent;package=com.mercadopago.wallet;scheme=mercadopago;end;`) y en iOS/otros (`mercadopago://`), asegurando que abra exclusivamente la app de Mercado Pago instalada en el dispositivo del cliente.
+  - **Selector de Medios de Pago Alternativos:**
+    1. 📱 **Mercado Pago (App):** Botón directo para invocar la app instalada + Alias oficial con copiado en un clic.
+    2. 🏦 **Transferencia Bancaria:** Instrucciones y Alias interoperable para transferir desde MODO, Cuenta DNI, Ualá o cualquier aplicación bancaria nacional.
+    3. 💵 **Efectivo en Barra:** Opción para pagar directamente en efectivo en barra o con el personal de sala/DJ, confirmando el pedido con registro de pago en el local.
+
+---
+
 ## [1.49.25] - 2026-10-15
 
 ### 🚀 [ESPECIFICACIÓN / FEATURE]

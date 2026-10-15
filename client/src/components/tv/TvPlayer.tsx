@@ -23,6 +23,7 @@ export const TvPlayer = forwardRef<TvPlayerRef, TvPlayerProps>(function TvPlayer
   const onEndedRef = useRef(onEnded); onEndedRef.current = onEnded; const onErrorRef = useRef(onError); onErrorRef.current = onError;
   const onPlayingRef = useRef(onPlayingStateChange); onPlayingRef.current = onPlayingStateChange; const onTimeUpdateRef = useRef(onTimeUpdate); onTimeUpdateRef.current = onTimeUpdate;
   const hasEndedRef = useRef<boolean>(false);
+  const hasStartedRef = useRef<boolean>(false);
   const [isAutoplayBlocked, setIsAutoplayBlocked] = useState(false);
 
   const togglePlayPause = useCallback(() => {
@@ -56,8 +57,9 @@ export const TvPlayer = forwardRef<TvPlayerRef, TvPlayerProps>(function TvPlayer
         const c = playerRef.current.getCurrentTime() || 0; const d = playerRef.current.getDuration() || 0;
         const st = playerRef.current.getPlayerState?.();
         onTimeUpdateRef.current?.(c, d);
-        if (st === 1 || (c > 0 && Math.abs(c - lastTime) > 0.05)) onPlayingRef.current?.(true);
-        else if (st === 2) onPlayingRef.current?.(false);
+        if (st === 1 || (c > 0 && Math.abs(c - lastTime) > 0.05)) {
+          hasStartedRef.current = true; setIsAutoplayBlocked(false); onPlayingRef.current?.(true);
+        } else if (st === 2) onPlayingRef.current?.(false);
         lastTime = c;
         if (d > 8 && c < d - 4 && hasEndedRef.current) hasEndedRef.current = false;
         if (d > 8 && c >= d - 1.8 && !hasEndedRef.current) { hasEndedRef.current = true; onEndedRef.current(); }
@@ -67,11 +69,10 @@ export const TvPlayer = forwardRef<TvPlayerRef, TvPlayerProps>(function TvPlayer
   }, []);
 
   useEffect(() => {
-    hasEndedRef.current = false;
+    hasEndedRef.current = false; setIsAutoplayBlocked(false);
     if (isReadyRef.current && playerRef.current) {
       currentVideoRef.current = videoId; logInfo('TV', 'tv', 'yt_load_video', `Cargando video: ${videoId}`);
-      playerRef.current.loadVideoById(videoId);
-      onPlayingRef.current?.(true);
+      playerRef.current.loadVideoById(videoId); onPlayingRef.current?.(true);
     }
   }, [videoId]);
 
@@ -89,12 +90,12 @@ export const TvPlayer = forwardRef<TvPlayerRef, TvPlayerProps>(function TvPlayer
             isReadyRef.current = true;
             try { evt.target.unloadModule?.('captions'); evt.target.setOption?.('captions', 'track', {}); } catch {}
             evt.target.playVideo(); logInfo('TV', 'tv', 'yt_ready', 'YouTube listo');
-            setTimeout(() => { if (isMounted && playerRef.current?.getPlayerState?.() !== 1) setIsAutoplayBlocked(true); }, 2500);
+            setTimeout(() => { if (isMounted && !hasStartedRef.current && playerRef.current?.getPlayerState?.() === -1) setIsAutoplayBlocked(true); }, 8000);
           },
           onStateChange: (evt) => {
             try { evt.target.unloadModule?.('captions'); } catch {}
             if (evt.data === 0 && !hasEndedRef.current) { hasEndedRef.current = true; onEndedRef.current(); }
-            else if (evt.data === 1) { hasEndedRef.current = false; setIsAutoplayBlocked(false); onPlayingRef.current?.(true); }
+            else if (evt.data === 1) { hasEndedRef.current = false; hasStartedRef.current = true; setIsAutoplayBlocked(false); onPlayingRef.current?.(true); }
             else if (evt.data === 2) { onPlayingRef.current?.(false); }
           },
           onError: (evt) => { logError('TV', 'tv', 'yt_error', `YT Error: ${YT_ERRORS[evt.data] || evt.data}`, { errorCode: evt.data, videoId }); onErrorRef.current?.(evt.data); },

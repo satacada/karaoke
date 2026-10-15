@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import { Disc3, Music2, Clock, Play } from 'lucide-react';
+import { Disc3, Music2, Clock } from 'lucide-react';
 import type { QueueItem } from '../../types';
 import { isTvHudIntervalActive } from '../../utils/tvPlaybackInterval';
 
@@ -101,12 +101,6 @@ export const TvNowPlayingHUD: FC<TvNowPlayingHUDProps> = ({
                 style={{ width: `${progressPercent}%` }}
               />
             </div>
-            {isPaused && (
-              <div className="absolute -top-8 left-1/2 -translate-x-1/2 flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/95 text-zinc-950 text-[11px] font-black shadow-2xl border border-white/40 animate-pulse">
-                <Play className="w-3.5 h-3.5 fill-current" />
-                <span>PAUSADO (OK: Reanudar)</span>
-              </div>
-            )}
           </button>
           <span className="font-semibold text-white/20 text-[8px] tracking-wide tv-text-outline-sm shrink-0 whitespace-nowrap select-none">
             Powered by DT
