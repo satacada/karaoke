@@ -4,6 +4,16 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.49.28] - 2026-10-15
+
+### 🚀 [ESPECIFICACIÓN / FEATURE]
+- **API Interna de Verificación Automática de Transferencias sin Comisión (`client/api/verify-payment.js`, `GuestMercadoPagoModal.tsx`):**
+  - **Estrategia Cero Comisión:** Se implementó el flujo donde el cliente gira directamente al Alias oficial (`david.taboa`) sin pasar por pasarelas comerciales que descuenten porcentajes (0% de comisión).
+  - **Verificación Automática por API:** Se creó la Serverless Function `/api/verify-payment` que consulta en tiempo real mediante el `Access Token` oficial de Mercado Pago (`/v1/payments/search`) si la cuenta recibió una transferencia coincidente con el monto esperado ($100 ARS).
+  - **Experiencia de Usuario Segura:** Al presionar "Girar $100 y Abrir MP", la app abre Mercado Pago en el celular del cliente e inicia un sondeo cada 5s. La canción sube a la cola prioritaria **únicamente tras validar la acreditación real en la cuenta**.
+
+---
+
 ## [1.49.27] - 2026-10-15
 
 ### 🚀 [ESPECIFICACIÓN / FEATURE]
