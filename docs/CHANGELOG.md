@@ -4,6 +4,23 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.49.29] - 2026-10-21
+
+### 🚀 [ESPECIFICACIÓN / TELEMETRÍA Y RENDIMIENTO TV BOXES]
+- **Telemetría Automática Exhaustiva de Hardware en Supabase (`loggerService.ts`, `App.tsx`):**
+  - Se implementó la captura desatendida del hardware de cada dispositivo cliente y TV conectado:
+    1. `ua`: User-Agent completo (marca, modelo de caja, versión de Android y versión de WebView).
+    2. `screen`: Resolución de pantalla nativa y relación de densidad de píxeles (`dpr`).
+    3. `cpu`: Número de núcleos de procesamiento (`hardwareConcurrency`).
+    4. `ram`: Memoria RAM aproximada del dispositivo (`deviceMemory`).
+    5. `net`: Tipo y velocidad de red efectiva (`connectionType`, `downlink`).
+  - **Captura Global de Errores no Controlados:** Escuchadores globales `window.onerror` y `unhandledrejection` que reportan de inmediato a `karaoke_system_logs` en Supabase cualquier fallo de renderizado o JavaScript.
+- **Aceleración por GPU y Fluidez de Sonido en TV Boxes Chinos (`AndroidManifest.xml`, `MainActivity.java`, `TvPlayer.tsx`):**
+  - **Aceleración por Hardware:** Forzado `android:hardwareAccelerated="true"` en la aplicación y actividad, y `setLayerType(LAYER_TYPE_HARDWARE)` en el WebView para evitar decodificación por software en procesadores básicos (Allwinner/Rockchip).
+  - **Optimización de Calidad YouTube:** Se configuró la sugerencia de calidad `hd720` en `TvPlayer.tsx` para evitar que YouTube intente reproducir a 1080p a 60 FPS en cajas de 1 GB de RAM, erradicando los cortes de sonido y tartamudeo.
+
+---
+
 ## [1.49.28] - 2026-10-15
 
 ### 🚀 [ESPECIFICACIÓN / FEATURE]

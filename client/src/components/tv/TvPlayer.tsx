@@ -72,7 +72,9 @@ export const TvPlayer = forwardRef<TvPlayerRef, TvPlayerProps>(function TvPlayer
     hasEndedRef.current = false; setIsAutoplayBlocked(false);
     if (isReadyRef.current && playerRef.current) {
       currentVideoRef.current = videoId; logInfo('TV', 'tv', 'yt_load_video', `Cargando video: ${videoId}`);
-      playerRef.current.loadVideoById(videoId); onPlayingRef.current?.(true);
+      playerRef.current.loadVideoById(videoId);
+      try { (playerRef.current as unknown as { setPlaybackQuality?: (q: string) => void })?.setPlaybackQuality?.('hd720'); } catch {}
+      onPlayingRef.current?.(true);
     }
   }, [videoId]);
 
@@ -88,7 +90,10 @@ export const TvPlayer = forwardRef<TvPlayerRef, TvPlayerProps>(function TvPlayer
           onReady: (evt) => {
             if (!isMounted) return;
             isReadyRef.current = true;
-            try { evt.target.unloadModule?.('captions'); evt.target.setOption?.('captions', 'track', {}); } catch {}
+            try {
+              evt.target.unloadModule?.('captions'); evt.target.setOption?.('captions', 'track', {});
+              (evt.target as unknown as { setPlaybackQuality?: (q: string) => void })?.setPlaybackQuality?.('hd720');
+            } catch {}
             evt.target.playVideo(); logInfo('TV', 'tv', 'yt_ready', 'YouTube listo');
             setTimeout(() => { if (isMounted && !hasStartedRef.current && playerRef.current?.getPlayerState?.() === -1) setIsAutoplayBlocked(true); }, 8000);
           },
@@ -105,7 +110,6 @@ export const TvPlayer = forwardRef<TvPlayerRef, TvPlayerProps>(function TvPlayer
     if (!window.YT) { const tag = document.createElement('script'); tag.src = 'https://www.youtube.com/iframe_api'; window.onYouTubeIframeAPIReady = init; document.body.appendChild(tag); } else init();
     return () => { isMounted = false; try { playerRef.current?.destroy(); } catch {} playerRef.current = null; isReadyRef.current = false; };
   }, []);
-
   return (
     <div className="relative w-full h-full bg-black flex items-center justify-center overflow-hidden tv-player-container select-none">
       <div ref={containerRef} className="w-full h-full pointer-events-none" />

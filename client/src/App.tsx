@@ -6,6 +6,7 @@ import { GuestView } from './components/guest/GuestView';
 import { HostQrValidationView } from './components/host/HostQrValidationView';
 import { isTvDevice } from './utils/deviceDetector';
 import { initAutoUpdate } from './services/autoUpdateService';
+import { initGlobalErrorCapture } from './services/loggerService';
 import { Sliders, Music, QrCode } from 'lucide-react';
 
 export function getInitialMode(isTv: boolean): 'tv' | 'host' | 'guest' {
@@ -44,6 +45,7 @@ export const App: FC = () => {
   }, []);
 
   useEffect(() => {
+    initGlobalErrorCapture();
     const unbindAutoUpdate = initAutoUpdate();
     const p = new URLSearchParams(window.location.search);
     const qRoom = p.get('room');
