@@ -1,4 +1,5 @@
 {
-  "version": "v1.49.29",
-  "buildDate": "2026-10-21 23:45"
+  "version": "1.49.30",
+  "buildTimestamp": "2026-10-22T21:29:00Z",
+  "releaseNotes": "Aislamiento total Multi-Cuenta y Multi-TV: cada TV vinculada y cada cuenta de administrador tiene su propia sala independiente en Supabase, evitando mezclar canciones entre televisores."
 }

@@ -4,6 +4,15 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.49.30] - 2026-10-22
+
+### 🐛 [CORRECCIÓN / AISLAMIENTO MULTI-CUENTA Y MULTI-TV]
+- **Aislamiento Total de Salas por Cuenta y por Televisor (`roomIsolationService.ts`, `HostQrValidationView.tsx`, `HostView.tsx`, `karaokeApi.ts`, `App.tsx`):**
+  - Se corrigió el problema donde múltiples televisores o cuentas distintas compartían la sala por defecto `'FIESTA'` al vincular un código `TV-XXXX` o al iniciar sesión con otra cuenta de Google.
+  - Ahora cada vinculación de TV genera/asigna su propia sala independiente en Supabase (`SALA-XXXX` o la sala propia de la cuenta del administrador), y cada cuenta de Google tiene únicamente sus propias salas asignadas (`owner_email`), impidiendo que los pedidos de un televisor se mezclen con otro.
+
+---
+
 ## [1.49.29] - 2026-10-21
 
 ### 🚀 [ESPECIFICACIÓN / TELEMETRÍA Y RENDIMIENTO TV BOXES]

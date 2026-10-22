@@ -7,6 +7,7 @@ import { HostQrValidationView } from './components/host/HostQrValidationView';
 import { isTvDevice } from './utils/deviceDetector';
 import { initAutoUpdate } from './services/autoUpdateService';
 import { initGlobalErrorCapture } from './services/loggerService';
+import { getOrCreateDeviceAdminRoomCode } from './services/roomIsolationService';
 import { Sliders, Music, QrCode } from 'lucide-react';
 
 export function getInitialMode(isTv: boolean): 'tv' | 'host' | 'guest' {
@@ -36,6 +37,7 @@ export const App: FC = () => {
       return p.get('room')?.toUpperCase() || localStorage.getItem('tv_paired_room') || null;
     } catch { return null; }
   });
+  const fallbackAdminRoom = useMemo(() => roomCode || getOrCreateDeviceAdminRoomCode(), [roomCode]);
 
   const isGuestOnly = useMemo(() => {
     try {
@@ -97,15 +99,15 @@ export const App: FC = () => {
               } catch {}
               window.history.replaceState({}, '', `/host?room=${newCode}`);
             }}
-            defaultRoomFallback={roomCode || 'FIESTA'}
+            defaultRoomFallback={fallbackAdminRoom}
           />
         ) : (
-          <HostView roomCode={roomCode || 'FIESTA'} onSwitchToTv={() => handleSelectMode('tv')} onSwitchToGuest={() => handleSelectMode('guest')} />
+          <HostView roomCode={fallbackAdminRoom} onSwitchToTv={() => handleSelectMode('tv')} onSwitchToGuest={() => handleSelectMode('guest')} />
         )
       )}
 
       {currentMode === 'guest' && (
-        <GuestView roomCode={roomCode || 'FIESTA'} />
+        <GuestView roomCode={fallbackAdminRoom} />
       )}
     </div>
   );

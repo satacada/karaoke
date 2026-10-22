@@ -15,14 +15,22 @@ import type {
 } from '../types';
 
 export async function getRoomByCode(code: string): Promise<KaraokeRoom | null> {
+  const clean = code.trim().toUpperCase();
   const { data, error } = await supabase
     .from('karaoke_rooms')
     .select('*')
-    .ilike('room_code', code.trim())
-    .single();
+    .ilike('room_code', clean)
+    .maybeSingle();
 
-  if (error || !data) return null;
-  return data as KaraokeRoom;
+  if (!error && data) return data as KaraokeRoom;
+  return createOwnerRoom({
+    ownerEmail: `tv_${clean.toLowerCase()}@karaoke.local`,
+    businessName: `Karaoke ${clean}`,
+    zoneName: 'Salón Principal',
+    roomCode: clean,
+    hostPin: '1234',
+    vipPriceArs: 100,
+  });
 }
 
 export async function getQueueForRoom(roomId: string): Promise<QueueItem[]> {
@@ -571,7 +579,13 @@ export async function toggleSongLike(
 export async function getRoomsForOwner(ownerEmail: string): Promise<KaraokeRoom[]> {
   let query = supabase.from('karaoke_rooms').select('*');
   if (ownerEmail && ownerEmail !== 'all') {
-    query = query.or(`owner_email.eq.${ownerEmail},room_code.eq.FIESTA`);
+    query = query.ilike('owner_email', ownerEmail.trim());
+  } else {
+    const localCode =
+      (typeof window !== 'undefined' &&
+        (localStorage.getItem('tv_paired_room') || localStorage.getItem('admin_own_room_code'))) ||
+      'FIESTA';
+    query = query.ilike('room_code', localCode);
   }
   const { data, error } = await query.order('created_at', { ascending: true });
 

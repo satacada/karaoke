@@ -1,8 +1,2 @@
-// ==============================================================================
-// CONSTANTE GLOBAL DE VERSIÓN DEL SISTEMA ROCKOLA
-// Archivo: client/src/version.ts
-// Regla Clean-by-Design: <= 120 líneas
-// ==============================================================================
-
-export const APP_VERSION = 'v1.49.29';
-export const APP_BUILD_DATE = '2026-10-21 23:45';
+export const APP_VERSION = '1.49.30';
+export const BUILD_TIMESTAMP = '2026-10-22T21:29:00Z';

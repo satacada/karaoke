@@ -1,13 +1,14 @@
 import { useState, type FC, type FormEvent } from 'react';
 import { Tv, Sparkles, AlertCircle, ArrowRight } from 'lucide-react';
 import { supabase } from '../../lib/supabaseClient';
+import { resolveIsolatedTvLinkRoom } from '../../services/roomIsolationService';
 
 interface HostQrValidationViewProps {
   onLinked: (roomCode: string) => void;
   defaultRoomFallback?: string;
 }
 
-export const HostQrValidationView: FC<HostQrValidationViewProps> = ({ onLinked, defaultRoomFallback = 'FIESTA' }) => {
+export const HostQrValidationView: FC<HostQrValidationViewProps> = ({ onLinked, defaultRoomFallback }) => {
   // El cuadro NO DEBE estar lleno por defecto; el administrador debe tipear el código visto en la TV
   const [code, setCode] = useState('');
   const [isLinking, setIsLinking] = useState(false);
@@ -21,7 +22,7 @@ export const HostQrValidationView: FC<HostQrValidationViewProps> = ({ onLinked, 
     setError(null);
 
     try {
-      const targetRoom = clean.startsWith('TV-') ? defaultRoomFallback : clean;
+      const { roomCode: targetRoom, roomName } = await resolveIsolatedTvLinkRoom(clean, defaultRoomFallback);
       supabase.channel(`tv-room-${targetRoom}`).send({ type: 'broadcast', event: 'admin_linked', payload: {} }).catch(() => {});
       supabase.channel(`room_commands_${targetRoom}`).send({ type: 'broadcast', event: 'admin_linked', payload: {} }).catch(() => {});
       if (clean.startsWith('TV-')) {
@@ -29,13 +30,11 @@ export const HostQrValidationView: FC<HostQrValidationViewProps> = ({ onLinked, 
         await ch.send({
           type: 'broadcast',
           event: 'paired',
-          payload: { roomCode: defaultRoomFallback, roomName: 'Salón Principal' },
+          payload: { roomCode: targetRoom, roomName },
         });
         setTimeout(() => supabase.removeChannel(ch), 2000);
-        onLinked(defaultRoomFallback);
-      } else {
-        onLinked(clean);
       }
+      onLinked(targetRoom);
     } catch (err) {
       console.error('Error al enlazar TV:', err);
       setError('No se pudo enlazar. Verifica el código e intenta de nuevo.');
