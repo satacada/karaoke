@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="es">
+<html lang="es" style="background-color: #09090b; color: #f4f4f5;">
   <head>
     <meta charset="UTF-8" />
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
@@ -11,21 +11,76 @@
     <meta name="description" content="Rockola Digital Colaborativa en Tiempo Real para Locales y Fiestas" />
     <link rel="manifest" href="/manifest.json" />
     <title>🎶 Rockola Digital Live</title>
+    <style>
+      html, body {
+        margin: 0;
+        padding: 0;
+        background-color: #09090b !important;
+        color: #f4f4f5 !important;
+        font-family: sans-serif;
+      }
+    </style>
     <script>
-      try {
-        localStorage.removeItem('rockola_hide_mode_nav');
-        var isMob = /mobile|iphone|ipod|ipad|android.*mobile/i.test(navigator.userAgent);
-        if (isMob) {
-          localStorage.removeItem('rockola_force_device');
-          if (sessionStorage.getItem('rockola_app_mode') === 'tv') {
-            sessionStorage.removeItem('rockola_app_mode');
-          }
+      (function () {
+        var SB_URL = 'https://pfhjrplnfuupftgzdnop.supabase.co/rest/v1/karaoke_system_logs';
+        var SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBmaGpycGxuZnV1cGZ0Z3pkbm9wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg5NTc4NDEsImV4cCI6MjEwNDUzMzg0MX0.u2ysI-hTvT7LczA7QL2YS2mudW8pSI644Ig8gyvTs7o';
+        function sendBootLog(level, evt, msg, extra) {
+          try {
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', SB_URL, true);
+            xhr.setRequestHeader('apikey', SB_KEY);
+            xhr.setRequestHeader('Authorization', 'Bearer ' + SB_KEY);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            var room = 'GLOBAL';
+            try {
+              room = localStorage.getItem('tv_paired_room') || localStorage.getItem('admin_own_room_code') || 'GLOBAL';
+            } catch (e) {}
+            var payload = [{
+              room_code: String(room).slice(0, 8),
+              node_type: 'tv',
+              level: level,
+              event: evt,
+              message: String(msg).slice(0, 240),
+              details: {
+                ua: navigator.userAgent || 'unknown',
+                screen: (window.screen ? window.screen.width + 'x' + window.screen.height : 'unknown'),
+                url: window.location.href,
+                extra: extra || null,
+                app_version: '1.49.32'
+              }
+            }];
+            xhr.send(JSON.stringify(payload));
+          } catch (err) {}
         }
-      } catch (e) {}
+        window.onerror = function (msg, url, line, col, error) {
+          sendBootLog('error', 'early_js_error', msg || 'JS Error', {
+            url: url,
+            line: line,
+            col: col,
+            stack: error && error.stack ? String(error.stack) : null
+          });
+        };
+        sendBootLog('info', 'html_boot', 'HTML cargado en dispositivo');
+        try {
+          localStorage.removeItem('rockola_hide_mode_nav');
+          var isMob = /mobile|iphone|ipod|ipad|android.*mobile/i.test(navigator.userAgent);
+          if (isMob) {
+            localStorage.removeItem('rockola_force_device');
+            if (sessionStorage.getItem('rockola_app_mode') === 'tv') {
+              sessionStorage.removeItem('rockola_app_mode');
+            }
+          }
+        } catch (e) {}
+      })();
     </script>
   </head>
-  <body class="bg-zinc-950 text-zinc-100 antialiased selection:bg-purple-500 selection:text-white overflow-x-hidden">
-    <div id="root"></div>
+  <body class="bg-zinc-950 text-zinc-100 antialiased selection:bg-purple-500 selection:text-white overflow-x-hidden" style="background-color: #09090b; color: #f4f4f5;">
+    <div id="root">
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;background-color:#09090b;color:#a1a1aa;font-family:sans-serif;text-align:center;padding:20px;">
+        <div style="font-size:22px;font-weight:bold;color:#ffffff;margin-bottom:8px;">🎶 Rockola Digital Live</div>
+        <div style="font-size:13px;color:#a855f7;">Iniciando sistema en pantalla...</div>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

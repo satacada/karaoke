@@ -4,6 +4,16 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.49.32] - 2026-10-28
+
+### 🚀 [COMPATIBILIDAD TV BOXES CHINOS ANDROID 7/8/9 — OPENBOX B12 PLUS]
+- **Eliminación de Pantalla Blanca en WebViews Antiguos (`vite.config.ts`, `index.html`):**
+  - Se identificó que la caja **Openbox b12 plus** cuenta con un Android System WebView antiguo (Chromium < 85) que ignora `<script type="module">`, rechaza sintaxis JS ES2022 (`?.`, `??`, `||=`) y descarta hojas de estilo con `@layer` y colores `oklch()` de Tailwind v4, provocando pantalla 100% blanca sin llegar a ejecutar el logger.
+  - Se configuró Vite (`legacyTvBoxCompatPlugin`) para transpilar todo el bundle JS a formato clásico **ES2015 IIFE** (`<script defer>`), desenvolver todos los bloques `@layer` y convertir todos los colores `oklch()` a RGB/HEX compatibles desde Chrome 52+.
+  - Se incorporó un beacon de telemetría puro ES5 (`XMLHttpRequest`) en el `<head>` de `index.html` y fondo oscuro nativo `#09090b` inmediato.
+
+---
+
 ## [1.49.31] - 2026-10-28
 
 ### 🐛 [CORRECCIÓN / RESTRICCIÓN `ck_rooms_code_length` EN SUPABASE]

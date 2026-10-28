@@ -1,5 +1,5 @@
 {
-  "version": "1.49.31",
-  "buildTimestamp": "2026-10-28T17:54:00Z",
-  "releaseNotes": "Hotfix ck_rooms_code_length (S-XXXX <= 8 caracteres) y registro de errores de creación de sala en telemetría."
+  "version": "1.49.32",
+  "buildTimestamp": "2026-10-28T18:08:00Z",
+  "releaseNotes": "Compatibilidad total con TV Boxes Chinos (Openbox b12 plus / Android 7-9): compilación JS ES2015 IIFE sin type=module, CSS sin @layer ni oklch, y beacon ES5 de arranque."
 }
