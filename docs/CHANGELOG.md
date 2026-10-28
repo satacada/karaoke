@@ -4,6 +4,15 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.49.33] - 2026-10-28
+
+### 🐛 [CORRECCIÓN / POLYFILLS CHROME 66 PARA OPENBOX B12 PLUS]
+- **Polyfills de Runtime para Chrome 66 (`index.html`, `vite.config.ts`, `deviceDetector.ts`):**
+  - El beacon ES5 de `v1.49.32` capturó en `karaoke_system_logs` el hardware exacto de la **Openbox b12 plus** (`Android 9; b12 plus Build/PPR1.180610.011; Chrome/66.0.3359.158`) y el error exacto: `Uncaught ReferenceError: globalThis is not defined` (ya que `globalThis` y `queueMicrotask` fueron introducidos en Chrome 71).
+  - Se inyectaron polyfills completos para Chrome 66 (`globalThis`, `queueMicrotask`, `Object.fromEntries`, `Object.hasOwn`, `crypto.randomUUID`, `Array.prototype.flat/flatMap/at`, `String.prototype.replaceAll`, `Promise.allSettled`, `window.reportError`) y detección directa de `b12 plus` como dispositivo TV en `deviceDetector.ts`.
+
+---
+
 ## [1.49.32] - 2026-10-28
 
 ### 🚀 [COMPATIBILIDAD TV BOXES CHINOS ANDROID 7/8/9 — OPENBOX B12 PLUS]

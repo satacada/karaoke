@@ -21,6 +21,92 @@
       }
     </style>
     <script>
+      // 1. Polyfills críticos para Android TV Boxes con Chrome 52-85 (ej. Openbox b12 plus Chrome 66)
+      if (typeof globalThis === 'undefined') {
+        window.globalThis = window;
+      }
+      if (typeof window.queueMicrotask !== 'function') {
+        window.queueMicrotask = function (cb) {
+          Promise.resolve().then(cb).catch(function (e) {
+            setTimeout(function () { throw e; }, 0);
+          });
+        };
+      }
+      if (typeof window.reportError !== 'function') {
+        window.reportError = function (err) {
+          if (window.console && console.error) console.error(err);
+        };
+      }
+      if (typeof Object.fromEntries !== 'function') {
+        Object.fromEntries = function (entries) {
+          var obj = {};
+          if (!entries) return obj;
+          var arr = Array.from ? Array.from(entries) : entries;
+          for (var i = 0; i < arr.length; i++) {
+            if (arr[i]) obj[arr[i][0]] = arr[i][1];
+          }
+          return obj;
+        };
+      }
+      if (typeof Object.hasOwn !== 'function') {
+        Object.hasOwn = function (obj, prop) {
+          return Object.prototype.hasOwnProperty.call(obj, prop);
+        };
+      }
+      if (!Array.prototype.flat) {
+        Array.prototype.flat = function (depth) {
+          var d = depth === undefined ? 1 : Number(depth);
+          return d > 0
+            ? Array.prototype.reduce.call(this, function (acc, val) {
+                return acc.concat(Array.isArray(val) ? val.flat(d - 1) : val);
+              }, [])
+            : Array.prototype.slice.call(this);
+        };
+      }
+      if (!Array.prototype.flatMap) {
+        Array.prototype.flatMap = function (cb, thisArg) {
+          return Array.prototype.map.call(this, cb, thisArg).flat(1);
+        };
+      }
+      if (!Array.prototype.at) {
+        Array.prototype.at = function (n) {
+          n = Math.trunc(n) || 0;
+          if (n < 0) n += this.length;
+          return n < 0 || n >= this.length ? undefined : this[n];
+        };
+      }
+      if (!String.prototype.replaceAll) {
+        String.prototype.replaceAll = function (search, replacement) {
+          if (search instanceof RegExp) return this.replace(search, replacement);
+          return this.split(String(search)).join(String(replacement));
+        };
+      }
+      if (!Promise.allSettled) {
+        Promise.allSettled = function (promises) {
+          return Promise.all(
+            Array.from(promises).map(function (p) {
+              return Promise.resolve(p).then(
+                function (value) { return { status: 'fulfilled', value: value }; },
+                function (reason) { return { status: 'rejected', reason: reason }; }
+              );
+            })
+          );
+        };
+      }
+      try {
+        if (!window.crypto) window.crypto = {};
+        if (typeof window.crypto.randomUUID !== 'function') {
+          window.crypto.randomUUID = function () {
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+              var r = (Math.random() * 16) | 0;
+              var v = c === 'x' ? r : (r & 0x3) | 0x8;
+              return v.toString(16);
+            });
+          };
+        }
+      } catch (e) {}
+
+      // 2. Beacon ES5 de arranque y captura temprana de errores
       (function () {
         var SB_URL = 'https://pfhjrplnfuupftgzdnop.supabase.co/rest/v1/karaoke_system_logs';
         var SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBmaGpycGxuZnV1cGZ0Z3pkbm9wIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODg5NTc4NDEsImV4cCI6MjEwNDUzMzg0MX0.u2ysI-hTvT7LczA7QL2YS2mudW8pSI644Ig8gyvTs7o';
@@ -46,7 +132,7 @@
                 screen: (window.screen ? window.screen.width + 'x' + window.screen.height : 'unknown'),
                 url: window.location.href,
                 extra: extra || null,
-                app_version: '1.49.32'
+                app_version: '1.49.33'
               }
             }];
             xhr.send(JSON.stringify(payload));

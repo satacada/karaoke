@@ -19,28 +19,28 @@ export function isTvDevice(): boolean {
     if (deviceParam === 'tv') return true;
     if (deviceParam === 'mobile') return false;
 
-    // 3. User-Agent
+    // 3. User-Agent (incluyendo TV Boxes chinos AOSP como Openbox b12 plus, FlowBox, MXQ, TX, X96, H96)
     const ua = (navigator.userAgent || navigator.vendor || '').toLowerCase();
     const tvPatterns = [
       'googletv', 'androidtv', 'smart-tv', 'smarttv', 'appletv', 'hbbtv',
       'netcast', 'viera', 'bravia', 'roku', 'firetv', 'aftb', 'aftm', 'afts',
       'boxee', 'kylo', 'webos', 'tizen', 'leanback', 'large screen', 'crkey',
-      'mibox', 'mitv', 'shield android tv', 'tv box', 'atv',
+      'mibox', 'mitv', 'shield android tv', 'tv box', 'tvbox', 'atv',
+      'b12 plus', 'openbox', 'flowbox', 'mxq', 'x96', 'h96', 'tx3', 'tx6', 'tx9', 'rk322', 'rk33',
     ];
     if (tvPatterns.some((pattern) => ua.includes(pattern))) return true;
 
-    // 4. Si el User-Agent o pantalla táctil es de celular / móvil -> NUNCA es TV
+    // 4. En Android, los teléfonos incluyen "Mobile" en el User-Agent; las cajas TV Box AOSP NO incluyen "Mobile"
+    const isAndroid = ua.includes('android');
     const isMobileUa = /mobile|iphone|ipod|ipad|android.*mobile|windows phone|blackberry|iemobile/i.test(ua);
+    if (isAndroid && !isMobileUa) return true;
+
     const hasTouch = 'ontouchstart' in window || (navigator.maxTouchPoints || 0) > 0;
     const isSmallScreen = Math.min(window.innerWidth, window.innerHeight) < 640;
 
     if (isMobileUa || (hasTouch && isSmallScreen)) return false;
 
-    // 5. Android TV oficial: "Android" sin "Mobile" y pantalla amplia sin touch
-    const isAndroid = ua.includes('android');
-    if (isAndroid && !isMobileUa && !hasTouch) return true;
-
-    // 6. Pantalla Panorámica de TV (Landscape 16:9 sin multitouch de escritorio/tv)
+    // 5. Pantalla Panorámica de TV (Landscape 16:9 sin multitouch de escritorio/tv)
     const isLandscape = window.innerWidth > window.innerHeight;
     const aspectRatio = window.innerWidth / Math.max(1, window.innerHeight);
 
@@ -48,7 +48,7 @@ export function isTvDevice(): boolean {
       return true;
     }
 
-    // 7. Ruta explícita /tv o ?mode=tv en dispositivos no móviles
+    // 6. Ruta explícita /tv o ?mode=tv en dispositivos no móviles
     if (!hasTouch && (params.get('mode')?.toLowerCase() === 'tv' || window.location.pathname.toLowerCase().startsWith('/tv'))) {
       return true;
     }

@@ -57,8 +57,10 @@ function legacyTvBoxCompatPlugin(): Plugin {
         if (fileName.endsWith('.css') && chunk.type === 'asset') {
           const rawCss = typeof chunk.source === 'string' ? chunk.source : Buffer.from(chunk.source).toString('utf8');
           chunk.source = convertCssForLegacyWebView(rawCss, fileName);
-        } else if (fileName.endsWith('.js') && chunk.type === 'chunk' && chunk.code.includes('@layer')) {
-          chunk.code = stripCssLayersAndModernSupports(chunk.code);
+        } else if (fileName.endsWith('.js') && chunk.type === 'chunk') {
+          let code = chunk.code;
+          if (code.includes('@layer')) code = stripCssLayersAndModernSupports(code);
+          chunk.code = 'if(typeof globalThis==="undefined"){window.globalThis=window;}\n' + code;
         }
       }
     },
