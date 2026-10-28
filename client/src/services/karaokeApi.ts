@@ -14,8 +14,10 @@ import type {
   PromoBanner,
 } from '../types';
 
+import { logError } from './loggerService';
+
 export async function getRoomByCode(code: string): Promise<KaraokeRoom | null> {
-  const clean = code.trim().toUpperCase();
+  const clean = code.trim().toUpperCase().replace(/^SALA-/, 'S-').replace(/[^A-Z0-9_-]/g, '').slice(0, 8);
   const { data, error } = await supabase
     .from('karaoke_rooms')
     .select('*')
@@ -601,9 +603,10 @@ export async function createOwnerRoom(params: {
   hostPin: string;
   vipPriceArs?: number;
 }): Promise<KaraokeRoom | null> {
-  const cleanCode = params.roomCode.toUpperCase().trim().replace(/[^A-Z0-9_-]/g, '');
+  const cleanCode = params.roomCode.toUpperCase().trim().replace(/^SALA-/, 'S-').replace(/[^A-Z0-9_-]/g, '').slice(0, 8);
   const basePayload: Record<string, unknown> = {
     owner_email: params.ownerEmail,
+    businessName: undefined,
     business_name: params.businessName,
     name: `${params.businessName} - ${params.zoneName}`,
     room_code: cleanCode,
@@ -612,6 +615,7 @@ export async function createOwnerRoom(params: {
     is_approved: true,
     price_per_song: params.vipPriceArs || 500,
   };
+  delete basePayload.businessName;
 
   try {
     const { data, error } = await supabase
@@ -630,7 +634,10 @@ export async function createOwnerRoom(params: {
     .select()
     .single();
 
-  if (error || !data) return null;
+  if (error || !data) {
+    if (error) logError(cleanCode, 'api', 'db_create_room_error', error.message, { code: error.code, details: error.details });
+    return null;
+  }
   return { ...(data as KaraokeRoom), zone_name: params.zoneName, vip_price_ars: params.vipPriceArs || 500 };
 }
 

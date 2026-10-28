@@ -4,6 +4,15 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.49.31] - 2026-10-28
+
+### 🐛 [CORRECCIÓN / RESTRICCIÓN `ck_rooms_code_length` EN SUPABASE]
+- **Corrección de Longitud de Código de Sala (`roomIsolationService.ts`, `karaokeApi.ts`, `useTvRealtime.ts`, `App.tsx`):**
+  - Se detectó que los códigos autogenerados `SALA-XXXX` (9 caracteres) en `v1.49.30` eran rechazados por la restricción de PostgreSQL `ck_rooms_code_length CHECK (char_length(room_code) BETWEEN 3 AND 8)` con error `23514`.
+  - Se normalizó el formato a `S-XXXX` (6 caracteres) con auto-reparación automática de cualquier código `SALA-XXXX` guardado en `localStorage`, además de registrar cualquier fallo de base de datos en `karaoke_system_logs`.
+
+---
+
 ## [1.49.30] - 2026-10-22
 
 ### 🐛 [CORRECCIÓN / AISLAMIENTO MULTI-CUENTA Y MULTI-TV]

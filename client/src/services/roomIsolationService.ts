@@ -10,32 +10,40 @@ import type { KaraokeRoom } from '../types';
 
 const OWN_ROOM_STORAGE_KEY = 'admin_own_room_code';
 
+export function sanitizeRoomCodeLength(rawCode: string): string {
+  const clean = rawCode.trim().toUpperCase().replace(/^SALA-/, 'S-').replace(/[^A-Z0-9_-]/g, '');
+  if (clean.length > 8) return clean.slice(0, 8);
+  if (clean.length < 3) return `S-${Math.floor(1000 + Math.random() * 9000)}`;
+  return clean;
+}
+
 export function getOrCreateDeviceAdminRoomCode(): string {
   try {
     const saved = localStorage.getItem(OWN_ROOM_STORAGE_KEY);
-    if (saved && saved !== 'FIESTA') return saved;
-    const paired = localStorage.getItem('tv_paired_room');
-    if (paired && paired !== 'FIESTA') {
-      localStorage.setItem(OWN_ROOM_STORAGE_KEY, paired);
-      return paired;
+    if (saved && saved !== 'FIESTA') {
+      const fixed = sanitizeRoomCodeLength(saved);
+      if (fixed !== saved) localStorage.setItem(OWN_ROOM_STORAGE_KEY, fixed);
+      return fixed;
     }
-    const newCode = `SALA-${Math.floor(1000 + Math.random() * 9000)}`;
+    const paired = localStorage.getItem('tv_paired_room');
+    if (paired) {
+      const fixed = sanitizeRoomCodeLength(paired);
+      if (fixed !== paired) localStorage.setItem('tv_paired_room', fixed);
+      localStorage.setItem(OWN_ROOM_STORAGE_KEY, fixed);
+      return fixed;
+    }
+    const newCode = `S-${Math.floor(1000 + Math.random() * 9000)}`;
     localStorage.setItem(OWN_ROOM_STORAGE_KEY, newCode);
     return newCode;
   } catch {
-    return `SALA-${Math.floor(1000 + Math.random() * 9000)}`;
+    return `S-${Math.floor(1000 + Math.random() * 9000)}`;
   }
 }
 
-export async function ensureRoomExists(
-  roomCode: string,
-  ownerEmail?: string | null,
-  roomName?: string
-): Promise<KaraokeRoom | null> {
-  const cleanCode = roomCode.trim().toUpperCase();
+export async function ensureRoomExists(roomCode: string, ownerEmail?: string | null, roomName?: string): Promise<KaraokeRoom | null> {
+  const cleanCode = sanitizeRoomCodeLength(roomCode);
   const existing = await getRoomByCode(cleanCode);
   if (existing) return existing;
-
   return createOwnerRoom({
     ownerEmail: ownerEmail || `tv_${cleanCode.toLowerCase()}@karaoke.local`,
     businessName: roomName || `Karaoke ${cleanCode}`,
@@ -46,32 +54,16 @@ export async function ensureRoomExists(
   });
 }
 
-export async function ensureAccountIsolatedRoom(
-  email: string,
-  displayName?: string
-): Promise<KaraokeRoom | null> {
+export async function ensureAccountIsolatedRoom(email: string, displayName?: string): Promise<KaraokeRoom | null> {
   const cleanEmail = email.trim().toLowerCase();
-  const { data: ownedRooms } = await supabase
-    .from('karaoke_rooms')
-    .select('*')
-    .ilike('owner_email', cleanEmail)
-    .order('created_at', { ascending: true });
-
+  const { data: ownedRooms } = await supabase.from('karaoke_rooms').select('*').ilike('owner_email', cleanEmail).order('created_at', { ascending: true });
   if (ownedRooms && ownedRooms.length > 0) {
     const primary = ownedRooms[0] as KaraokeRoom;
-    try {
-      localStorage.setItem(OWN_ROOM_STORAGE_KEY, primary.room_code);
-      localStorage.setItem('tv_paired_room', primary.room_code);
-    } catch {}
+    try { localStorage.setItem(OWN_ROOM_STORAGE_KEY, primary.room_code); localStorage.setItem('tv_paired_room', primary.room_code); } catch {}
     return primary;
   }
-
-  const prefix = (displayName || cleanEmail.split('@')[0] || 'SALA')
-    .toUpperCase()
-    .replace(/[^A-Z0-9]/g, '')
-    .slice(0, 4) || 'SALA';
-  const newRoomCode = `${prefix}-${Math.floor(100 + Math.random() * 900)}`;
-
+  const prefix = (displayName || cleanEmail.split('@')[0] || 'K').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 3) || 'KRK';
+  const newRoomCode = sanitizeRoomCodeLength(`${prefix}-${Math.floor(100 + Math.random() * 900)}`);
   const created = await createOwnerRoom({
     ownerEmail: cleanEmail,
     businessName: displayName ? `Karaoke de ${displayName}` : `Karaoke ${newRoomCode}`,
@@ -80,39 +72,23 @@ export async function ensureAccountIsolatedRoom(
     hostPin: '1234',
     vipPriceArs: 100,
   });
-
   if (created) {
-    try {
-      localStorage.setItem(OWN_ROOM_STORAGE_KEY, created.room_code);
-      localStorage.setItem('tv_paired_room', created.room_code);
-    } catch {}
+    try { localStorage.setItem(OWN_ROOM_STORAGE_KEY, created.room_code); localStorage.setItem('tv_paired_room', created.room_code); } catch {}
   }
   return created;
 }
 
-export async function resolveIsolatedTvLinkRoom(
-  inputCode: string,
-  fallbackAdminRoom?: string | null
-): Promise<{ roomCode: string; roomName: string }> {
+export async function resolveIsolatedTvLinkRoom(inputCode: string, fallbackAdminRoom?: string | null): Promise<{ roomCode: string; roomName: string }> {
   const clean = inputCode.trim().toUpperCase();
   let targetCode = clean;
-
   if (clean.startsWith('TV-')) {
     const digits = clean.replace('TV-', '');
     const savedOwn = localStorage.getItem(OWN_ROOM_STORAGE_KEY);
-    targetCode =
-      savedOwn && savedOwn !== 'FIESTA'
-        ? savedOwn
-        : fallbackAdminRoom && fallbackAdminRoom !== 'FIESTA'
-        ? fallbackAdminRoom
-        : `SALA-${digits}`;
+    targetCode = savedOwn && savedOwn !== 'FIESTA' ? sanitizeRoomCodeLength(savedOwn) : fallbackAdminRoom && fallbackAdminRoom !== 'FIESTA' ? sanitizeRoomCodeLength(fallbackAdminRoom) : `S-${digits}`;
+  } else {
+    targetCode = sanitizeRoomCodeLength(clean);
   }
-
   const room = await ensureRoomExists(targetCode);
-  try {
-    localStorage.setItem(OWN_ROOM_STORAGE_KEY, targetCode);
-    localStorage.setItem('tv_paired_room', targetCode);
-  } catch {}
-
+  try { localStorage.setItem(OWN_ROOM_STORAGE_KEY, targetCode); localStorage.setItem('tv_paired_room', targetCode); } catch {}
   return { roomCode: targetCode, roomName: room?.zone_name || room?.name || `Sala ${targetCode}` };
 }

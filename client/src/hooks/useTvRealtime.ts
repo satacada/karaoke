@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabaseClient'; import type { KaraokeRoom, Que
 import { getRoomByCode, getQueueForRoom, advanceNextSong, markCommandExecuted, markSongFinished } from '../services/karaokeApi';
 import { isLocalAutoDjActive, setLocalAutoDjActive, getLocalAutoDjGenre, fetchRemoteAutoDjSettings } from '../services/autoDjStateService';
 import { getRamQueue, dequeueRamSong, fetchDiverseRamTrack, replenishRamQueue, clearRamQueue, setRamQueue, initializeGenreRamQueue } from '../services/autoDjRamQueueService';
-import { getRoomChannelName } from '../utils/channelUtils'; import { logInfo } from '../services/loggerService';
+import { getRoomChannelName } from '../utils/channelUtils'; import { logInfo, logError } from '../services/loggerService';
 
 export function useTvRealtime(roomCode: string, onRemoteCommand?: (command: RemoteCommand) => void) {
   const [room, setRoom] = useState<KaraokeRoom | null>(null), [currentSong, setCurrentSong] = useState<QueueItem | null>(null);
@@ -58,7 +58,8 @@ export function useTvRealtime(roomCode: string, onRemoteCommand?: (command: Remo
     let isMounted = true;
     async function init() {
       setIsLoading(true); const loaded = await getRoomByCode(roomCode);
-      if (!isMounted || !loaded) { setIsLoading(false); return; }
+      if (!isMounted) return;
+      if (!loaded) { logError(roomCode, 'tv', 'room_load_failed', `No se pudo cargar/crear la sala ${roomCode}`); setIsLoading(false); return; }
       const autoDj = await fetchRemoteAutoDjSettings(loaded.id, roomCode);
       loaded.auto_dj_enabled = autoDj.enabled; loaded.auto_dj_genre = autoDj.genre; setRoom(loaded); await refreshState(loaded.id); setIsLoading(false);
       logInfo(roomCode, 'tv', 'room_loaded', `Sala ${roomCode} conectada`, { roomId: loaded.id, autoDj });

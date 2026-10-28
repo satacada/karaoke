@@ -7,7 +7,7 @@ import { HostQrValidationView } from './components/host/HostQrValidationView';
 import { isTvDevice } from './utils/deviceDetector';
 import { initAutoUpdate } from './services/autoUpdateService';
 import { initGlobalErrorCapture } from './services/loggerService';
-import { getOrCreateDeviceAdminRoomCode } from './services/roomIsolationService';
+import { getOrCreateDeviceAdminRoomCode, sanitizeRoomCodeLength } from './services/roomIsolationService';
 import { Sliders, Music, QrCode } from 'lucide-react';
 
 export function getInitialMode(isTv: boolean): 'tv' | 'host' | 'guest' {
@@ -34,7 +34,8 @@ export const App: FC = () => {
   const [roomCode, setRoomCode] = useState<string | null>(() => {
     try {
       const p = new URLSearchParams(window.location.search);
-      return p.get('room')?.toUpperCase() || localStorage.getItem('tv_paired_room') || null;
+      const raw = p.get('room')?.toUpperCase() || localStorage.getItem('tv_paired_room') || null;
+      return raw ? sanitizeRoomCodeLength(raw) : null;
     } catch { return null; }
   });
   const fallbackAdminRoom = useMemo(() => roomCode || getOrCreateDeviceAdminRoomCode(), [roomCode]);

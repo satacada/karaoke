@@ -1,5 +1,5 @@
 {
-  "version": "1.49.30",
-  "buildTimestamp": "2026-10-22T21:29:00Z",
-  "releaseNotes": "Aislamiento total Multi-Cuenta y Multi-TV: cada TV vinculada y cada cuenta de administrador tiene su propia sala independiente en Supabase, evitando mezclar canciones entre televisores."
+  "version": "1.49.31",
+  "buildTimestamp": "2026-10-28T17:54:00Z",
+  "releaseNotes": "Hotfix ck_rooms_code_length (S-XXXX <= 8 caracteres) y registro de errores de creación de sala en telemetría."
 }
