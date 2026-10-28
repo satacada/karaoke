@@ -1,5 +1,5 @@
 {
-  "version": "1.49.33",
-  "buildTimestamp": "2026-10-28T18:17:00Z",
-  "releaseNotes": "Polyfills completos para Chrome 66 en Openbox b12 plus (globalThis, queueMicrotask, Object.fromEntries, crypto.randomUUID) y detección automática como TV Box."
+  "version": "1.49.34",
+  "buildTimestamp": "2026-10-28T18:41:00Z",
+  "releaseNotes": "Corrección de salto falso al cargar canción solicitada, prioridad inmediata sobre Auto-DJ y optimización de RAM/GPU para TV Box de 1GB (b12 plus)."
 }

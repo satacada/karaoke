@@ -3,7 +3,7 @@
 // Archivo: client/public/sw.js
 // ==============================================================================
 
-const CACHE_NAME = 'rockola-pwa-v1.49.33';
+const CACHE_NAME = 'rockola-pwa-v1.49.34';
 
 self.addEventListener('install', () => {
   self.skipWaiting();

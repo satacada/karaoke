@@ -82,8 +82,9 @@ export const TvView: FC<{ roomCode?: string; onUnlink?: () => void; onSwitchToHo
   }, [roomCode, currentSong]);
 
   const handleTimeUpdate = useCallback((curr: number, dur: number) => {
-    setCurrentTime(curr); setDuration(dur); const now = Date.now();
-    if (room && now - lastSyncRef.current > 3000) { lastSyncRef.current = now; updatePlaybackTick(room.id, true, curr).catch(() => {}); }
+    const cFloor = Math.floor(curr), dFloor = Math.floor(dur), now = Date.now();
+    setCurrentTime((p) => (Math.abs(cFloor - p) >= 2 ? cFloor : p)); setDuration((p) => (p !== dFloor ? dFloor : p));
+    if (room && now - lastSyncRef.current > 5000) { lastSyncRef.current = now; updatePlaybackTick(room.id, true, cFloor).catch(() => {}); }
   }, [room]);
 
   if (isLoading) return (<div className="w-full h-screen bg-zinc-950 flex flex-col items-center justify-center gap-3"><div className="w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full animate-spin" /><p className="text-zinc-400 font-mono text-sm tracking-widest uppercase">Conectando a Sala {roomCode}...</p></div>);

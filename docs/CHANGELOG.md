@@ -4,6 +4,20 @@ Todas las modificaciones, nuevas especificaciones, afinamientos y correcciones d
 
 ---
 
+## [1.49.34] - 2026-10-28
+
+### 🐛 [CORRECCIÓN / REPRODUCCIÓN DE PEDIDOS Y FLUIDEZ EN TV BOX 1GB RAM (`b12 plus`)]
+- **Corrección de Salto Prematuro al Cambiar de Canción (`TvPlayer.tsx`):**
+  - En cajas lentas (1GB RAM), `loadVideoById` demora algunos segundos en reiniciar `getCurrentTime()` a `0`. Al resetear `hasEndedRef = false` antes de que el nuevo video arrancara, el temporizador leía el tiempo final del video anterior y marcaba por error el pedido nuevo (*"Give Me The Night"*) como finalizado a los 5 segundos.
+  - Se agregó validación de arranque real (`videoLoadTimeRef` + `hasStartedRef` + `c < 15`) antes de habilitar la detección de fin de canción.
+- **Prioridad Inmediata de Pedidos Reales y Preservación del IFrame (`useTvRealtime.ts`):**
+  - Se implementó `isAdvancingRef` para evitar que `currentSong` pase temporalmente por `null` entre canciones (lo cual destruía y recreaba el `<iframe />` de YouTube consumiendo la memoria de 1GB RAM de la `b12 plus`).
+  - Cuando entra un pedido real de un cliente (`status: 'queued'`) mientras no hay otro pedido real sonando, el reproductor pasa inmediatamente al tema del cliente sin quedar retenido en una pista RAM del Auto-DJ.
+- **Optimización de GPU y Memoria para 1GB RAM (`TvPlayer.tsx`, `TvView.tsx`, `index.css`):**
+  - Calidad adaptativa `medium` (360p/480p) para dispositivos de $\le 1\text{GB}$ de RAM / Chrome 66, eliminación de `backdrop-filter: blur()` sobre el video en vivo y throttling de actualizaciones de tiempo a cada 2 segundos.
+
+---
+
 ## [1.49.33] - 2026-10-28
 
 ### 🐛 [CORRECCIÓN / POLYFILLS CHROME 66 PARA OPENBOX B12 PLUS]
